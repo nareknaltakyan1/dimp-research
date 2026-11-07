@@ -1,0 +1,27 @@
+# Load generator Job (in-cluster client). Placeholders are substituted by
+# scripts/k8s_rolling_baseline.sh. Output is written to a hostPath on the kind
+# node and copied out with `docker cp`.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: loadgen-__RUN__
+  namespace: dimp-bench
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: loadgen
+          image: dimp-mock:latest
+          imagePullPolicy: Never
+          command: ["/usr/local/bin/loadgen"]
+          args: ["-url", "http://mock.dimp-bench.svc.cluster.local/api", "-rate", "__RATE__",
+                 "-duration", "__DURATION__s", "-concurrency", "__CONC__", "-work-mix", "__MIX__",
+                 "-keepalive=__KA__", "-timeout", "__TIMEOUT__", "-seed", "__SEED__",
+                 "-out", "/out/loadgen.csv", "-start-file", "/out/t0"]
+          volumeMounts:
+            - {name: out, mountPath: /out}
+      volumes:
+        - name: out
+          hostPath: {path: /tmp/dimp-out/__RUN__, type: DirectoryOrCreate}

@@ -1,0 +1,11 @@
+# Benchmark/measurement image: Linux + Go toolchain + Python analysis stack.
+# Build:  docker build -f deploy/Dockerfile.bench -t dimp-bench .
+# Normally used via scripts/in_docker.sh.
+FROM golang:1.25
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+      python3 python3-pandas python3-matplotlib python3-scipy python3-numpy \
+      procps util-linux curl iproute2 strace jq \
+ && rm -rf /var/lib/apt/lists/*
+ENV GOFLAGS=-buildvcs=false MPLBACKEND=Agg
+WORKDIR /work

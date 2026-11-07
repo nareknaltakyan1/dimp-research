@@ -1,0 +1,12 @@
+# Image with the contract mock server and the load generator, used by the
+# Kubernetes (kind) rolling-update baseline. Build context = repo root.
+FROM golang:1.25 AS build
+WORKDIR /src
+COPY go.mod ./
+COPY bench/ ./bench/
+RUN CGO_ENABLED=0 go build -o /out/mockserver ./bench/mockserver \
+ && CGO_ENABLED=0 go build -o /out/loadgen ./bench/loadgen
+
+FROM gcr.io/distroless/static-debian12
+COPY --from=build /out/ /usr/local/bin/
+ENTRYPOINT ["/usr/local/bin/mockserver"]
