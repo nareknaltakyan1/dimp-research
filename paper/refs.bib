@@ -1,0 +1,945 @@
+% refs.bib - Zero-Downtime Microservice Upgrades via Dynamic In-Memory Binary Patching
+% Every entry below was checked against Crossref metadata (DOI resolved) or the
+% publisher / project page (URL fetched) in November 2026.
+% Entries with note = {Grey literature} are documentation, blogs or code repositories
+% (verified to exist at the URL; content may change over time).
+
+%% ---------------------------------------------------------------------------
+%% Surveys and foundations of DSU
+%% ---------------------------------------------------------------------------
+
+@article{hicks2005dsu,
+  author    = {Michael Hicks and Scott Nettles},
+  title     = {Dynamic Software Updating},
+  journal   = {ACM Transactions on Programming Languages and Systems},
+  volume    = {27},
+  number    = {6},
+  pages     = {1049--1096},
+  year      = {2005},
+  doi       = {10.1145/1108970.1108971}
+}
+
+@article{seifzadeh2013survey,
+  author    = {Habib Seifzadeh and Hassan Abolhassani and Mohsen Sadighi Moshkenani},
+  title     = {A Survey of Dynamic Software Updating},
+  journal   = {Journal of Software: Evolution and Process},
+  volume    = {25},
+  number    = {5},
+  pages     = {535--568},
+  year      = {2013},
+  doi       = {10.1002/smr.1556},
+  note      = {Published online 2012}
+}
+
+@article{ahmed2020mapping,
+  author    = {Babiker Hussien Ahmed and Sai Peck Lee and Moon Ting Su and Abubakar Zakari},
+  title     = {Dynamic Software Updating: A Systematic Mapping Study},
+  journal   = {IET Software},
+  volume    = {14},
+  number    = {5},
+  pages     = {468--481},
+  year      = {2020},
+  doi       = {10.1049/iet-sen.2019.0201}
+}
+
+@inproceedings{dumitras2009upgrades,
+  author    = {Tudor Dumitra{\c{s}} and Priya Narasimhan},
+  title     = {Why Do Upgrades Fail and What Can We Do about It?},
+  booktitle = {Middleware 2009},
+  series    = {Lecture Notes in Computer Science},
+  publisher = {Springer},
+  pages     = {349--372},
+  year      = {2009},
+  doi       = {10.1007/978-3-642-10445-9_18}
+}
+
+@inproceedings{zhang2021upgradefailures,
+  author    = {Yongle Zhang and Junwen Yang and Zhuqi Jin and Utsav Sethi and Kirk Rodrigues and Shan Lu and Ding Yuan},
+  title     = {Understanding and Detecting Software Upgrade Failures in Distributed Systems},
+  booktitle = {Proceedings of the ACM SIGOPS 28th Symposium on Operating Systems Principles (SOSP)},
+  pages     = {116--131},
+  year      = {2021},
+  doi       = {10.1145/3477132.3483577}
+}
+
+%% ---------------------------------------------------------------------------
+%% Update safety, quiescence, tranquillity, version consistency
+%% ---------------------------------------------------------------------------
+
+@article{kramer1990evolving,
+  author    = {Jeff Kramer and Jeff Magee},
+  title     = {The Evolving Philosophers Problem: Dynamic Change Management},
+  journal   = {IEEE Transactions on Software Engineering},
+  volume    = {16},
+  number    = {11},
+  pages     = {1293--1306},
+  year      = {1990},
+  doi       = {10.1109/32.60317}
+}
+
+@article{kramer2025quiescence,
+  author    = {Jeff Kramer and Jeff Magee},
+  title     = {Dynamic Change Management: Quiescence Revisited},
+  journal   = {IEEE Transactions on Software Engineering},
+  volume    = {51},
+  number    = {3},
+  pages     = {746--750},
+  year      = {2025},
+  doi       = {10.1109/TSE.2024.3521298}
+}
+
+@article{vandewoude2007tranquility,
+  author    = {Yves Vandewoude and Peter Ebraert and Yolande Berbers and Theo D'Hondt},
+  title     = {Tranquility: A Low Disruptive Alternative to Quiescence for Ensuring Safe Dynamic Updates},
+  journal   = {IEEE Transactions on Software Engineering},
+  volume    = {33},
+  number    = {12},
+  pages     = {856--868},
+  year      = {2007},
+  doi       = {10.1109/TSE.2007.70733}
+}
+
+@inproceedings{ma2011versionconsistent,
+  author    = {Xiaoxing Ma and Luciano Baresi and Carlo Ghezzi and Valerio Panzica La Manna and Jian Lu},
+  title     = {Version-Consistent Dynamic Reconfiguration of Component-Based Distributed Systems},
+  booktitle = {Proceedings of the 19th ACM SIGSOFT Symposium and the 13th European Conference on Foundations of Software Engineering (ESEC/FSE)},
+  pages     = {245--255},
+  year      = {2011},
+  doi       = {10.1145/2025113.2025148}
+}
+
+@article{baresi2017versionconsistency,
+  author    = {Luciano Baresi and Carlo Ghezzi and Xiaoxing Ma and Valerio Panzica La Manna},
+  title     = {Efficient Dynamic Updates of Distributed Components Through Version Consistency},
+  journal   = {IEEE Transactions on Software Engineering},
+  volume    = {43},
+  number    = {4},
+  pages     = {340--358},
+  year      = {2017},
+  doi       = {10.1109/TSE.2016.2592913}
+}
+
+@inproceedings{stoyle2005mutatis,
+  author    = {Gareth Stoyle and Michael Hicks and Gavin Bierman and Peter Sewell and Iulian Neamtiu},
+  title     = {Mutatis Mutandis: Safe and Predictable Dynamic Software Updating},
+  booktitle = {Proceedings of the 32nd ACM SIGPLAN-SIGACT Symposium on Principles of Programming Languages (POPL)},
+  pages     = {183--194},
+  year      = {2005},
+  doi       = {10.1145/1040305.1040321}
+}
+
+@inproceedings{hayden2012specifying,
+  author    = {Christopher M. Hayden and Stephen Magill and Michael Hicks and Nate Foster and Jeffrey S. Foster},
+  title     = {Specifying and Verifying the Correctness of Dynamic Software Updates},
+  booktitle = {Verified Software: Theories, Tools, Experiments (VSTTE 2012)},
+  series    = {Lecture Notes in Computer Science},
+  publisher = {Springer},
+  pages     = {278--293},
+  year      = {2012},
+  doi       = {10.1007/978-3-642-27705-4_22}
+}
+
+@article{hayden2012testing,
+  author    = {Christopher M. Hayden and Edward K. Smith and Eric A. Hardisty and Michael Hicks and Jeffrey S. Foster},
+  title     = {Evaluating Dynamic Software Update Safety Using Systematic Testing},
+  journal   = {IEEE Transactions on Software Engineering},
+  volume    = {38},
+  number    = {6},
+  pages     = {1340--1354},
+  year      = {2012},
+  doi       = {10.1109/TSE.2011.101}
+}
+
+@inproceedings{hayden2012quiescence,
+  author    = {Christopher M. Hayden and Karla Saur and Michael Hicks and Jeffrey S. Foster},
+  title     = {A Study of Dynamic Software Update Quiescence for Multithreaded Programs},
+  booktitle = {4th International Workshop on Hot Topics in Software Upgrades (HotSWUp)},
+  pages     = {6--10},
+  year      = {2012},
+  doi       = {10.1109/HotSWUp.2012.6226617}
+}
+
+@inproceedings{ajmani2006modular,
+  author    = {Sameer Ajmani and Barbara Liskov and Liuba Shrira},
+  title     = {Modular Software Upgrades for Distributed Systems},
+  booktitle = {ECOOP 2006 -- Object-Oriented Programming},
+  series    = {Lecture Notes in Computer Science},
+  publisher = {Springer},
+  pages     = {452--476},
+  year      = {2006},
+  doi       = {10.1007/11785477_26}
+}
+
+@article{chaitroth2026consistent,
+  author    = {Devora Chait-Roth and Kedar S. Namjoshi and Thomas Wies},
+  title     = {Consistent Updates for Scalable Microservices},
+  journal   = {Proceedings of the ACM on Programming Languages},
+  volume    = {10},
+  number    = {POPL},
+  pages     = {1673--1701},
+  year      = {2026},
+  doi       = {10.1145/3776700},
+  note      = {Preprint: arXiv:2508.04829}
+}
+
+%% ---------------------------------------------------------------------------
+%% Kernel live patching
+%% ---------------------------------------------------------------------------
+
+@inproceedings{arnold2009ksplice,
+  author    = {Jeff Arnold and M. Frans Kaashoek},
+  title     = {Ksplice: Automatic Rebootless Kernel Updates},
+  booktitle = {Proceedings of the 4th ACM European Conference on Computer Systems (EuroSys)},
+  pages     = {187--198},
+  year      = {2009},
+  doi       = {10.1145/1519065.1519085}
+}
+
+@misc{linux-livepatch,
+  author       = {{The Linux Kernel Documentation}},
+  title        = {Livepatch},
+  howpublished = {\url{https://docs.kernel.org/livepatch/livepatch.html}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{kpatch,
+  author       = {{dynup}},
+  title        = {kpatch: Live Linux Kernel Patching},
+  howpublished = {\url{https://github.com/dynup/kpatch}},
+  note         = {Grey literature (code repository; now in maintenance mode). Accessed 2026-11-08}
+}
+
+@misc{lwn2014kgraft,
+  author       = {{LWN.net}},
+  title        = {kGraft -- Live Kernel Patching from {SUSE}},
+  howpublished = {\url{https://lwn.net/Articles/584016/}},
+  year         = {2014},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@inproceedings{zhou2020kshot,
+  author    = {Lei Zhou and Fengwei Zhang and Jinghui Liao and Zhengyu Ning and Jidong Xiao and Kevin Leach and Westley Weimer and Guojun Wang},
+  title     = {{KShot}: Live Kernel Patching with {SMM} and {SGX}},
+  booktitle = {50th Annual IEEE/IFIP International Conference on Dependable Systems and Networks (DSN)},
+  pages     = {1--13},
+  year      = {2020},
+  doi       = {10.1109/DSN48063.2020.00021}
+}
+
+@inproceedings{ma2023plugsched,
+  author    = {Teng Ma and Shanpei Chen and Yihao Wu and Erwei Deng and Zhuo Song and Quan Chen and Minyi Guo},
+  title     = {Efficient Scheduler Live Update for Linux Kernel with Modularization},
+  booktitle = {Proceedings of the 28th ACM International Conference on Architectural Support for Programming Languages and Operating Systems, Volume 3 (ASPLOS)},
+  pages     = {194--207},
+  year      = {2023},
+  doi       = {10.1145/3582016.3582054}
+}
+
+@inproceedings{kashyap2016kup,
+  author    = {Sanidhya Kashyap and Changwoo Min and Byoungyoung Lee and Taesoo Kim and Pavel Emelyanov},
+  title     = {Instant {OS} Updates via Userspace Checkpoint-and-Restart},
+  booktitle = {2016 USENIX Annual Technical Conference (USENIX ATC 16)},
+  pages     = {605--619},
+  year      = {2016},
+  url       = {https://www.usenix.org/conference/atc16/technical-sessions/presentation/kashyap}
+}
+
+%% ---------------------------------------------------------------------------
+%% User-space / binary DSU for C and native code
+%% ---------------------------------------------------------------------------
+
+@inproceedings{neamtiu2006ginseng,
+  author    = {Iulian Neamtiu and Michael Hicks and Gareth Stoyle and Manuel Oriol},
+  title     = {Practical Dynamic Software Updating for {C}},
+  booktitle = {Proceedings of the 27th ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI)},
+  pages     = {72--83},
+  year      = {2006},
+  doi       = {10.1145/1133981.1133991}
+}
+
+@inproceedings{neamtiu2009timely,
+  author    = {Iulian Neamtiu and Michael Hicks},
+  title     = {Safe and Timely Updates to Multi-Threaded Programs},
+  booktitle = {Proceedings of the 30th ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI)},
+  pages     = {13--24},
+  year      = {2009},
+  doi       = {10.1145/1542476.1542479}
+}
+
+@inproceedings{makris2009upstare,
+  author    = {Kristis Makris and Rida A. Bazzi},
+  title     = {Immediate Multi-Threaded Dynamic Software Updates Using Stack Reconstruction},
+  booktitle = {2009 USENIX Annual Technical Conference},
+  year      = {2009},
+  url       = {https://www.usenix.org/conference/usenix-09/immediate-multi-threaded-dynamic-software-updates-using-stack-reconstruction}
+}
+
+@inproceedings{chen2007polus,
+  author    = {Haibo Chen and Jie Yu and Rong Chen and Binyu Zang and Pen-Chung Yew},
+  title     = {{POLUS}: A {POwerful} Live Updating System},
+  booktitle = {29th International Conference on Software Engineering (ICSE)},
+  pages     = {271--281},
+  year      = {2007},
+  doi       = {10.1109/ICSE.2007.65}
+}
+
+@inproceedings{hayden2012kitsune,
+  author    = {Christopher M. Hayden and Edward K. Smith and Michail Denchev and Michael Hicks and Jeffrey S. Foster},
+  title     = {Kitsune: Efficient, General-Purpose Dynamic Software Updating for {C}},
+  booktitle = {Proceedings of the ACM International Conference on Object Oriented Programming Systems Languages and Applications (OOPSLA)},
+  pages     = {249--264},
+  year      = {2012},
+  doi       = {10.1145/2384616.2384635}
+}
+
+@inproceedings{ramaswamy2010katana,
+  author    = {Ashwin Ramaswamy and Sergey Bratus and Sean W. Smith and Michael E. Locasto},
+  title     = {Katana: A Hot Patching Framework for {ELF} Executables},
+  booktitle = {2010 International Conference on Availability, Reliability and Security (ARES)},
+  pages     = {507--512},
+  year      = {2010},
+  doi       = {10.1109/ARES.2010.112}
+}
+
+@misc{libcare,
+  author       = {{CloudLinux}},
+  title        = {{LibCare}: Live Patch Updates for Userspace Processes and Libraries},
+  howpublished = {\url{https://github.com/cloudlinux/libcare}},
+  note         = {Grey literature (code repository). Accessed 2026-11-08}
+}
+
+@inproceedings{giuffrida2012statetransfer,
+  author    = {Cristiano Giuffrida and Andrew S. Tanenbaum},
+  title     = {Safe and Automated State Transfer for Secure and Reliable Live Update},
+  booktitle = {4th International Workshop on Hot Topics in Software Upgrades (HotSWUp)},
+  pages     = {16--20},
+  year      = {2012},
+  doi       = {10.1109/HotSWUp.2012.6226610}
+}
+
+@inproceedings{giuffrida2013proteos,
+  author    = {Cristiano Giuffrida and Anton Kuijsten and Andrew S. Tanenbaum},
+  title     = {Safe and Automatic Live Update for Operating Systems},
+  booktitle = {Proceedings of the 18th International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS)},
+  pages     = {279--292},
+  year      = {2013},
+  doi       = {10.1145/2451116.2451147}
+}
+
+@inproceedings{giuffrida2014mcr,
+  author    = {Cristiano Giuffrida and C{\u{a}}lin Iorgulescu and Andrew S. Tanenbaum},
+  title     = {Mutable Checkpoint-Restart: Automating Live Update for Generic Server Programs},
+  booktitle = {Proceedings of the 15th International Middleware Conference (Middleware)},
+  pages     = {133--144},
+  year      = {2014},
+  doi       = {10.1145/2663165.2663328}
+}
+
+@inproceedings{karpoff2020psu,
+  author    = {Marcus Karpoff and Jose Nelson Amaral and Kai-Ting Amy Wang and Rayson Ho and Brice Dobry},
+  title     = {{PSU}: A Framework for Dynamic Software Updates in Multi-threaded {C}-Language Programs},
+  booktitle = {2020 IEEE 32nd International Symposium on Computer Architecture and High Performance Computing (SBAC-PAD)},
+  pages     = {233--240},
+  year      = {2020},
+  doi       = {10.1109/SBAC-PAD49847.2020.00040}
+}
+
+@inproceedings{strombaeck2024activedsu,
+  author    = {Filip Str{\"o}mb{\"a}ck and D{\'a}niel Varr{\'o}},
+  title     = {Active {DSU}: Dynamic Software Updates for Active Functions},
+  booktitle = {Proceedings of the 2024 ACM SIGPLAN International Symposium on New Ideas, New Paradigms, and Reflections on Programming and Software (Onward!)},
+  pages     = {26--37},
+  year      = {2024},
+  doi       = {10.1145/3689492.3690046}
+}
+
+@inproceedings{fruth2022dbms,
+  author    = {Michael Fruth},
+  title     = {Live Patching Database Management Systems},
+  booktitle = {Proceedings of the 2022 International Conference on Management of Data (SIGMOD), PhD Symposium},
+  pages     = {2524--2526},
+  year      = {2022},
+  doi       = {10.1145/3514221.3520253}
+}
+
+@article{fruth2024case,
+  author    = {Michael Fruth and Stefanie Scherzinger},
+  title     = {The Case for {DBMS} Live Patching},
+  journal   = {Proceedings of the VLDB Endowment},
+  volume    = {17},
+  number    = {13},
+  pages     = {4557--4570},
+  year      = {2024},
+  doi       = {10.14778/3704965.3704966}
+}
+
+@article{fruth2024kv,
+  author    = {Michael Fruth and Stefanie Scherzinger},
+  title     = {Live Patching for Distributed In-Memory Key-Value Stores},
+  journal   = {Proceedings of the ACM on Management of Data},
+  volume    = {2},
+  number    = {6},
+  pages     = {1--26},
+  year      = {2024},
+  doi       = {10.1145/3698816}
+}
+
+@inproceedings{he2022rapidpatch,
+  author    = {Yi He and Zhenhua Zou and Kun Sun and Zhuotao Liu and Ke Xu and Qian Wang and Chao Shen and Zhi Wang and Qi Li},
+  title     = {{RapidPatch}: Firmware Hotpatching for Real-Time Embedded Devices},
+  booktitle = {31st USENIX Security Symposium (USENIX Security 22)},
+  pages     = {2225--2242},
+  year      = {2022},
+  url       = {https://www.usenix.org/conference/usenixsecurity22/presentation/he-yi}
+}
+
+@inproceedings{salehi2024autopatch,
+  author    = {Mohsen Salehi and Karthik Pattabiraman},
+  title     = {{AutoPatch}: Automated Generation of Hotpatches for Real-Time Embedded Devices},
+  booktitle = {Proceedings of the 2024 ACM SIGSAC Conference on Computer and Communications Security (CCS)},
+  pages     = {2370--2384},
+  year      = {2024},
+  doi       = {10.1145/3658644.3690255}
+}
+
+@inproceedings{zhou2025stackframe,
+  author    = {Ming Zhou and Xupu Hu and Zhihao Wang and Haining Wang and Hui Wen and Limin Sun and Peng Zhang},
+  title     = {Dynamic Vulnerability Patching for Heterogeneous Embedded Systems Using Stack Frame Reconstruction},
+  booktitle = {Proceedings of the 2025 ACM SIGSAC Conference on Computer and Communications Security (CCS)},
+  pages     = {3855--3869},
+  year      = {2025},
+  doi       = {10.1145/3719027.3765200}
+}
+
+@inproceedings{watson2024retcon,
+  author    = {Jean-Luc Watson and Saharsh Agrawal and Ryan Tsang and Sherry Luo and Raluca Ada Popa and Prabal Dutta},
+  title     = {Retcon: Live Updates for Embedded Event-Driven Applications},
+  booktitle = {2024 23rd ACM/IEEE International Conference on Information Processing in Sensor Networks (IPSN)},
+  pages     = {126--137},
+  year      = {2024},
+  doi       = {10.1109/IPSN61024.2024.00015}
+}
+
+@inproceedings{zheng2025bpftime,
+  author    = {Yusheng Zheng and Tong Yu and Yiwei Yang and Yanpeng Hu and Xiaozheng Lai and Dan Williams and Andi Quinn},
+  title     = {Extending Applications Safely and Efficiently},
+  booktitle = {19th USENIX Symposium on Operating Systems Design and Implementation (OSDI 25)},
+  pages     = {557--574},
+  year      = {2025},
+  url       = {https://www.usenix.org/conference/osdi25/presentation/zheng-yusheng}
+}
+
+%% ---------------------------------------------------------------------------
+%% Language-runtime DSU
+%% ---------------------------------------------------------------------------
+
+@inproceedings{armstrong2007erlang,
+  author    = {Joe Armstrong},
+  title     = {A History of {Erlang}},
+  booktitle = {Proceedings of the Third ACM SIGPLAN Conference on History of Programming Languages (HOPL III)},
+  year      = {2007},
+  doi       = {10.1145/1238844.1238850}
+}
+
+@misc{erlang-codeloading,
+  author       = {{Erlang/OTP}},
+  title        = {Compilation and Code Loading -- Code Replacement},
+  howpublished = {\url{https://www.erlang.org/doc/system/code_loading.html}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{java-instrumentation,
+  author       = {{Oracle}},
+  title        = {Interface Instrumentation (java.lang.instrument), {Java SE} 21 {API}},
+  howpublished = {\url{https://docs.oracle.com/en/java/javase/21/docs/api/java.instrument/java/lang/instrument/Instrumentation.html}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@inproceedings{wurthinger2010dcevm,
+  author    = {Thomas W{\"u}rthinger and Christian Wimmer and Lukas Stadler},
+  title     = {Dynamic Code Evolution for {Java}},
+  booktitle = {Proceedings of the 8th International Conference on the Principles and Practice of Programming in Java (PPPJ)},
+  pages     = {10--19},
+  year      = {2010},
+  doi       = {10.1145/1852761.1852764}
+}
+
+@inproceedings{subramanian2009jvolve,
+  author    = {Suriya Subramanian and Michael Hicks and Kathryn S. McKinley},
+  title     = {Dynamic Software Updates: A {VM}-Centric Approach},
+  booktitle = {Proceedings of the 30th ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI)},
+  pages     = {1--12},
+  year      = {2009},
+  doi       = {10.1145/1542476.1542478}
+}
+
+@inproceedings{magill2012tos,
+  author    = {Stephen Magill and Michael Hicks and Suriya Subramanian and Kathryn S. McKinley},
+  title     = {Automating Object Transformations for Dynamic Software Updating},
+  booktitle = {Proceedings of the ACM International Conference on Object Oriented Programming Systems Languages and Applications (OOPSLA)},
+  pages     = {265--280},
+  year      = {2012},
+  doi       = {10.1145/2384616.2384636}
+}
+
+@inproceedings{pina2014rubah,
+  author    = {Lu{\'i}s Pina and Lu{\'i}s Veiga and Michael Hicks},
+  title     = {Rubah: {DSU} for {Java} on a Stock {JVM}},
+  booktitle = {Proceedings of the 2014 ACM International Conference on Object Oriented Programming Systems Languages and Applications (OOPSLA)},
+  pages     = {103--119},
+  year      = {2014},
+  doi       = {10.1145/2660193.2660220}
+}
+
+@inproceedings{gu2012javelus,
+  author    = {Tianxiao Gu and Chun Cao and Chang Xu and Xiaoxing Ma and Linghao Zhang and Jian Lu},
+  title     = {Javelus: A Low Disruptive Approach to Dynamic Software Updates},
+  booktitle = {2012 19th Asia-Pacific Software Engineering Conference (APSEC)},
+  pages     = {527--536},
+  year      = {2012},
+  doi       = {10.1109/APSEC.2012.55}
+}
+
+@article{gu2014lowdisruptive,
+  author    = {Tianxiao Gu and Chun Cao and Chang Xu and Xiaoxing Ma and Linghao Zhang and Jian L{\"u}},
+  title     = {Low-Disruptive Dynamic Updating of {Java} Applications},
+  journal   = {Information and Software Technology},
+  volume    = {56},
+  number    = {9},
+  pages     = {1086--1098},
+  year      = {2014},
+  doi       = {10.1016/j.infsof.2014.04.003}
+}
+
+@inproceedings{cazzola2016dodging,
+  author    = {Walter Cazzola and Mehdi Jalili},
+  title     = {Dodging Unsafe Update Points in {Java} Dynamic Software Updating Systems},
+  booktitle = {2016 IEEE 27th International Symposium on Software Reliability Engineering (ISSRE)},
+  pages     = {332--341},
+  year      = {2016},
+  doi       = {10.1109/ISSRE.2016.17}
+}
+
+@misc{mlinaric2025javadsu,
+  author       = {Danijel Mlinaric and Vedran Mornar},
+  title        = {Dynamic Software Updating in {Java} -- Comparing Concepts and Resource Demands},
+  howpublished = {arXiv:2506.01875},
+  year         = {2025},
+  url          = {https://arxiv.org/abs/2506.01875},
+  note         = {Preprint}
+}
+
+@misc{dotnet-hotreload,
+  author       = {{Microsoft}},
+  title        = {Write and Debug Code by Using Hot Reload -- {Visual Studio}},
+  howpublished = {\url{https://learn.microsoft.com/en-us/visualstudio/debugger/hot-reload}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{go-plugin,
+  author       = {{The Go Authors}},
+  title        = {Package plugin},
+  howpublished = {\url{https://pkg.go.dev/plugin}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{go-issue-20461,
+  author       = {{The Go Authors}},
+  title        = {plugin: add support for closing plugins (golang/go issue \#20461)},
+  howpublished = {\url{https://github.com/golang/go/issues/20461}},
+  year         = {2017},
+  note         = {Grey literature; open, milestone Unplanned as of 2026-11-08}
+}
+
+@misc{bouk-monkey,
+  author       = {Bouke van der Bijl},
+  title        = {monkey: Monkey Patching in {Go}},
+  howpublished = {\url{https://github.com/bouk/monkey}},
+  note         = {Grey literature (code repository, archived 2020). Accessed 2026-11-08}
+}
+
+@inproceedings{haas2017wasm,
+  author    = {Andreas Haas and Andreas Rossberg and Derek L. Schuff and Ben L. Titzer and Michael Holman and Dan Gohman and Luke Wagner and Alon Zakai and J. F. Bastien},
+  title     = {Bringing the Web up to Speed with {WebAssembly}},
+  booktitle = {Proceedings of the 38th ACM SIGPLAN Conference on Programming Language Design and Implementation (PLDI)},
+  pages     = {185--200},
+  year      = {2017},
+  doi       = {10.1145/3062341.3062363}
+}
+
+@misc{wazero,
+  author       = {{wazero authors}},
+  title        = {wazero: The Zero Dependency {WebAssembly} Runtime for {Go} Developers},
+  howpublished = {\url{https://wazero.io/}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{wasm-component-model,
+  author       = {{Bytecode Alliance}},
+  title        = {The {WebAssembly} Component Model},
+  howpublished = {\url{https://component-model.bytecodealliance.org/}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+%% ---------------------------------------------------------------------------
+%% Process-level handoff / hot restart
+%% ---------------------------------------------------------------------------
+
+@inproceedings{naseer2020zdr,
+  author    = {Usama Naseer and Luca Niccolini and Udip Pant and Alan Frindell and Ranjeeth Dasineni and Theophilus A. Benson},
+  title     = {Zero Downtime Release: Disruption-free Load Balancing of a Multi-Billion User Website},
+  booktitle = {Proceedings of the Annual Conference of the ACM Special Interest Group on Data Communication (SIGCOMM)},
+  pages     = {529--541},
+  year      = {2020},
+  doi       = {10.1145/3387514.3405885}
+}
+
+@misc{envoy-hotrestart,
+  author       = {{Envoy Project}},
+  title        = {Hot Restart -- Envoy Architecture Overview},
+  howpublished = {\url{https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/operations/hot_restart}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{tarreau2017haproxy,
+  author       = {Willy Tarreau},
+  title        = {Truly Seamless Reloads with {HAProxy} -- No More Hacks!},
+  howpublished = {\url{https://www.haproxy.com/blog/truly-seamless-reloads-with-haproxy-no-more-hacks}},
+  year         = {2017},
+  note         = {Grey literature (blog, 3 May 2017)}
+}
+
+@misc{nginx-control,
+  author       = {{nginx}},
+  title        = {Controlling nginx -- Upgrading Executable on the Fly},
+  howpublished = {\url{https://nginx.org/en/docs/control.html}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{cloudflare2018graceful,
+  author       = {{Cloudflare}},
+  title        = {Graceful Upgrades in {Go}},
+  howpublished = {\url{https://blog.cloudflare.com/graceful-upgrades-in-go/}},
+  year         = {2018},
+  note         = {Grey literature (blog, 11 Oct 2018)}
+}
+
+@misc{tableflip,
+  author       = {{Cloudflare}},
+  title        = {tableflip: Graceful Process Restarts in {Go}},
+  howpublished = {\url{https://github.com/cloudflare/tableflip}},
+  note         = {Grey literature (code repository). Accessed 2026-11-08}
+}
+
+@misc{kerrisk2013reuseport,
+  author       = {Michael Kerrisk},
+  title        = {The {SO\_REUSEPORT} Socket Option},
+  howpublished = {LWN.net, \url{https://lwn.net/Articles/542629/}},
+  year         = {2013},
+  note         = {Grey literature (13 Mar 2013)}
+}
+
+@misc{iwashima2021migrate,
+  author       = {Kuniyuki Iwashima},
+  title        = {Socket Migration for {SO\_REUSEPORT} (patch series cover letter)},
+  howpublished = {LWN.net, \url{https://lwn.net/Articles/855911/}},
+  year         = {2021},
+  note         = {Grey literature; introduces net.ipv4.tcp\_migrate\_req}
+}
+
+@misc{poettering2011socketactivation,
+  author       = {Lennart Poettering},
+  title        = {systemd for Developers {I}},
+  howpublished = {\url{https://0pointer.de/blog/projects/socket-activation.html}},
+  year         = {2011},
+  note         = {Grey literature (blog, 18 May 2011)}
+}
+
+@misc{pidfd-getfd,
+  author       = {{Linux man-pages project}},
+  title        = {pidfd\_getfd(2) -- Linux Manual Page},
+  howpublished = {\url{https://man7.org/linux/man-pages/man2/pidfd_getfd.2.html}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+%% ---------------------------------------------------------------------------
+%% Checkpoint/restore and live migration
+%% ---------------------------------------------------------------------------
+
+@misc{criu,
+  author       = {{CRIU Project}},
+  title        = {{CRIU}: Checkpoint/Restore In Userspace},
+  howpublished = {\url{https://criu.org/Main_Page}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{corbet2012tcprepair,
+  author       = {Jonathan Corbet},
+  title        = {{TCP} Connection Repair},
+  howpublished = {LWN.net, \url{https://lwn.net/Articles/495304/}},
+  year         = {2012},
+  note         = {Grey literature (1 May 2012)}
+}
+
+@inproceedings{clark2005livemigration,
+  author    = {Christopher Clark and Keir Fraser and Steven Hand and Jacob Gorm Hansen and Eric Jul and Christian Limpach and Ian Pratt and Andrew Warfield},
+  title     = {Live Migration of Virtual Machines},
+  booktitle = {2nd Symposium on Networked Systems Design and Implementation (NSDI 05)},
+  year      = {2005},
+  url       = {https://www.usenix.org/conference/nsdi-05/live-migration-virtual-machines}
+}
+
+@inproceedings{stoyanov2018containermigration,
+  author    = {Radostin Stoyanov and Martin J. Kollingbaum},
+  title     = {Efficient Live Migration of {Linux} Containers},
+  booktitle = {High Performance Computing (ISC High Performance 2018 Workshops)},
+  series    = {Lecture Notes in Computer Science},
+  publisher = {Springer},
+  pages     = {184--193},
+  year      = {2018},
+  doi       = {10.1007/978-3-030-02465-9_13}
+}
+
+@inproceedings{ma2017edgehandoff,
+  author    = {Lele Ma and Shanhe Yi and Qun Li},
+  title     = {Efficient Service Handoff Across Edge Servers via {Docker} Container Migration},
+  booktitle = {Proceedings of the Second ACM/IEEE Symposium on Edge Computing (SEC)},
+  pages     = {1--13},
+  year      = {2017},
+  doi       = {10.1145/3132211.3134460}
+}
+
+@inproceedings{poggiani2024podmigration,
+  author    = {Leonardo Poggiani and Carlo Puliafito and Antonio Virdis and Enzo Mingozzi},
+  title     = {Live Migration of Multi-Container {Kubernetes} Pods in Multi-Cluster Serverless Edge Systems},
+  booktitle = {Proceedings of the 1st Workshop on Serverless at the Edge},
+  pages     = {9--16},
+  year      = {2024},
+  doi       = {10.1145/3660319.3660330}
+}
+
+@misc{kep2008,
+  author       = {{Kubernetes SIG Node}},
+  title        = {{KEP-2008}: Forensic Container Checkpointing},
+  howpublished = {\url{https://www.kubernetes.dev/resources/keps/2008/}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+%% ---------------------------------------------------------------------------
+%% Cloud-native orchestration
+%% ---------------------------------------------------------------------------
+
+@article{burns2016borg,
+  author    = {Brendan Burns and Brian Grant and David Oppenheimer and Eric Brewer and John Wilkes},
+  title     = {Borg, Omega, and {Kubernetes}},
+  journal   = {Communications of the ACM},
+  volume    = {59},
+  number    = {5},
+  pages     = {50--57},
+  year      = {2016},
+  doi       = {10.1145/2890784}
+}
+
+@inproceedings{verma2015borg,
+  author    = {Abhishek Verma and Luis Pedrosa and Madhukar Korupolu and David Oppenheimer and Eric Tune and John Wilkes},
+  title     = {Large-Scale Cluster Management at {Google} with {Borg}},
+  booktitle = {Proceedings of the Tenth European Conference on Computer Systems (EuroSys)},
+  pages     = {1--17},
+  year      = {2015},
+  doi       = {10.1145/2741948.2741964}
+}
+
+@incollection{dragoni2017microservices,
+  author    = {Nicola Dragoni and Saverio Giallorenzo and Alberto Lluch Lafuente and Manuel Mazzara and Fabrizio Montesi and Ruslan Mustafin and Larisa Safina},
+  title     = {Microservices: Yesterday, Today, and Tomorrow},
+  booktitle = {Present and Ulterior Software Engineering},
+  publisher = {Springer},
+  pages     = {195--216},
+  year      = {2017},
+  doi       = {10.1007/978-3-319-67425-4_12}
+}
+
+@misc{k8s-deployment,
+  author       = {{Kubernetes Documentation}},
+  title        = {Deployments},
+  howpublished = {\url{https://kubernetes.io/docs/concepts/workloads/controllers/deployment/}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{k8s-podlifecycle,
+  author       = {{Kubernetes Documentation}},
+  title        = {Pod Lifecycle},
+  howpublished = {\url{https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{kep1287,
+  author       = {{Kubernetes SIG Node}},
+  title        = {{KEP-1287}: In-place Update of Pod Resources},
+  howpublished = {\url{https://www.kubernetes.dev/resources/keps/1287/}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{openkruise-inplace,
+  author       = {{OpenKruise}},
+  title        = {In-Place Update},
+  howpublished = {\url{https://openkruise.io/docs/core-concepts/inplace-update}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@misc{istio-trafficshifting,
+  author       = {{Istio}},
+  title        = {Traffic Shifting},
+  howpublished = {\url{https://istio.io/latest/docs/tasks/traffic-management/traffic-shifting/}},
+  note         = {Grey literature. Accessed 2026-11-08}
+}
+
+@inproceedings{rakshit2024zdd,
+  author    = {Haranath Rakshit and Subhasis Banerjee},
+  title     = {Scalability Evaluation on Zero Downtime Deployment in {Kubernetes} Cluster},
+  booktitle = {2024 IEEE Calcutta Conference (CALCON)},
+  pages     = {1--5},
+  year      = {2024},
+  doi       = {10.1109/CALCON63337.2024.10914046}
+}
+
+%% ---------------------------------------------------------------------------
+%% Multi-version execution and update validation
+%% ---------------------------------------------------------------------------
+
+@inproceedings{hosek2013mx,
+  author    = {Petr Hosek and Cristian Cadar},
+  title     = {Safe Software Updates via Multi-Version Execution},
+  booktitle = {35th International Conference on Software Engineering (ICSE)},
+  pages     = {612--621},
+  year      = {2013},
+  doi       = {10.1109/ICSE.2013.6606607}
+}
+
+@inproceedings{hosek2015varan,
+  author    = {Petr Hosek and Cristian Cadar},
+  title     = {{VARAN} the Unbelievable: An Efficient {N}-version Execution Framework},
+  booktitle = {Proceedings of the Twentieth International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS)},
+  pages     = {339--353},
+  year      = {2015},
+  doi       = {10.1145/2694344.2694390}
+}
+
+@inproceedings{pina2019mvedsua,
+  author    = {Lu{\'i}s Pina and Anastasios Andronidis and Michael Hicks and Cristian Cadar},
+  title     = {{MVEDSUA}: Higher Availability Dynamic Software Updates via Multi-Version Execution},
+  booktitle = {Proceedings of the Twenty-Fourth International Conference on Architectural Support for Programming Languages and Operating Systems (ASPLOS)},
+  pages     = {573--585},
+  year      = {2019},
+  doi       = {10.1145/3297858.3304063}
+}
+
+@inproceedings{pina2016tedsuto,
+  author    = {Lu{\'i}s Pina and Michael Hicks},
+  title     = {Tedsuto: A General Framework for Testing Dynamic Software Updates},
+  booktitle = {2016 IEEE International Conference on Software Testing, Verification and Validation (ICST)},
+  pages     = {278--287},
+  year      = {2016},
+  doi       = {10.1109/ICST.2016.27}
+}
+
+@misc{venkateshwaran2021sinatra,
+  author       = {Siddhanth Venkateshwaran and Ellen Kidane and Lu{\'i}s Pina},
+  title        = {Dynamic Software Updates for Unmodified Browsers through Multi-Version Execution},
+  howpublished = {arXiv:2106.04655},
+  year         = {2021},
+  url          = {https://arxiv.org/abs/2106.04655},
+  note         = {Preprint}
+}
+
+%% ---------------------------------------------------------------------------
+%% Concurrency: grace periods, epoch-based reclamation
+%% ---------------------------------------------------------------------------
+
+@article{hart2007reclamation,
+  author    = {Thomas E. Hart and Paul E. McKenney and Angela Demke Brown and Jonathan Walpole},
+  title     = {Performance of Memory Reclamation for Lockless Synchronization},
+  journal   = {Journal of Parallel and Distributed Computing},
+  volume    = {67},
+  number    = {12},
+  pages     = {1270--1285},
+  year      = {2007},
+  doi       = {10.1016/j.jpdc.2007.04.010}
+}
+
+@article{guniguntala2008rcu,
+  author    = {Dinakar Guniguntala and Paul E. McKenney and Josh Triplett and Jonathan Walpole},
+  title     = {The Read-Copy-Update Mechanism for Supporting Real-Time Applications on Shared-Memory Multiprocessor Systems with {Linux}},
+  journal   = {IBM Systems Journal},
+  volume    = {47},
+  number    = {2},
+  pages     = {221--236},
+  year      = {2008},
+  doi       = {10.1147/sj.472.0221}
+}
+
+@inproceedings{brown2015reclaiming,
+  author    = {Trevor Alexander Brown},
+  title     = {Reclaiming Memory for Lock-Free Data Structures: There has to be a Better Way},
+  booktitle = {Proceedings of the 2015 ACM Symposium on Principles of Distributed Computing (PODC)},
+  pages     = {261--270},
+  year      = {2015},
+  doi       = {10.1145/2767386.2767436}
+}
+
+%% ---------------------------------------------------------------------------
+%% Software update security / supply chain
+%% ---------------------------------------------------------------------------
+
+@inproceedings{samuel2010tuf,
+  author    = {Justin Samuel and Nick Mathewson and Justin Cappos and Roger Dingledine},
+  title     = {Survivable Key Compromise in Software Update Systems},
+  booktitle = {Proceedings of the 17th ACM Conference on Computer and Communications Security (CCS)},
+  pages     = {61--72},
+  year      = {2010},
+  doi       = {10.1145/1866307.1866315}
+}
+
+@inproceedings{torresarias2019intoto,
+  author    = {Santiago Torres-Arias and Hammad Afzali and Trishank Karthik Kuppusamy and Reza Curtmola and Justin Cappos},
+  title     = {in-toto: Providing Farm-to-Table Guarantees for Bits and Bytes},
+  booktitle = {28th USENIX Security Symposium (USENIX Security 19)},
+  pages     = {1393--1410},
+  year      = {2019},
+  url       = {https://www.usenix.org/conference/usenixsecurity19/presentation/torres-arias}
+}
+
+@inproceedings{newman2022sigstore,
+  author    = {Zachary Newman and John Speed Meyers and Santiago Torres-Arias},
+  title     = {Sigstore: Software Signing for Everybody},
+  booktitle = {Proceedings of the 2022 ACM SIGSAC Conference on Computer and Communications Security (CCS)},
+  pages     = {2353--2367},
+  year      = {2022},
+  doi       = {10.1145/3548606.3560596}
+}
+
+%% ---------------------------------------------------------------------------
+%% Performance-evaluation methodology
+%% ---------------------------------------------------------------------------
+
+@article{dean2013tail,
+  author    = {Jeffrey Dean and Luiz Andr{\'e} Barroso},
+  title     = {The Tail at Scale},
+  journal   = {Communications of the ACM},
+  volume    = {56},
+  number    = {2},
+  pages     = {74--80},
+  year      = {2013},
+  doi       = {10.1145/2408776.2408794}
+}
+
+@article{papadopoulos2021methodological,
+  author    = {Alessandro Vittorio Papadopoulos and Laurens Versluis and Andr{\'e} Bauer and Nikolas Herbst and J{\'o}akim von Kistowski and Ahmed Ali-Eldin and Cristina L. Abad and Jos{\'e} Nelson Amaral and Petr T{\r{u}}ma and Alexandru Iosup},
+  title     = {Methodological Principles for Reproducible Performance Evaluation in Cloud Computing},
+  journal   = {IEEE Transactions on Software Engineering},
+  volume    = {47},
+  number    = {8},
+  pages     = {1528--1543},
+  year      = {2021},
+  doi       = {10.1109/TSE.2019.2927908}
+}
