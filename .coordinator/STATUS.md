@@ -12,7 +12,7 @@ wait for the reset and continue. The user is the supervisor; the student repo is
 
 ## Wave 1 (dispatched, background agents)
 - [x] Research scientist (100 verified refs, 10 gaps G1-G10, 8 ideas; TODO lead: add Idea 9 = transactional patch sets from S6 once results exist) -> docs/literature-survey.md, docs/paper-ideas.md, paper/refs.bib
-- [ ] Engineer A -> internal/hotswap, cmd/s1-epoch-swap, cmd/s2-plugin, cmd/s3-wasm, docs/solutions/S1-S3
+- [x] Engineer A (committed; drain 0.7ms vs global-counter timeout; plugin +5.3MiB/upgrade leak, WASM flat) -> internal/hotswap, cmd/s1-epoch-swap, cmd/s2-plugin, cmd/s3-wasm, docs/solutions/S1-S3
 - [x] Engineer B (committed; S5 0 errors; finding: http.Server.Shutdown drops accepted-unread conns) -> internal/handoff, cmd/b0-naive-restart, cmd/s4-reuseport, cmd/s5-fdpass, docs/solutions/B0,S4,S5
 - [ ] Benchmark engineer -> bench/, scripts/, deploy/, docs/evaluation-methodology.md, kind baseline
 
@@ -22,11 +22,11 @@ wait for the reset and continue. The user is the supervisor; the student repo is
       New S6 = hotpatch-ready compilation: tools/hotpatchgen (AST transformer that makes functions patchable),
       internal/patchable (slots, transactional patch sets, quiescence), cmd/s6-hotpatch, signed plugin delivery.
       Agent dispatched. Owns tools/hotpatchgen, internal/patchable, cmd/s6-*, docs/solutions/S6*
-- [ ] S7 Kubernetes-native in-place patch operator: HotPatch CRD, signed patch artifacts (ed25519),
+- [~] S7 DISPATCHED (agent D; kind cluster 'dimp-s7'; operator/ is a separate go module) Kubernetes-native in-place patch operator: HotPatch CRD, signed patch artifacts (ed25519),
       in-process canary (traffic split v1/v2 in one process), shadow/differential execution,
       SLO-based auto-rollback. Builds on internal/hotswap + s3-wasm (start AFTER Engineer A).
       Owns internal/canary, internal/signing, operator/, cmd/s7-*, docs/solutions/S7*
-- [ ] S8 Adaptive mechanism selector: classify a patch (body-only / signature / state-schema change)
+- [~] S8 DISPATCHED (agent E; tools/dimpclass + real-history eval of commit classes) Adaptive mechanism selector: classify a patch (body-only / signature / state-schema change)
       and pick S1/S3/S6 vs S5 vs rolling update. Small; can be done by the lead or S7 agent.
 
 ## Wave 3
