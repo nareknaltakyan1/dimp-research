@@ -17,9 +17,11 @@ wait for the reset and continue. The user is the supervisor; the student repo is
 - [ ] Benchmark engineer -> bench/, scripts/, deploy/, docs/evaluation-methodology.md, kind baseline
 
 ## Wave 2 (advanced / novel)
-- [ ] S6 true in-memory machine-code patching of a running Go process (function prologue
-      trampoline into code loaded at runtime) + stack-inspection safe update points (Linux, Docker).
-      Owns internal/livepatch, cmd/s6-*, docs/solutions/S6*
+- [~] S6 RE-SCOPED: the raw machine-code patching attempt stopped (part of its output was safety-filtered);
+      internal/livepatch is quarantined behind build tag `livepatch_raw` (do NOT resume raw code-page rewriting).
+      New S6 = hotpatch-ready compilation: tools/hotpatchgen (AST transformer that makes functions patchable),
+      internal/patchable (slots, transactional patch sets, quiescence), cmd/s6-hotpatch, signed plugin delivery.
+      Agent dispatched. Owns tools/hotpatchgen, internal/patchable, cmd/s6-*, docs/solutions/S6*
 - [ ] S7 Kubernetes-native in-place patch operator: HotPatch CRD, signed patch artifacts (ed25519),
       in-process canary (traffic split v1/v2 in one process), shadow/differential execution,
       SLO-based auto-rollback. Builds on internal/hotswap + s3-wasm (start AFTER Engineer A).
