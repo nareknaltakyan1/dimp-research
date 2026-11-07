@@ -11,7 +11,7 @@ wait for the reset and continue. The user is the supervisor; the student repo is
 - [x] Repo https://github.com/nareknaltakyan1/dimp-research, docs/CONTRACT.md, docs/problem-statement.md
 
 ## Wave 1 (dispatched, background agents)
-- [ ] Research scientist -> docs/literature-survey.md, docs/paper-ideas.md, paper/refs.bib
+- [x] Research scientist (100 verified refs, 10 gaps G1-G10, 8 ideas; TODO lead: add Idea 9 = transactional patch sets from S6 once results exist) -> docs/literature-survey.md, docs/paper-ideas.md, paper/refs.bib
 - [ ] Engineer A -> internal/hotswap, cmd/s1-epoch-swap, cmd/s2-plugin, cmd/s3-wasm, docs/solutions/S1-S3
 - [ ] Engineer B -> internal/handoff, cmd/b0-naive-restart, cmd/s4-reuseport, cmd/s5-fdpass, docs/solutions/B0,S4,S5
 - [ ] Benchmark engineer -> bench/, scripts/, deploy/, docs/evaluation-methodology.md, kind baseline
