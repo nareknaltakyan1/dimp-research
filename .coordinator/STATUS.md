@@ -13,7 +13,7 @@ wait for the reset and continue. The user is the supervisor; the student repo is
 ## Wave 1 (dispatched, background agents)
 - [x] Research scientist (100 verified refs, 10 gaps G1-G10, 8 ideas; TODO lead: add Idea 9 = transactional patch sets from S6 once results exist) -> docs/literature-survey.md, docs/paper-ideas.md, paper/refs.bib
 - [ ] Engineer A -> internal/hotswap, cmd/s1-epoch-swap, cmd/s2-plugin, cmd/s3-wasm, docs/solutions/S1-S3
-- [ ] Engineer B -> internal/handoff, cmd/b0-naive-restart, cmd/s4-reuseport, cmd/s5-fdpass, docs/solutions/B0,S4,S5
+- [x] Engineer B (committed; S5 0 errors; finding: http.Server.Shutdown drops accepted-unread conns) -> internal/handoff, cmd/b0-naive-restart, cmd/s4-reuseport, cmd/s5-fdpass, docs/solutions/B0,S4,S5
 - [ ] Benchmark engineer -> bench/, scripts/, deploy/, docs/evaluation-methodology.md, kind baseline
 
 ## Wave 2 (advanced / novel)
