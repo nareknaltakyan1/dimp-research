@@ -1,0 +1,6 @@
+results/raw/
+*.so
+*.wasm
+/bin/
+.DS_Store
+__pycache__/
