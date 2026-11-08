@@ -1,0 +1,5 @@
+edge.go:28: skipping Map: generic function (type parameters are not supported: a slot needs one concrete func type; see S6 doc)
+edge.go:42: skipping Get: method of a generic type (type parameters are not supported)
+edge.go:48: skipping Hot: compiler directive //go:noinline (semantics would not carry over to the trampoline)
+edge.go:54: edge.Format has no context.Context parameter: per-call (not per-request) consistency
+edge_linux.go: file has build constraints; its functions are not made patchable
