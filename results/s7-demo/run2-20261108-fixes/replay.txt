@@ -1,0 +1,17 @@
+after container restart: restartCount=1 status={"version":"v1","pid":1,"inflight":{"v1":0,"v2":0},"count":0,"running_digest":"c1b9df2d34a461c225ea2be47dc33fb083a7b00499a173bea1c37500de39c0a2","rollout":"idle"}
+--- pod admin state (token): stable / high-water mark
+stable=v1 previous=None high_water_mark={'version': 'v2', 'digest': '92fc4314c86d6f466dbf29c8091f6c9772e036f4b989c1ff7d5e887ca75e8547', 'restorable': True}
+--- replay: push the older signed v1.5 (base v1 == running v1) WITH a valid token (expect 409 VersionPolicy)
+HTTP 409
+{"time":"2026-11-08T06:48:55.510558585Z","version":"v1.5","digest":"c64b00b7365366a9fe00ddb50526a83778e84a5938dc54853addfee18cd3e8af","accepted":false,"error":"signing: version is not newer than current (replay/downgrade): v1.5 \u003c high-water mark v2","reason":"VersionPolicy","verify_ms":0.774167,"compile_ms":0,"source":"admin"}
+
+--- unauthenticated admin calls (expect 401)
+POST /admin/patch no token:    HTTP 401
+POST /admin/patch wrong token: HTTP 401
+GET /admin/rollout no token:    HTTP 401
+GET /admin/rollout wrong token: HTTP 401
+POST /admin/rollback no token:    HTTP 401
+POST /admin/rollback wrong token: HTTP 401
+POST /admin/rollout/abort no token:    HTTP 401
+POST /admin/rollout/abort wrong token: HTTP 401
+restored after 1267 ms (incl. operator start): {"version":"v2","pid":1,"inflight":{"v1":0,"v2":0},"count":0,"running_digest":"92fc4314c86d6f466dbf29c8091f6c9772e036f4b989c1ff7d5e887ca75e8547","rollout":"promoted"}

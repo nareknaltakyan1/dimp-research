@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"time"
 )
 
@@ -82,12 +83,18 @@ type Rollout struct {
 
 // RolloutDoc mirrors GET /admin/rollout.
 type RolloutDoc struct {
-	Stable        string              `json:"stable"`
-	Rollout       *Rollout            `json:"rollout"`
-	Window        map[string]Snapshot `json:"window"`
-	RunningDigest string              `json:"running_digest"`
-	Count         uint64              `json:"count"`
-	Patches       []PatchRecord       `json:"patches"`
+	Stable         string              `json:"stable"`
+	Rollout        *Rollout            `json:"rollout"`
+	Window         map[string]Snapshot `json:"window"`
+	RunningDigest  string              `json:"running_digest"`
+	Previous       string              `json:"previous"`        // retained rollback target
+	PreviousDigest string              `json:"previous_digest"` // its digest
+	HighWaterMark  struct {
+		Version    string `json:"version"`
+		Restorable bool   `json:"restorable"`
+	} `json:"high_water_mark"`
+	Count   uint64        `json:"count"`
+	Patches []PatchRecord `json:"patches"`
 }
 
 // Client is an admin-endpoint client.
@@ -158,15 +165,45 @@ func (c *Client) Rollout(ctx context.Context, base string) (*RolloutDoc, error) 
 	return &d, nil
 }
 
-// Abort aborts the pod's rollout.
-func (c *Client) Abort(ctx context.Context, base, reason string) error {
-	_, _, err := c.do(ctx, http.MethodPost, base+"/admin/rollout/abort?reason="+reason, nil)
-	return err
+// AbortResult mirrors cmd/s7-inplace.AbortDoc: the REAL outcome of the
+// rollout that was current when the abort arrived.
+type AbortResult struct {
+	Code      int    `json:"-"`
+	Aborted   bool   `json:"aborted"` // candidate is not stable
+	Sent      bool   `json:"sent"`
+	Phase     string `json:"phase"`
+	Stable    string `json:"stable"`
+	Candidate string `json:"candidate"`
+	Reason    string `json:"reason"`
 }
 
-// Rollback reverts the pod to its retained previous version.
-func (c *Client) Rollback(ctx context.Context, base, to string) error {
-	code, b, err := c.do(ctx, http.MethodPost, base+"/admin/rollback?to="+to, nil)
+// Abort aborts the pod's rollout and returns its decided outcome. HTTP 200
+// means the candidate is not stable; 409 means it was promoted before the
+// abort took effect (Aborted=false). Any other status is an error.
+func (c *Client) Abort(ctx context.Context, base, reason string) (*AbortResult, error) {
+	code, b, err := c.do(ctx, http.MethodPost, base+"/admin/rollout/abort?reason="+url.QueryEscape(reason), nil)
+	if err != nil {
+		return nil, err
+	}
+	if code != http.StatusOK && code != http.StatusConflict {
+		return nil, fmt.Errorf("abort: HTTP %d: %.200s", code, b)
+	}
+	var r AbortResult
+	if err := json.Unmarshal(b, &r); err != nil {
+		return nil, fmt.Errorf("abort: bad response: %w", err)
+	}
+	r.Code = code
+	return &r, nil
+}
+
+// Rollback re-installs the pod's retained previous version, which must be
+// `to` (and, if digest != "", have that digest).
+func (c *Client) Rollback(ctx context.Context, base, to, digest string) error {
+	q := url.Values{"to": {to}}
+	if digest != "" {
+		q.Set("digest", digest)
+	}
+	code, b, err := c.do(ctx, http.MethodPost, base+"/admin/rollback?"+q.Encode(), nil)
 	if err == nil && code != 200 {
 		err = fmt.Errorf("rollback: HTTP %d: %.200s", code, b)
 	}

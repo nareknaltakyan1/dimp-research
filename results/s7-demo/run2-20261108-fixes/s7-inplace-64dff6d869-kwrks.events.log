@@ -1,0 +1,17 @@
+{"ev":"high_water_mark","persisted":true,"pid":1,"restorable":true,"ts_ns":1794120533486768042,"version":"v2"}
+{"addr":":8080","admin_addr":":9090","admin_token":true,"ev":"listening","insecure_admin":false,"pid":1,"state_dir":"/var/lib/dimp","tokenless_admin":false,"trusted_keys":["d1c07fd0bde259a8"],"ts_ns":1794120533809575043,"version":"v1"}
+{"err":"signing: version is not newer than current (replay/downgrade): v1.5 \u003c high-water mark v2","ev":"patch_rejected","pid":1,"reason":"VersionPolicy","source":"admin","ts_ns":1794120535511350210,"version":"v1.5"}
+{"ev":"admin_denied","path":"/admin/patch","pid":1,"remote":"127.0.0.1:36382","ts_ns":1794120535521511502}
+{"ev":"admin_denied","path":"/admin/patch","pid":1,"remote":"127.0.0.1:36396","ts_ns":1794120535529697293}
+{"ev":"admin_denied","path":"/admin/rollout","pid":1,"remote":"127.0.0.1:36402","ts_ns":1794120535538168043}
+{"ev":"admin_denied","path":"/admin/rollout","pid":1,"remote":"127.0.0.1:36404","ts_ns":1794120535546062293}
+{"ev":"admin_denied","path":"/admin/rollback","pid":1,"remote":"127.0.0.1:36408","ts_ns":1794120535554234627}
+{"ev":"admin_denied","path":"/admin/rollback","pid":1,"remote":"127.0.0.1:36414","ts_ns":1794120535562259085}
+{"ev":"admin_denied","path":"/admin/rollout/abort","pid":1,"remote":"127.0.0.1:36426","ts_ns":1794120535571050960}
+{"ev":"admin_denied","path":"/admin/rollout/abort","pid":1,"remote":"127.0.0.1:36432","ts_ns":1794120535579526793}
+{"ev":"rollout_start","from":"v1","pid":1,"stages":1,"to":"v2","ts_ns":1794120536574258919}
+{"compile_ms":291.676042,"ev":"upgrade_start","from":"v1","pid":1,"source":"admin","to":"v2","ts_ns":1794120536574288627,"verify_ms":0.604583}
+{"ev":"high_water_mark","persisted":true,"pid":1,"restorable":true,"ts_ns":1794120536575719627,"version":"v2"}
+{"ev":"new_version_serving","pid":1,"ts_ns":1794120536575736336,"version":"v2"}
+{"ev":"old_version_drained","pid":1,"ts_ns":1794120536575753877,"version":"v1"}
+{"ev":"upgrade_done","from":"v1","pid":1,"to":"v2","ts_ns":1794120536575756752}

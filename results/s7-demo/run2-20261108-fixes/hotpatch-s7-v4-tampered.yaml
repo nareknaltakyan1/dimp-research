@@ -1,0 +1,90 @@
+apiVersion: dimp.research.io/v1alpha1
+kind: HotPatch
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"dimp.research.io/v1alpha1","kind":"HotPatch","metadata":{"annotations":{},"name":"s7-v4-tampered","namespace":"dimp-s7"},"spec":{"artifact":{"configMapRef":{"name":"patch-v4-tampered"}},"maxUnavailablePods":1,"selector":{"matchLabels":{"app":"s7-inplace"}},"signatureRef":{"key":"manifest.sig","name":"patch-v4-tampered"},"strategy":{"shadowDuration":"5s","shadowSamples":100,"slo":{"maxErrorRateDelta":"0.01","maxMismatchRate":"0","maxP99Factor":"2","p99SlackMs":2},"steps":[{"minSamples":10,"pause":"3s","weight":10},{"minSamples":30,"pause":"3s","weight":50}]},"version":"v4"}}
+  creationTimestamp: "2026-11-08T06:48:44Z"
+  generation: 1
+  name: s7-v4-tampered
+  namespace: dimp-s7
+  resourceVersion: "758"
+  uid: 6857c7fa-b371-4047-89ca-869ab3546ec6
+spec:
+  adminPort: 9090
+  artifact:
+    configMapRef:
+      name: patch-v4-tampered
+  maxUnavailablePods: 1
+  repatchPolicy: Immediate
+  selector:
+    matchLabels:
+      app: s7-inplace
+  signatureRef:
+    key: manifest.sig
+    name: patch-v4-tampered
+  strategy:
+    shadowDuration: 5s
+    shadowSamples: 100
+    slo:
+      maxErrorRateDelta: "0.01"
+      maxMismatchRate: "0"
+      maxP99Factor: "2"
+      p99SlackMs: 2
+    steps:
+    - minSamples: 10
+      pause: 3s
+      weight: 10
+    - minSamples: 30
+      pause: 3s
+      weight: 50
+  version: v4
+status:
+  baseVersion: v2
+  completedAt: "2026-11-08T06:48:44Z"
+  conditions:
+  - lastTransitionTime: "2026-11-08T06:48:44Z"
+    message: 'pod s7-inplace-64dff6d869-22kr2 rejected the bundle: HTTP 403 SignatureInvalid:
+      signing: module digest does not match signed manifest'
+    observedGeneration: 1
+    reason: Rejected
+    status: "False"
+    type: Progressing
+  - lastTransitionTime: "2026-11-08T06:48:44Z"
+    message: 'pod s7-inplace-64dff6d869-22kr2 rejected the bundle: HTTP 403 SignatureInvalid:
+      signing: module digest does not match signed manifest'
+    observedGeneration: 1
+    reason: Rejected
+    status: "False"
+    type: Ready
+  digest: 92fc4314c86d6f466dbf29c8091f6c9772e036f4b989c1ff7d5e887ca75e8547
+  message: 'pod s7-inplace-64dff6d869-22kr2 rejected the bundle: HTTP 403 SignatureInvalid:
+    signing: module digest does not match signed manifest'
+  observedGeneration: 1
+  phase: Failed
+  pods:
+  - finishedAt: "2026-11-08T06:48:44Z"
+    fromDigest: 92fc4314c86d6f466dbf29c8091f6c9772e036f4b989c1ff7d5e887ca75e8547
+    fromVersion: v2
+    message: 'HTTP 403 SignatureInvalid: signing: module digest does not match signed
+      manifest'
+    metrics:
+      compileMs: "0.000"
+      verifyMs: "0.051"
+    name: s7-inplace-64dff6d869-22kr2
+    phase: Rejected
+    startedAt: "2026-11-08T06:48:44Z"
+    uid: 998474ec-fff9-45bb-a994-c963ac5e6806
+  - fromDigest: 92fc4314c86d6f466dbf29c8091f6c9772e036f4b989c1ff7d5e887ca75e8547
+    fromVersion: v2
+    name: s7-inplace-64dff6d869-kwrks
+    phase: Pending
+    uid: fedaebb3-5585-46fd-9ba6-fa04aa2e3e92
+  - fromDigest: 92fc4314c86d6f466dbf29c8091f6c9772e036f4b989c1ff7d5e887ca75e8547
+    fromVersion: v2
+    name: s7-inplace-64dff6d869-ssxf8
+    phase: Pending
+    uid: d5e49797-d16c-453d-97ee-3574b876be1d
+  promoted: 0
+  startedAt: "2026-11-08T06:48:44Z"
+  total: 3

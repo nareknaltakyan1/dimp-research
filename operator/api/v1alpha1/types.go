@@ -57,6 +57,9 @@ const (
 	PodReverted  = "Reverted"
 	PodAborted   = "Aborted"
 	PodRepatched = "Repatched"
+	// PodRollbackFailed: the fleet rollback could not revert/abort this pod
+	// within the retry budget (operator gave up; manual action needed).
+	PodRollbackFailed = "RollbackFailed"
 )
 
 // LocalRef names an object in the HotPatch namespace.
@@ -132,15 +135,21 @@ type PodMetrics struct {
 
 // PodStatus is one pod's state.
 type PodStatus struct {
-	Name        string       `json:"name"`
-	UID         string       `json:"uid"`
-	Phase       string       `json:"phase"`
-	FromVersion string       `json:"fromVersion,omitempty"`
-	Version     string       `json:"version,omitempty"`
-	Message     string       `json:"message,omitempty"`
-	StartedAt   *metav1.Time `json:"startedAt,omitempty"`
-	FinishedAt  *metav1.Time `json:"finishedAt,omitempty"`
-	Metrics     *PodMetrics  `json:"metrics,omitempty"`
+	Name  string `json:"name"`
+	UID   string `json:"uid"`
+	Phase string `json:"phase"`
+	// FromVersion is the version the pod ran BEFORE this HotPatch touched it
+	// (the fleet-rollback target), and FromDigest its digest when known.
+	FromVersion string `json:"fromVersion,omitempty"`
+	FromDigest  string `json:"fromDigest,omitempty"`
+	// Attempts counts consecutive transient failures (push, abort,
+	// rollback) for bounded retry with backoff.
+	Attempts   int32        `json:"attempts,omitempty"`
+	Version    string       `json:"version,omitempty"`
+	Message    string       `json:"message,omitempty"`
+	StartedAt  *metav1.Time `json:"startedAt,omitempty"`
+	FinishedAt *metav1.Time `json:"finishedAt,omitempty"`
+	Metrics    *PodMetrics  `json:"metrics,omitempty"`
 }
 
 // HotPatchStatus is the observed state.
@@ -156,6 +165,8 @@ type HotPatchStatus struct {
 	StartedAt          *metav1.Time       `json:"startedAt,omitempty"`
 	CompletedAt        *metav1.Time       `json:"completedAt,omitempty"`
 	Conditions         []metav1.Condition `json:"conditions,omitempty"`
+	// Attempts counts consecutive transient artifact-load failures.
+	Attempts int32 `json:"attempts,omitempty"`
 }
 
 // HotPatch is the CRD.

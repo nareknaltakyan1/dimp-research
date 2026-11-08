@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
@@ -55,24 +56,42 @@ type Config struct {
 	Initial     string
 	BundleDir   string // pre-staged signed bundles for /admin/upgrade (<to>/)
 	Verifier    *signing.Verifier
-	AdminToken  string // "" = no token required (development only)
-	// ContractUpgrade enables the unauthenticated harness endpoint
-	// /admin/upgrade (it can only load pre-staged, signed bundles).
+	// AdminToken is the bearer token required on every privileged endpoint
+	// (/admin/patch, /admin/rollout*, /admin/rollback, /admin/upgrade).
+	AdminToken string
+	// AllowTokenless lets privileged endpoints run without a token. It is
+	// only set by main when every listener serving them is bound to a
+	// loopback address or -insecure-admin was given. With AdminToken == ""
+	// and AllowTokenless == false every privileged request is refused
+	// (fail closed).
+	AllowTokenless bool
+	// ContractUpgrade enables the harness endpoint /admin/upgrade (it can
+	// only load pre-staged, signed bundles; it is authenticated like the
+	// other privileged endpoints).
 	ContractUpgrade bool
-	Wasm            wasmguest.Options
-	MaxBundleBytes  int64
-	Events          *svc.EventLog
+	// StateDir holds the persisted anti-rollback high-water mark
+	// (floor.json). "" keeps it in memory only (tests, benchmarks).
+	StateDir string
+	// MaxBundleAge rejects bundles whose signed manifest.created is older
+	// (signing.Policy.MaxAge). 0 = no limit.
+	MaxBundleAge   time.Duration
+	Wasm           wasmguest.Options
+	MaxBundleBytes int64
+	Events         *svc.EventLog
 	// UpgradeStrategy is used by /admin/upgrade and SIGHUP.
 	UpgradeStrategy canary.Strategy
 }
 
-// PatchRequest is the body of POST /admin/patch.
+// PatchRequest is the body of POST /admin/patch. Unknown fields are
+// rejected (there is deliberately no "rollback" flag: rollback is
+// POST /admin/rollback, which can only re-install the retained artifact).
 type PatchRequest struct {
 	Bundle       json.RawMessage  `json:"bundle"` // signing.Envelope
 	Strategy     *canary.Strategy `json:"strategy,omitempty"`
 	StrategyName string           `json:"strategy_name,omitempty"` // default | fast | immediate
-	Reconcile    bool             `json:"reconcile,omitempty"`
-	Rollback     bool             `json:"rollback,omitempty"`
+	// Reconcile relaxes only the base_version == running check (re-patching
+	// a fresh pod that runs image code). Monotonicity is always enforced.
+	Reconcile bool `json:"reconcile,omitempty"`
 }
 
 // PatchRecord is one admission decision (kept for /admin/rollout).
@@ -97,12 +116,27 @@ type Server struct {
 	counter  atomic.Uint64
 	eng      *canary.Engine[In, Out]
 
+	// mu guards current, previous, floor, pending and patches. It is held
+	// across the final admission check and Engine.StartFrom, and taken by
+	// the engine's OnDecision hook, so admission decisions, retained
+	// artifacts and the high-water mark change atomically with rollout
+	// phase transitions.
 	mu        sync.Mutex
 	current   *artifact // stable
-	previous  *artifact // retained for /admin/rollback
+	previous  *artifact // retained for /admin/rollback (the ONLY rollback target)
+	floor     signing.Floor
+	pending   *pendingRollout
 	patches   []PatchRecord
 	mismatchN atomic.Int64
 }
+
+// pendingRollout describes the rollout currently owned by the engine.
+type pendingRollout struct {
+	cand     *artifact
+	rollback bool // re-install of s.previous via /admin/rollback
+}
+
+const floorFile = "floor.json"
 
 // NewServer loads the initial built-in module.
 func NewServer(cfg Config) (*Server, error) {
@@ -125,12 +159,16 @@ func NewServer(cfg Config) (*Server, error) {
 		return nil, err
 	}
 	art := &artifact{Name: cfg.Initial, Digest: signing.Digest(wasm), Wasm: wasm}
+	if err := s.loadFloor(art); err != nil {
+		return nil, err
+	}
 	v, _, err := s.load(art)
 	if err != nil {
 		return nil, err
 	}
 	s.current = art
 	s.eng = canary.New(canary.Config[In, Out]{
+		OnDecision: s.onDecision,
 		Admit: func(in In) In {
 			in.Count = s.counter.Add(1)
 			in.TS = time.Now().UnixNano()
@@ -187,14 +225,118 @@ func (s *Server) load(a *artifact) (*canary.Version[In, Out], time.Duration, err
 	}, time.Since(t0), nil
 }
 
-// Handler serves the contract endpoints; if admin is nil the admin
-// endpoints are mounted on the same mux.
+// loadFloor reads the persisted high-water mark (fail closed on a corrupt
+// file) and raises it to at least the image's built-in version.
+func (s *Server) loadFloor(builtin *artifact) error {
+	s.floor = signing.Floor{Version: builtin.Name}
+	if s.cfg.StateDir != "" {
+		b, err := os.ReadFile(filepath.Join(s.cfg.StateDir, floorFile))
+		switch {
+		case err == nil:
+			var f struct {
+				Service string `json:"service"`
+				signing.Floor
+			}
+			if err := json.Unmarshal(b, &f); err != nil || f.Service != s.cfg.Service {
+				return fmt.Errorf("corrupt high-water mark %s (service %q): %v", floorFile, f.Service, err)
+			}
+			if _, err := signing.ParseVersion(f.Version); err != nil {
+				return fmt.Errorf("corrupt high-water mark %s: %w", floorFile, err)
+			}
+			if c, _ := signing.CompareVersions(f.Version, builtin.Name); c > 0 {
+				s.floor = f.Floor
+			}
+		case errors.Is(err, os.ErrNotExist):
+		default:
+			return fmt.Errorf("high-water mark: %w", err)
+		}
+	}
+	s.log.Emit("high_water_mark", "version", s.floor.Version, "restorable", s.floor.Restorable, "persisted", s.cfg.StateDir != "")
+	return s.persistFloor()
+}
+
+// persistFloor atomically writes s.floor (tmp + fsync + rename + dir fsync).
+// The caller holds s.mu (or is the constructor).
+func (s *Server) persistFloor() error {
+	if s.cfg.StateDir == "" {
+		return nil
+	}
+	b, _ := json.Marshal(struct {
+		Service string `json:"service"`
+		signing.Floor
+		Updated time.Time `json:"updated"`
+	}{s.cfg.Service, s.floor, time.Now().UTC()})
+	tmp, err := os.CreateTemp(s.cfg.StateDir, floorFile+".tmp*")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmp.Name())
+	if _, err := tmp.Write(b); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err := tmp.Sync(); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+	if err := os.Rename(tmp.Name(), filepath.Join(s.cfg.StateDir, floorFile)); err != nil {
+		return err
+	}
+	if d, err := os.Open(s.cfg.StateDir); err == nil {
+		d.Sync()
+		d.Close()
+	}
+	return nil
+}
+
+// onDecision is the engine's OnDecision hook: it runs before the rollout's
+// final phase is visible, so current/previous/floor are never stale with
+// respect to the phase reported by /admin/rollout.
+func (s *Server) onDecision(phase canary.Phase, keep, drop *canary.Version[In, Out]) {
+	keepArt, _ := keep.Meta.(*artifact)
+	dropArt, _ := drop.Meta.(*artifact)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	p := s.pending
+	s.pending = nil
+	if phase != canary.PhasePromoted || keepArt == nil {
+		return // candidate refused or aborted: nothing changes
+	}
+	if p != nil && p.rollback {
+		// keep = the retained previous artifact. The rolled-back version may
+		// never be re-installed from a bundle: the floor stays where it is
+		// and is no longer restorable.
+		s.current, s.previous = keepArt, nil
+		s.floor.Restorable = false
+	} else {
+		s.previous, s.current = s.current, keepArt
+		if dropArt != nil && s.previous != dropArt {
+			s.previous = dropArt
+		}
+		if c, err := signing.CompareVersions(keepArt.Name, s.floor.Version); err == nil && c >= 0 {
+			s.floor = signing.Floor{Version: keepArt.Name, Digest: keepArt.Digest, Restorable: true}
+		}
+	}
+	if err := s.persistFloor(); err != nil {
+		s.log.Emit("high_water_mark_persist_failed", "err", err.Error())
+	} else {
+		s.log.Emit("high_water_mark", "version", s.floor.Version, "restorable", s.floor.Restorable, "persisted", s.cfg.StateDir != "")
+	}
+}
+
+// Handler serves the contract endpoints (/api, /healthz, /admin/status and
+// the authenticated /admin/upgrade). withAdmin additionally mounts the
+// privileged endpoints on the same mux (tests only; main always serves them
+// on a separate listener).
 func (s *Server) Handler(withAdmin bool) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api", s.api)
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, r *http.Request) { io.WriteString(w, "ok") })
 	mux.HandleFunc("/admin/status", s.status)
-	mux.HandleFunc("/admin/upgrade", s.contractUpgrade)
+	mux.HandleFunc("/admin/upgrade", s.auth(s.contractUpgrade))
 	if withAdmin {
 		s.mountAdmin(mux)
 	}
@@ -218,15 +360,27 @@ func (s *Server) mountAdmin(mux *http.ServeMux) {
 	mux.HandleFunc("/admin/rollback", s.auth(s.rollback))
 }
 
+// auth guards a privileged endpoint. Fail closed: with no configured token
+// a request passes only if the process was explicitly started in tokenless
+// mode (loopback-only listeners or -insecure-admin). Tokens are compared in
+// constant time over their SHA-256 digests (no length leak).
 func (s *Server) auth(h http.HandlerFunc) http.HandlerFunc {
+	want := sha256.Sum256([]byte(s.cfg.AdminToken))
 	return func(w http.ResponseWriter, r *http.Request) {
+		ok := false
 		if s.cfg.AdminToken != "" {
-			got := strings.TrimPrefix(r.Header.Get("Authorization"), "Bearer ")
-			if subtle.ConstantTimeCompare([]byte(got), []byte(s.cfg.AdminToken)) != 1 {
-				s.log.Emit("admin_denied", "path", r.URL.Path, "remote", r.RemoteAddr)
-				httpJSON(w, http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
-				return
+			hdr := r.Header.Get("Authorization")
+			if got, found := strings.CutPrefix(hdr, "Bearer "); found {
+				g := sha256.Sum256([]byte(got))
+				ok = subtle.ConstantTimeCompare(g[:], want[:]) == 1
 			}
+		} else {
+			ok = s.cfg.AllowTokenless
+		}
+		if !ok {
+			s.log.Emit("admin_denied", "path", r.URL.Path, "remote", r.RemoteAddr)
+			httpJSON(w, http.StatusUnauthorized, map[string]any{"error": "unauthorized"})
+			return
 		}
 		h(w, r)
 	}
@@ -325,6 +479,8 @@ type RolloutDoc struct {
 	canary.Status
 	RunningDigest string        `json:"running_digest"`
 	Previous      string        `json:"previous,omitempty"`
+	PreviousDig   string        `json:"previous_digest,omitempty"`
+	HighWaterMark signing.Floor `json:"high_water_mark"`
 	Count         uint64        `json:"count"`
 	Patches       []PatchRecord `json:"patches"`
 }
@@ -334,8 +490,9 @@ func (s *Server) rolloutDoc() RolloutDoc {
 	s.mu.Lock()
 	d.RunningDigest = s.current.Digest
 	if s.previous != nil {
-		d.Previous = s.previous.Name
+		d.Previous, d.PreviousDig = s.previous.Name, s.previous.Digest
 	}
+	d.HighWaterMark = s.floor
 	d.Patches = append([]PatchRecord(nil), s.patches...)
 	s.mu.Unlock()
 	return d
@@ -363,7 +520,7 @@ func admissionError(err error) (int, string) {
 		return http.StatusConflict, "VersionPolicy"
 	case errors.Is(err, signing.ErrWrongTarget), errors.Is(err, signing.ErrSchema), errors.Is(err, signing.ErrTooOld):
 		return http.StatusUnprocessableEntity, "PolicyRejected"
-	case errors.Is(err, canary.ErrBusy):
+	case errors.Is(err, canary.ErrBusy), errors.Is(err, canary.ErrStableChanged):
 		return http.StatusConflict, "RolloutInProgress"
 	case errors.Is(err, signing.ErrMalformedBundle), errors.Is(err, signing.ErrBadManifest), errors.Is(err, signing.ErrTooLarge):
 		return http.StatusBadRequest, "MalformedBundle"
@@ -372,16 +529,30 @@ func admissionError(err error) (int, string) {
 	}
 }
 
-// admit verifies a bundle, compiles it and starts a rollout.
+// admit verifies a bundle, compiles it and starts a rollout. The policy
+// (running version, high-water mark, base_version) is re-checked under s.mu
+// immediately before Engine.StartFrom, which itself refuses to start if the
+// stable version moved: check-then-start is atomic w.r.t. promotions.
 func (s *Server) admit(b *signing.Bundle, strat canary.Strategy, o signing.CheckOptions, source string) (PatchRecord, error) {
 	rec := PatchRecord{Time: time.Now(), Source: source}
+	pol := signing.Policy{Service: s.cfg.Service, StateSchema: s.cfg.StateSchema, MaxAge: s.cfg.MaxBundleAge}
+	check := func(m *signing.Manifest) (string, error) { // caller holds s.mu
+		f := s.floor
+		o.Floor = &f
+		return s.current.Name, pol.Check(m, s.current.Name, o)
+	}
 	t0 := time.Now()
 	m, err := s.cfg.Verifier.Verify(b)
 	if err == nil {
 		rec.Version, rec.Digest = m.Version, m.SHA256
-		err = signing.Policy{Service: s.cfg.Service, StateSchema: s.cfg.StateSchema}.Check(m, s.eng.Stable(), o)
+		s.mu.Lock()
+		_, err = check(m)
+		s.mu.Unlock()
 	}
 	rec.VerifyMs = float64(time.Since(t0)) / 1e6
+	if err == nil && s.rolloutActive() {
+		err = canary.ErrBusy // don't compile a candidate that cannot start
+	}
 	if err != nil {
 		return s.reject(rec, err)
 	}
@@ -391,20 +562,28 @@ func (s *Server) admit(b *signing.Bundle, strat canary.Strategy, o signing.Check
 	if err != nil {
 		return s.reject(rec, fmt.Errorf("load: %w", err))
 	}
-	from := s.eng.Stable()
-	s.log.Emit("upgrade_start", "from", from, "to", m.Version, "verify_ms", rec.VerifyMs, "compile_ms", rec.CompileMs, "source", source)
-	s.mismatchN.Store(0)
-	if err := s.eng.Start(v, strat); err != nil {
+	s.mu.Lock()
+	from, err := check(m)
+	if err == nil {
+		s.mismatchN.Store(0)
+		err = s.eng.StartFrom(from, v, strat)
+	}
+	if err != nil {
+		s.mu.Unlock()
 		v.Close()
 		return s.reject(rec, err)
 	}
-	s.mu.Lock()
-	prev := s.current
+	s.pending = &pendingRollout{cand: art}
 	s.mu.Unlock()
-	go s.followRollout(prev, art)
+	s.log.Emit("upgrade_start", "from", from, "to", m.Version, "verify_ms", rec.VerifyMs, "compile_ms", rec.CompileMs, "source", source)
 	rec.Accepted = true
 	s.record(rec)
 	return rec, nil
+}
+
+func (s *Server) rolloutActive() bool {
+	r := s.eng.Status().Rollout
+	return r != nil && r.Phase == canary.PhaseProgressing
 }
 
 func (s *Server) reject(rec PatchRecord, err error) (PatchRecord, error) {
@@ -413,17 +592,6 @@ func (s *Server) reject(rec PatchRecord, err error) (PatchRecord, error) {
 	s.record(rec)
 	s.log.Emit("patch_rejected", "version", rec.Version, "reason", reason, "err", err.Error(), "source", rec.Source)
 	return rec, err
-}
-
-// followRollout updates the retained artifacts once the rollout finishes.
-func (s *Server) followRollout(prev, cand *artifact) {
-	r, err := s.eng.Wait(context.Background())
-	if err != nil || r.Phase != canary.PhasePromoted || r.Stable != cand.Name {
-		return
-	}
-	s.mu.Lock()
-	s.current, s.previous = cand, prev
-	s.mu.Unlock()
 }
 
 func strategyFor(req *PatchRequest) (canary.Strategy, error) {
@@ -452,7 +620,9 @@ func (s *Server) patch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	var req PatchRequest
-	if err := json.Unmarshal(body, &req); err != nil || len(req.Bundle) == 0 {
+	dec := json.NewDecoder(bytes.NewReader(body))
+	dec.DisallowUnknownFields()
+	if err := dec.Decode(&req); err != nil || len(req.Bundle) == 0 {
 		rec, _ := s.reject(PatchRecord{Time: time.Now(), Source: "admin"}, fmt.Errorf("%w: bad patch request", signing.ErrMalformedBundle))
 		httpJSON(w, http.StatusBadRequest, rec)
 		return
@@ -463,7 +633,7 @@ func (s *Server) patch(w http.ResponseWriter, r *http.Request) {
 		var b *signing.Bundle
 		b, err = signing.DecodeEnvelope(req.Bundle, s.cfg.MaxBundleBytes)
 		if err == nil {
-			rec, err = s.admit(b, strat, signing.CheckOptions{Reconcile: req.Reconcile, Rollback: req.Rollback}, "admin")
+			rec, err = s.admit(b, strat, signing.CheckOptions{Reconcile: req.Reconcile}, "admin")
 		} else {
 			rec, _ = s.reject(PatchRecord{Time: time.Now(), Source: "admin"}, err)
 		}
@@ -477,6 +647,20 @@ func (s *Server) patch(w http.ResponseWriter, r *http.Request) {
 	httpJSON(w, http.StatusAccepted, rec)
 }
 
+// AbortDoc is the answer of POST /admin/rollout/abort: the REAL outcome of
+// the rollout that was current when the abort arrived.
+type AbortDoc struct {
+	Aborted   bool         `json:"aborted"` // the candidate is not serving as stable
+	Sent      bool         `json:"sent"`    // abort registered before the decision
+	Phase     canary.Phase `json:"phase"`
+	Stable    string       `json:"stable"`
+	Candidate string       `json:"candidate,omitempty"`
+	Reason    string       `json:"reason,omitempty"`
+}
+
+// abort aborts the running rollout and waits for its decision. 200 = the
+// candidate is not (and will not be) stable; 409 = it was promoted before
+// the abort took effect (the caller must roll it back explicitly).
 func (s *Server) abort(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "POST required", http.StatusMethodNotAllowed)
@@ -486,12 +670,29 @@ func (s *Server) abort(w http.ResponseWriter, r *http.Request) {
 	if reason == "" {
 		reason = "operator abort"
 	}
-	ok := s.eng.Abort(reason)
-	httpJSON(w, http.StatusOK, map[string]any{"aborted": ok})
+	ctx, cancel := context.WithTimeout(r.Context(), 20*time.Second)
+	defer cancel()
+	ro, sent, err := s.eng.AbortAndWait(ctx, reason)
+	if err != nil {
+		httpJSON(w, http.StatusGatewayTimeout, map[string]any{"error": err.Error()})
+		return
+	}
+	d := AbortDoc{Sent: sent, Phase: ro.Phase, Stable: ro.Stable, Candidate: ro.Candidate, Reason: ro.Reason}
+	d.Aborted = ro.Phase != canary.PhasePromoted || ro.Candidate == "" || ro.Stable != ro.Candidate
+	code := http.StatusOK
+	if !d.Aborted {
+		code = http.StatusConflict
+	}
+	s.log.Emit("rollout_abort_request", "sent", sent, "phase", string(ro.Phase), "stable", ro.Stable, "candidate", ro.Candidate)
+	httpJSON(w, code, d)
 }
 
-// rollback re-installs the retained previous version (explicit rollback,
-// e.g. the operator rolling back a fleet after another pod failed).
+// rollback re-installs the retained previous artifact (explicit rollback,
+// e.g. the operator rolling back a fleet after another pod failed). It is the
+// ONLY way to move to an older version: the target is the exact artifact
+// (bytes and digest) this process ran before its last promotion, never a
+// bundle supplied by the caller. Optional ?to=<version>&digest=<sha256>
+// must match the retained artifact.
 func (s *Server) rollback(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "POST required", http.StatusMethodNotAllowed)
@@ -501,11 +702,16 @@ func (s *Server) rollback(w http.ResponseWriter, r *http.Request) {
 	prev, cur := s.previous, s.current
 	s.mu.Unlock()
 	if prev == nil {
-		httpJSON(w, http.StatusConflict, map[string]any{"error": "no retained previous version"})
+		httpJSON(w, http.StatusConflict, map[string]any{"error": "no retained previous version", "stable": cur.Name})
 		return
 	}
-	if want := r.URL.Query().Get("to"); want != "" && want != prev.Name {
-		httpJSON(w, http.StatusConflict, map[string]any{"error": fmt.Sprintf("retained version is %s, not %s", prev.Name, want)})
+	q := r.URL.Query()
+	if want := q.Get("to"); want != "" && want != prev.Name {
+		httpJSON(w, http.StatusConflict, map[string]any{"error": fmt.Sprintf("retained version is %s, not %s", prev.Name, want), "stable": cur.Name})
+		return
+	}
+	if want := q.Get("digest"); want != "" && !strings.EqualFold(want, prev.Digest) {
+		httpJSON(w, http.StatusConflict, map[string]any{"error": "retained artifact digest does not match", "stable": cur.Name})
 		return
 	}
 	v, _, err := s.load(prev)
@@ -513,21 +719,35 @@ func (s *Server) rollback(w http.ResponseWriter, r *http.Request) {
 		httpJSON(w, http.StatusInternalServerError, map[string]any{"error": err.Error()})
 		return
 	}
-	s.log.Emit("upgrade_start", "from", cur.Name, "to", prev.Name, "source", "rollback")
-	if err := s.eng.Start(v, canary.ImmediateStrategy()); err != nil {
+	s.mu.Lock()
+	if s.previous != prev || s.current != cur {
+		s.mu.Unlock()
 		v.Close()
-		code, _ := admissionError(err)
-		httpJSON(w, code, map[string]any{"error": err.Error()})
+		httpJSON(w, http.StatusConflict, map[string]any{"error": "retained/running version changed concurrently", "reason": "RolloutInProgress"})
 		return
 	}
-	res, _ := s.eng.Wait(context.Background())
-	s.mu.Lock()
-	if res.Phase == canary.PhasePromoted {
-		s.current, s.previous = prev, nil
+	if err := s.eng.StartFrom(cur.Name, v, canary.ImmediateStrategy()); err != nil {
+		s.mu.Unlock()
+		v.Close()
+		code, reason := admissionError(err)
+		httpJSON(w, code, map[string]any{"error": err.Error(), "reason": reason})
+		return
 	}
+	s.pending = &pendingRollout{cand: prev, rollback: true}
 	s.mu.Unlock()
-	s.record(PatchRecord{Time: time.Now(), Version: prev.Name, Digest: prev.Digest, Accepted: true, Source: "rollback"})
-	httpJSON(w, http.StatusOK, map[string]any{"stable": s.eng.Stable(), "phase": res.Phase})
+	s.log.Emit("upgrade_start", "from", cur.Name, "to", prev.Name, "source", "rollback")
+	res, err := s.eng.WaitDecided(context.Background())
+	ok := err == nil && res.Phase == canary.PhasePromoted && res.Stable == prev.Name
+	rec := PatchRecord{Time: time.Now(), Version: prev.Name, Digest: prev.Digest, Accepted: ok, Source: "rollback"}
+	if !ok {
+		rec.Error = fmt.Sprintf("rollback ended %s (stable %s)", res.Phase, res.Stable)
+	}
+	s.record(rec)
+	code := http.StatusOK
+	if !ok {
+		code = http.StatusInternalServerError
+	}
+	httpJSON(w, code, map[string]any{"stable": res.Stable, "phase": res.Phase, "digest": prev.Digest})
 }
 
 // contractUpgrade implements the harness endpoint: load the pre-staged

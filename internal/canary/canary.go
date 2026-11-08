@@ -120,6 +120,13 @@ type Config[In, Out any] struct {
 	Events func(ev string, kv ...any)
 	// OnMismatch is called for (a sample of) shadow mismatches (optional).
 	OnMismatch func(in In, stable, cand Out)
+	// OnDecision is called once per rollout, synchronously in the rollout
+	// goroutine, after the final plan {stable: keep} has been published and
+	// BEFORE the rollout's phase becomes visible (Status, Wait, Abort) or a
+	// new rollout can start. Callers use it to keep their own bookkeeping
+	// (retained artifacts, persisted high-water marks) in lock-step with the
+	// engine. It must not call Start/Abort/Wait (it may call Status).
+	OnDecision func(phase Phase, keep, drop *Version[In, Out])
 }
 
 // Engine routes requests between the stable version and at most one
@@ -131,12 +138,21 @@ type Engine[In, Out any] struct {
 
 	live sync.Map // *version -> struct{}: versions not yet closed
 
-	mu      sync.Mutex // serialises rollouts and plan publication
-	rollout *Rollout   // current or last rollout
-	abort   chan string
-	done    chan struct{}
+	mu  sync.Mutex // serialises rollouts and plan publication
+	cur *runState  // current or last rollout
 
 	shadowWG sync.WaitGroup
+}
+
+// runState is the per-rollout control block. The rollout goroutine only ever
+// touches its OWN runState (never e.cur), so a rollout that finishes while a
+// newer one has started cannot write into the newer one's record.
+type runState struct {
+	r       *Rollout
+	abort   chan string   // buffered(1); written only under e.mu while !decided
+	decided bool          // set under e.mu at the promote/rollback decision
+	decCh   chan struct{} // closed once r.Phase is final
+	done    chan struct{} // closed once the dropped version is released
 }
 
 // New creates an engine serving stable.
@@ -380,13 +396,19 @@ func (e *Engine[In, Out]) Status() Status {
 		st.Totals[p.cand.Name+"(shadow)"] = p.cand.shadow.Snapshot()
 	}
 	e.mu.Lock()
-	if e.rollout != nil {
-		r := *e.rollout
-		r.Stages = append([]StageRecord(nil), e.rollout.Stages...)
+	if e.cur != nil {
+		r := copyRollout(e.cur.r)
 		st.Rollout = &r
 	}
 	e.mu.Unlock()
 	return st
+}
+
+// copyRollout returns a deep copy of r; the caller holds e.mu.
+func copyRollout(r *Rollout) Rollout {
+	c := *r
+	c.Stages = append([]StageRecord(nil), r.Stages...)
+	return c
 }
 
 // publish swaps in a new plan; the caller holds e.mu.
@@ -399,97 +421,183 @@ func (e *Engine[In, Out]) publish(name string, p *plan[In, Out]) *hotswap.Upgrad
 	return u
 }
 
+// ErrStableChanged is returned by StartFrom when the stable version is no
+// longer the one the caller validated the candidate against.
+var ErrStableChanged = errors.New("canary: stable version changed since admission check")
+
 // Start begins a rollout of cand with strategy s. It returns immediately;
 // use Wait or Status to follow it.
 func (e *Engine[In, Out]) Start(cand *Version[In, Out], s Strategy) error {
+	return e.StartFrom("", cand, s)
+}
+
+// StartFrom is Start, but fails with ErrStableChanged unless the current
+// stable version is named expectStable ("" = any). The check and the start
+// happen under one lock, so a caller that validated cand against
+// expectStable (e.g. base_version == running) cannot race a promotion.
+func (e *Engine[In, Out]) StartFrom(expectStable string, cand *Version[In, Out], s Strategy) error {
 	if err := s.normalize(); err != nil {
 		return err
 	}
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	if e.rollout != nil && e.rollout.Phase == PhaseProgressing {
+	if e.cur != nil && e.cur.r.Phase == PhaseProgressing {
 		return ErrBusy
 	}
 	cur := e.reg.Current().Impl
-	r := &Rollout{Phase: PhaseProgressing, Stable: cur.stable.Name, Candidate: cand.Name, Started: time.Now(), Previous: cur.stable.Name}
-	e.rollout = r
-	e.abort = make(chan string, 1)
-	e.done = make(chan struct{})
+	if expectStable != "" && cur.stable.Name != expectStable {
+		return fmt.Errorf("%w: expected %s, running %s", ErrStableChanged, expectStable, cur.stable.Name)
+	}
+	rs := &runState{
+		r:     &Rollout{Phase: PhaseProgressing, Stable: cur.stable.Name, Candidate: cand.Name, Started: time.Now(), Previous: cur.stable.Name},
+		abort: make(chan string, 1),
+		decCh: make(chan struct{}),
+		done:  make(chan struct{}),
+	}
+	e.cur = rs
 	e.emit("rollout_start", "from", cur.stable.Name, "to", cand.Name, "stages", len(s.Stages))
 	cv := &version[In, Out]{Version: cand}
 	e.live.Store(cv, struct{}{})
-	go e.run(cur.stable, cv, s, e.abort, e.done)
+	go e.run(rs, cur.stable, cv, s)
 	return nil
 }
 
-// Abort stops the current rollout and rolls back to stable.
+// Abort asks the current rollout to stop and keep the stable version. It
+// returns true only if the request was registered BEFORE the rollout made
+// its promote/rollback decision; in that case the rollout is guaranteed to
+// end Aborted or RolledBack, never Promoted. It returns false if no rollout
+// is progressing or the decision was already taken (the candidate may have
+// been promoted). Use AbortAndWait to learn the final outcome.
 func (e *Engine[In, Out]) Abort(reason string) bool {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	if e.rollout == nil || e.rollout.Phase != PhaseProgressing {
-		return false
-	}
-	select {
-	case e.abort <- reason:
-	default:
-	}
-	return true
+	ok, _ := e.abortRun(reason)
+	return ok
 }
 
-// Wait blocks until the current rollout finishes (or ctx is done) and
-// returns its final state.
-func (e *Engine[In, Out]) Wait(ctx context.Context) (Rollout, error) {
+func (e *Engine[In, Out]) abortRun(reason string) (bool, *runState) {
 	e.mu.Lock()
-	done := e.done
-	e.mu.Unlock()
-	if done == nil {
-		return Rollout{Phase: PhaseIdle}, nil
+	defer e.mu.Unlock()
+	rs := e.cur
+	if rs == nil || rs.r.Phase != PhaseProgressing || rs.decided {
+		return false, rs
 	}
 	select {
-	case <-done:
+	case rs.abort <- reason:
+	default: // an abort is already pending
+	}
+	return true, rs
+}
+
+// AbortAndWait aborts the current rollout (see Abort) and waits until that
+// rollout's outcome is decided. It returns the final state of the rollout
+// that was current when it was called (Phase may be Promoted if the abort
+// came too late) and whether the abort was registered in time.
+func (e *Engine[In, Out]) AbortAndWait(ctx context.Context, reason string) (Rollout, bool, error) {
+	sent, rs := e.abortRun(reason)
+	if rs == nil {
+		return Rollout{Phase: PhaseIdle, Stable: e.Stable()}, false, nil
+	}
+	r, err := e.waitRun(ctx, rs, rs.decCh)
+	return r, sent, err
+}
+
+// Wait blocks until the current rollout finishes and its dropped version has
+// been released (or ctx is done) and returns that rollout's final state.
+func (e *Engine[In, Out]) Wait(ctx context.Context) (Rollout, error) {
+	e.mu.Lock()
+	rs := e.cur
+	e.mu.Unlock()
+	if rs == nil {
+		return Rollout{Phase: PhaseIdle}, nil
+	}
+	return e.waitRun(ctx, rs, rs.done)
+}
+
+// WaitDecided is Wait, but returns as soon as the outcome is decided (the
+// final plan is published), without waiting for the dropped version to drain.
+func (e *Engine[In, Out]) WaitDecided(ctx context.Context) (Rollout, error) {
+	e.mu.Lock()
+	rs := e.cur
+	e.mu.Unlock()
+	if rs == nil {
+		return Rollout{Phase: PhaseIdle}, nil
+	}
+	return e.waitRun(ctx, rs, rs.decCh)
+}
+
+func (e *Engine[In, Out]) waitRun(ctx context.Context, rs *runState, ch chan struct{}) (Rollout, error) {
+	select {
+	case <-ch:
 	case <-ctx.Done():
 		return Rollout{}, ctx.Err()
 	}
-	st := e.Status()
-	return *st.Rollout, nil
-}
-
-func (e *Engine[In, Out]) setStage(i int, st Stage) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	r := e.rollout
+	return copyRollout(rs.r), nil
+}
+
+func (e *Engine[In, Out]) setStage(rs *runState, i int, st Stage) {
+	e.mu.Lock()
+	defer e.mu.Unlock()
+	r := rs.r
 	r.Stage, r.StageIndex, r.Mode, r.Weight = st.Name, i, st.Mode, st.Weight
 	r.Stages = append(r.Stages, StageRecord{Stage: st.Name, Mode: st.Mode, Weight: st.Weight, Started: time.Now()})
 }
 
-func (e *Engine[In, Out]) endStage(d Decision, stable, cand Snapshot) {
+func (e *Engine[In, Out]) endStage(rs *runState, d Decision, stable, cand Snapshot) {
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	r := e.rollout
+	r := rs.r
 	if n := len(r.Stages); n > 0 {
 		sr := &r.Stages[n-1]
 		sr.Ended, sr.Verdict, sr.Reason, sr.Stable, sr.Candidate = time.Now(), d.Verdict.String(), d.Reason, stable, cand
 	}
 }
 
-func (e *Engine[In, Out]) run(stable, cand *version[In, Out], s Strategy, abort <-chan string, done chan struct{}) {
-	defer close(done)
+func (e *Engine[In, Out]) run(rs *runState, stable, cand *version[In, Out], s Strategy) {
+	defer close(rs.done)
+	r := rs.r // this rollout's record; never e.cur (which may be a newer rollout)
 	var ups []*hotswap.Upgrade[*plan[In, Out]]
-	finish := func(phase Phase, reason string, keep, drop *version[In, Out]) {
+	finish := func(phase Phase, reason string) {
 		decided := time.Now()
 		e.mu.Lock()
+		if phase == PhasePromoted {
+			// An abort registered before this point must win: Abort promised
+			// the caller that the candidate will not be promoted.
+			select {
+			case ar := <-rs.abort:
+				phase, reason = PhaseAborted, ar
+				if n := len(r.Stages); n > 0 {
+					sr := &r.Stages[n-1]
+					sr.Ended, sr.Verdict, sr.Reason = decided, Fail.String(), "aborted: "+ar
+				}
+			default:
+			}
+		}
+		rs.decided = true
+		keep, drop := stable, cand
+		if phase == PhasePromoted {
+			keep, drop = cand, stable
+		}
 		ups = append(ups, e.publish(keep.Name, &plan[In, Out]{stable: keep, mode: ModeCanary, stage: "stable", win: &window{start: decided}}))
-		r := e.rollout
-		r.Phase, r.Reason, r.Stable, r.DecisionMs = phase, reason, keep.Name, ms(decided.Sub(r.Started))
+		started := r.Started
+		e.mu.Unlock()
+		// Caller bookkeeping happens before the phase is visible, so anyone
+		// who observes the final phase also observes the caller's state.
+		if e.cfg.OnDecision != nil {
+			e.cfg.OnDecision(phase, keep.Version, drop.Version)
+		}
+		e.mu.Lock()
+		r.Phase, r.Reason, r.Stable, r.DecisionMs = phase, reason, keep.Name, ms(decided.Sub(started))
 		r.Mode, r.Weight = "", 0
 		if phase == PhasePromoted {
 			r.Weight = 1
 		}
+		close(rs.decCh)
 		e.mu.Unlock()
 		if phase == PhasePromoted {
 			e.emit("new_version_serving", "version", keep.Name)
 		} else {
-			e.emit("rollout_rollback", "version", drop.Name, "reason", reason, "decision_ms", ms(decided.Sub(e.rolloutStarted())))
+			e.emit("rollout_rollback", "version", drop.Name, "reason", reason, "decision_ms", ms(decided.Sub(started)))
 		}
 		// Unload the dropped version once every plan that referenced it has
 		// drained (shadow mirrors included).
@@ -519,8 +627,8 @@ func (e *Engine[In, Out]) run(stable, cand *version[In, Out], s Strategy, abort 
 			}()
 		}
 		e.mu.Lock()
-		e.rollout.Finished = time.Now()
-		e.rollout.ReleaseMs = ms(time.Since(decided))
+		r.Finished = time.Now()
+		r.ReleaseMs = ms(time.Since(decided))
 		e.mu.Unlock()
 		if phase == PhasePromoted {
 			e.emit("upgrade_done", "from", drop.Name, "to", keep.Name)
@@ -531,9 +639,9 @@ func (e *Engine[In, Out]) run(stable, cand *version[In, Out], s Strategy, abort 
 
 	for i, st := range s.Stages {
 		if st.Mode == ModeCanary && st.Weight >= 1 {
-			e.setStage(i, st)
-			e.endStage(Decision{Pass, "promoted"}, Snapshot{}, Snapshot{})
-			finish(PhasePromoted, "all stages passed", cand, stable)
+			e.setStage(rs, i, st)
+			e.endStage(rs, Decision{Pass, "promoted"}, Snapshot{}, Snapshot{})
+			finish(PhasePromoted, "all stages passed")
 			return
 		}
 		w := &window{start: time.Now()}
@@ -541,7 +649,7 @@ func (e *Engine[In, Out]) run(stable, cand *version[In, Out], s Strategy, abort 
 		if st.Mode == ModeCanary {
 			p.weightPPM = uint32(st.Weight * 1_000_000)
 		}
-		e.setStage(i, st)
+		e.setStage(rs, i, st)
 		e.mu.Lock()
 		ups = append(ups, e.publish(st.Name, p))
 		e.mu.Unlock()
@@ -552,35 +660,29 @@ func (e *Engine[In, Out]) run(stable, cand *version[In, Out], s Strategy, abort 
 	loop:
 		for {
 			select {
-			case reason := <-abort:
+			case reason := <-rs.abort:
 				t.Stop()
 				ss, cs := e.windowSnaps(p)
-				e.endStage(Decision{Fail, "aborted: " + reason}, ss, cs)
-				finish(PhaseAborted, reason, stable, cand)
+				e.endStage(rs, Decision{Fail, "aborted: " + reason}, ss, cs)
+				finish(PhaseAborted, reason)
 				return
 			case <-t.C:
 				ss, cs := e.windowSnaps(p)
 				d = Analyze(st, s.SLO, ss, cs, time.Since(w.start))
 				if d.Verdict != Continue {
-					e.endStage(d, ss, cs)
+					e.endStage(rs, d, ss, cs)
 					break loop
 				}
 			}
 		}
 		t.Stop()
 		if d.Verdict == Fail {
-			finish(PhaseRolledBack, fmt.Sprintf("stage %s: %s", st.Name, d.Reason), stable, cand)
+			finish(PhaseRolledBack, fmt.Sprintf("stage %s: %s", st.Name, d.Reason))
 			return
 		}
 	}
 	// Strategy without an explicit promote stage: promote after the last.
-	finish(PhasePromoted, "all stages passed", cand, stable)
-}
-
-func (e *Engine[In, Out]) rolloutStarted() time.Time {
-	e.mu.Lock()
-	defer e.mu.Unlock()
-	return e.rollout.Started
+	finish(PhasePromoted, "all stages passed")
 }
 
 func (e *Engine[In, Out]) windowSnaps(p *plan[In, Out]) (stable, cand Snapshot) {

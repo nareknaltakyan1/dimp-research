@@ -110,6 +110,11 @@ type loadStats struct {
 
 var client = &http.Client{Timeout: 10 * time.Second, Transport: &http.Transport{MaxIdleConnsPerHost: 64, MaxIdleConns: 64}}
 
+// adminClient is used for admin calls: a push compiles a WASM module and
+// pre-warms its pools, which takes several seconds under -race on a busy
+// machine (Linux CI container), far above the load client's 10 s budget.
+var adminClient = &http.Client{Timeout: 90 * time.Second}
+
 func runLoad(url string, workers int, stop <-chan struct{}) (*loadStats, *sync.WaitGroup) {
 	ls := &loadStats{versions: map[string]int{}}
 	var wg sync.WaitGroup
@@ -189,7 +194,13 @@ func TestContractUpgradeUnderLoad(t *testing.T) {
 	stop := make(chan struct{})
 	ls, wg := runLoad(ts.URL, 8, stop)
 	time.Sleep(200 * time.Millisecond)
-	r, err := http.Post(ts.URL+"/admin/upgrade?to=v2", "", nil)
+	// The contract endpoint is privileged: without the token it is refused.
+	if r, err := http.Post(ts.URL+"/admin/upgrade?to=v2", "", nil); err != nil || r.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("unauthenticated upgrade: %v %v", err, r.StatusCode)
+	}
+	req, _ := http.NewRequest(http.MethodPost, ts.URL+"/admin/upgrade?to=v2", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	r, err := http.DefaultClient.Do(req)
 	if err != nil || r.StatusCode != http.StatusAccepted {
 		t.Fatalf("upgrade: %v %v", err, r.StatusCode)
 	}
@@ -225,7 +236,7 @@ func push(t *testing.T, url, tok string, body any) (int, PatchRecord) {
 	if tok != "" {
 		req.Header.Set("Authorization", "Bearer "+tok)
 	}
-	resp, err := client.Do(req)
+	resp, err := adminClient.Do(req)
 	if err != nil {
 		t.Fatal(err)
 	}

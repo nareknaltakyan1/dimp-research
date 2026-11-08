@@ -1,0 +1,2 @@
+wget: server returned error: HTTP/1.1 401 Unauthorized
+command terminated with exit code 1

@@ -1,0 +1,121 @@
+apiVersion: dimp.research.io/v1alpha1
+kind: HotPatch
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"dimp.research.io/v1alpha1","kind":"HotPatch","metadata":{"annotations":{},"name":"s7-v3","namespace":"dimp-s7"},"spec":{"artifact":{"configMapRef":{"name":"patch-v3"}},"maxUnavailablePods":3,"selector":{"matchLabels":{"app":"s7-inplace"}},"signatureRef":{"key":"manifest.sig","name":"patch-v3"},"strategy":{"shadowDuration":"5s","shadowSamples":100,"slo":{"maxErrorRateDelta":"0.01","maxMismatchRate":"0","maxP99Factor":"2","p99SlackMs":2},"steps":[{"minSamples":10,"pause":"3s","weight":10},{"minSamples":30,"pause":"3s","weight":50}]},"version":"v3"}}
+  creationTimestamp: "2026-11-08T06:48:43Z"
+  generation: 1
+  name: s7-v3
+  namespace: dimp-s7
+  resourceVersion: "751"
+  uid: e653d464-7859-4c62-805b-8dce1a45d33b
+spec:
+  adminPort: 9090
+  artifact:
+    configMapRef:
+      name: patch-v3
+  maxUnavailablePods: 3
+  repatchPolicy: Immediate
+  selector:
+    matchLabels:
+      app: s7-inplace
+  signatureRef:
+    key: manifest.sig
+    name: patch-v3
+  strategy:
+    shadowDuration: 5s
+    shadowSamples: 100
+    slo:
+      maxErrorRateDelta: "0.01"
+      maxMismatchRate: "0"
+      maxP99Factor: "2"
+      p99SlackMs: 2
+    steps:
+    - minSamples: 10
+      pause: 3s
+      weight: 10
+    - minSamples: 30
+      pause: 3s
+      weight: 50
+  version: v3
+status:
+  baseVersion: v2
+  completedAt: "2026-11-08T06:48:44Z"
+  conditions:
+  - lastTransitionTime: "2026-11-08T06:48:44Z"
+    message: a pod's in-process analysis failed; halting and reverting the fleet
+    observedGeneration: 1
+    reason: AnalysisFailed
+    status: "False"
+    type: Progressing
+  - lastTransitionTime: "2026-11-08T06:48:44Z"
+    message: 'rolled back: pod s7-inplace-64dff6d869-22kr2 failed in-process analysis:
+      stage shadow: shadow mismatch rate 0.0435 > 0.0000 (1/23) [fail-fast]'
+    observedGeneration: 1
+    reason: RolledBack
+    status: "False"
+    type: Ready
+  digest: 68b938aee4b91d0af4e725cb28f084a532c6f1ac0d7f9803ffa00aa679420b68
+  message: 'rolled back: pod s7-inplace-64dff6d869-22kr2 failed in-process analysis:
+    stage shadow: shadow mismatch rate 0.0435 > 0.0000 (1/23) [fail-fast]'
+  observedGeneration: 1
+  phase: RolledBack
+  pods:
+  - finishedAt: "2026-11-08T06:48:44Z"
+    fromDigest: 92fc4314c86d6f466dbf29c8091f6c9772e036f4b989c1ff7d5e887ca75e8547
+    fromVersion: v2
+    message: 'stage shadow: shadow mismatch rate 0.0435 > 0.0000 (1/23) [fail-fast]'
+    metrics:
+      candidateErrorRate: "0.000"
+      candidateP99Ms: "4.026"
+      candidateSamples: 23
+      compileMs: "343.519"
+      decisionMs: "400.457"
+      mismatchRate: "0.043"
+      mismatches: 1
+      stableP99Ms: "0.026"
+      stage: shadow
+      verifyMs: "0.693"
+    name: s7-inplace-64dff6d869-22kr2
+    phase: Failed
+    startedAt: "2026-11-08T06:48:43Z"
+    uid: 998474ec-fff9-45bb-a994-c963ac5e6806
+    version: v2
+  - fromDigest: 92fc4314c86d6f466dbf29c8091f6c9772e036f4b989c1ff7d5e887ca75e8547
+    fromVersion: v2
+    message: 'aborted by fleet rollback (verified: runs v2)'
+    metrics:
+      candidateErrorRate: "0.000"
+      candidateP99Ms: "0.000"
+      compileMs: "349.221"
+      decisionMs: "0.000"
+      mismatchRate: "0.000"
+      stableP99Ms: "0.000"
+      stage: shadow
+      verifyMs: "0.671"
+    name: s7-inplace-64dff6d869-kwrks
+    phase: Aborted
+    startedAt: "2026-11-08T06:48:44Z"
+    uid: fedaebb3-5585-46fd-9ba6-fa04aa2e3e92
+    version: v2
+  - fromDigest: 92fc4314c86d6f466dbf29c8091f6c9772e036f4b989c1ff7d5e887ca75e8547
+    fromVersion: v2
+    message: 'aborted by fleet rollback (verified: runs v2)'
+    metrics:
+      candidateErrorRate: "0.000"
+      candidateP99Ms: "0.000"
+      compileMs: "331.364"
+      decisionMs: "0.000"
+      mismatchRate: "0.000"
+      stableP99Ms: "0.000"
+      stage: shadow
+      verifyMs: "0.671"
+    name: s7-inplace-64dff6d869-ssxf8
+    phase: Aborted
+    startedAt: "2026-11-08T06:48:44Z"
+    uid: d5e49797-d16c-453d-97ee-3574b876be1d
+    version: v2
+  promoted: 0
+  startedAt: "2026-11-08T06:48:43Z"
+  total: 3

@@ -2,11 +2,13 @@
 //
 //	s7-patchctl keygen  -out keys/release            # keys/release.key (0600) + keys/release.pub
 //	s7-patchctl sign    -key keys/release.key -module v2.wasm -version v2 -base v1 -out bundles/v2
-//	s7-patchctl verify  -keys keys/release.pub -bundle bundles/v2 [-current v1] [-rollback] [-reconcile]
+//	s7-patchctl verify  -keys keys/release.pub -bundle bundles/v2 [-current v1] [-floor v1] [-reconcile]
 //	s7-patchctl envelope -bundle bundles/v2 -out v2.json   # single-file JSON envelope (POST body)
-//	s7-patchctl push    -bundle bundles/v2 -url http://pod:9090 [-token-file f] [-strategy fast] [-reconcile] [-rollback]
+//	s7-patchctl push    -bundle bundles/v2 -url http://pod:9090 [-token-file f] [-strategy fast] [-reconcile]
 //	s7-patchctl status  -url http://pod:9090 [-token-file f]
 //	s7-patchctl abort   -url http://pod:9090 [-token-file f]
+//	s7-patchctl rollback -url http://pod:9090 [-token-file f] [-to v1]   # re-install the pod's RETAINED previous version
+//	s7-patchctl upgrade -url http://pod:8080 [-token-file f] -to v2     # contract endpoint (pre-staged bundle)
 //	s7-patchctl tamper  -bundle bundles/v2 -module evil.wasm -out bundles/evil   # demo: substitute module, keep signature
 package main
 
@@ -17,6 +19,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	neturl "net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -26,7 +29,7 @@ import (
 )
 
 func usage() {
-	fmt.Fprintln(os.Stderr, "usage: s7-patchctl keygen|sign|verify|envelope|push|status|abort|tamper [flags]")
+	fmt.Fprintln(os.Stderr, "usage: s7-patchctl keygen|sign|verify|envelope|push|status|abort|rollback|upgrade|tamper [flags]")
 	os.Exit(2)
 }
 
@@ -92,7 +95,7 @@ func main() {
 		bundle := fs.String("bundle", "", "bundle directory")
 		current := fs.String("current", "", "running version (enables version policy check)")
 		name := fs.String("name", "", "required target service")
-		rollback := fs.Bool("rollback", false, "explicit rollback")
+		floor := fs.String("floor", "", "high-water mark (version must be newer)")
 		reconcile := fs.Bool("reconcile", false, "allow base mismatch")
 		fs.Parse(args)
 		pubs, err := signing.LoadPublicKeys(strings.Split(*keys, ",")...)
@@ -109,7 +112,11 @@ func main() {
 			die("REJECTED: %v", err)
 		}
 		if *current != "" {
-			if err := (signing.Policy{Service: *name}).Check(m, *current, signing.CheckOptions{Rollback: *rollback, Reconcile: *reconcile}); err != nil {
+			o := signing.CheckOptions{Reconcile: *reconcile}
+			if *floor != "" {
+				o.Floor = &signing.Floor{Version: *floor}
+			}
+			if err := (signing.Policy{Service: *name}).Check(m, *current, o); err != nil {
 				die("REJECTED: %v", err)
 			}
 		}
@@ -145,13 +152,13 @@ func main() {
 		}
 		fmt.Printf("tampered bundle %s: module replaced (sha256 %s), signed manifest kept\n", *out, signing.Digest(wasm))
 
-	case "push", "status", "abort":
+	case "push", "status", "abort", "rollback", "upgrade":
 		url := fs.String("url", "http://localhost:8080", "pod admin base URL")
 		tokenFile := fs.String("token-file", "", "bearer token file")
 		bundle := fs.String("bundle", "", "bundle directory (push)")
 		strategy := fs.String("strategy", "default", "default|fast|immediate (push)")
 		reconcile := fs.Bool("reconcile", false, "allow base mismatch (push)")
-		rollback := fs.Bool("rollback", false, "explicit rollback (push)")
+		to := fs.String("to", "", "target version (rollback: must be the retained one; upgrade: pre-staged bundle)")
 		fs.Parse(args)
 		var req *http.Request
 		switch cmd {
@@ -161,13 +168,17 @@ func main() {
 				die("%v", err)
 			}
 			env, _ := b.Encode()
-			body, _ := json.Marshal(map[string]any{"bundle": json.RawMessage(env), "strategy_name": *strategy, "reconcile": *reconcile, "rollback": *rollback})
+			body, _ := json.Marshal(map[string]any{"bundle": json.RawMessage(env), "strategy_name": *strategy, "reconcile": *reconcile})
 			req, _ = http.NewRequest(http.MethodPost, *url+"/admin/patch", bytes.NewReader(body))
 			req.Header.Set("Content-Type", "application/json")
 		case "status":
 			req, _ = http.NewRequest(http.MethodGet, *url+"/admin/rollout", nil)
 		case "abort":
 			req, _ = http.NewRequest(http.MethodPost, *url+"/admin/rollout/abort", nil)
+		case "rollback":
+			req, _ = http.NewRequest(http.MethodPost, *url+"/admin/rollback?to="+neturl.QueryEscape(*to), nil)
+		case "upgrade":
+			req, _ = http.NewRequest(http.MethodPost, *url+"/admin/upgrade?to="+neturl.QueryEscape(*to), nil)
 		}
 		if *tokenFile != "" {
 			t, err := os.ReadFile(*tokenFile)

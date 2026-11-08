@@ -6,18 +6,23 @@
 #   3. HotPatch v4 (tampered)  -> rejected by every pod's signature check
 #   4. spec drift              -> a deleted pod comes back with image code v1,
 #                                 is held NotReady by the readiness gate and re-patched
-# Output: results/s7-demo/.  Only deletes the cluster if it created it AND KEEP=0.
+#   5. anti-rollback           -> container restart (pod runs image v1 again, persisted
+#                                 high-water mark v2): replay of an older, validly signed
+#                                 release v1.5 is rejected; unauthenticated admin calls
+#                                 are rejected; the operator restores v2 (restorable floor)
+# Output: results/s7-demo/run-<UTC stamp>/ (OUT=... overrides).
+# Only deletes the cluster if it created it AND KEEP=0.
 #   scripts/s7_kind_demo.sh            # KEEP=1 by default (cluster kept)
 set -euo pipefail
 cd "$(dirname "$0")/.."
 ROOT=$(pwd)
 CLUSTER=dimp-s7
-OUT=${OUT:-$ROOT/results/s7-demo}
+OUT=${OUT:-$ROOT/results/s7-demo/run-$(date -u +%Y%m%dT%H%M%SZ)}
 KEEP=${KEEP:-1}
 KIND=${KIND:-$(command -v kind || echo "$HOME/go/bin/kind")}
 WORK=$(mktemp -d /tmp/dimp-s7-demo.XXXX)
 mkdir -p "$OUT"
-rm -f "$OUT"/*.log "$OUT"/*.json "$OUT"/*.yaml "$OUT"/*.txt 2>/dev/null || true
+rm -f "$OUT"/*.log "$OUT"/*.json "$OUT"/*.yaml "$OUT"/*.txt 2>/dev/null || true  # only this run's dir
 exec > >(tee "$OUT/demo.log") 2>&1
 K="kubectl --context kind-$CLUSTER"
 NS=dimp-s7
@@ -48,6 +53,9 @@ $PC sign -key "$WORK/release.key" -module "$OUT_BIN/modules/v2.wasm" -version v2
 $PC sign -key "$WORK/release.key" -module "$OUT_BIN/modules/v3.wasm" -version v3 -base v2 -out "$WORK/b/v3"
 $PC sign -key "$WORK/release.key" -module "$OUT_BIN/modules/v2.wasm" -version v4 -base v2 -out "$WORK/b/v4"
 $PC tamper -bundle "$WORK/b/v4" -module "$OUT_BIN/modules/v3.wasm" -out "$WORK/b/v4-tampered"
+# An OLDER but validly signed release (v1.5 < v2, base v1): the replay candidate of step 5.
+GOOS=wasip1 GOARCH=wasm go build -buildmode=c-shared -ldflags="-s -w -X main.Version=v1.5" -o "$WORK/v1.5.wasm" ./cmd/s7-inplace/guest/v2
+$PC sign -key "$WORK/release.key" -module "$WORK/v1.5.wasm" -version v1.5 -base v1 -out "$WORK/b/v1.5"
 $PC verify -keys "$WORK/release.pub" -bundle "$WORK/b/v2"
 $PC verify -keys "$WORK/release.pub" -bundle "$WORK/b/v4-tampered" || echo "(local verify of tampered bundle failed as expected)"
 
@@ -55,6 +63,7 @@ say "install CRD, RBAC, secrets, operator, app"
 $K apply -f deploy/s7/crd.yaml -f deploy/s7/rbac.yaml
 $K create namespace $NS --dry-run=client -o yaml | $K apply -f -
 TOKEN=$(head -c 24 /dev/urandom | base64 | tr -d '/+=')
+printf '%s' "$TOKEN" > "$WORK/token"
 for n in dimp-system $NS; do
   $K -n $n create secret generic dimp-admin-token --from-literal=token="$TOKEN" --dry-run=client -o yaml | $K apply -f -
 done
@@ -143,6 +152,8 @@ if $K -n $NS exec s7-load -- wget -qO- -T 3 "http://$P1:9090/admin/status" >/dev
 else
   echo "admin port BLOCKED for non-operator pods (NetworkPolicy enforced)"
 fi
+say "Auth check: unauthenticated POST /admin/upgrade on the PUBLIC port via the Service (must be 401)"
+$K -n $NS exec s7-load -- wget -qO- -T 3 --post-data= "http://s7-inplace:8080/admin/upgrade?to=v2" 2>&1 | head -2 | tee "$OUT/unauth-public.txt" || true
 
 say "stop load, collect summary (covers v2, v3, tampered phases)"
 $K -n $NS exec s7-load -- /app/s7-load -stop http://localhost:8081 > "$OUT/load-summary.json"
@@ -186,6 +197,45 @@ $K -n $NS get pod "$NEWPOD" -o jsonpath='{range .status.conditions[*]}{.type}={.
 $K -n $NS get hotpatch s7-v2 -o json | python3 -c 'import json,sys; [print(" ", p["name"], p["phase"], p.get("fromVersion"), "->", p.get("version"), p.get("message")) for p in json.load(sys.stdin)["status"]["pods"]]' | tee -a "$OUT/spec-drift.txt"
 podtable | tee "$OUT/pods-final.txt"
 
+say "5) anti-rollback: container restart + replay of an older signed bundle (operator paused)"
+RPOD=$($K -n $NS get pods -l app=s7-inplace -o jsonpath='{.items[0].metadata.name}')
+$K -n dimp-system scale deploy/hotpatch-operator --replicas=0
+$K -n dimp-system wait --for=delete pod -l app=hotpatch-operator --timeout=60s || true
+RC0=$($K -n $NS get pod "$RPOD" -o jsonpath='{.status.containerStatuses[0].restartCount}')
+echo "pod $RPOD restartCount=$RC0, runs $($K -n $NS exec "$RPOD" -- wget -qO- localhost:8080/admin/status)"
+$K -n $NS exec "$RPOD" -- kill 1 || true   # SIGTERM to the server: container restarts, pod (and emptyDir) stays
+for _ in $(seq 1 120); do
+  rc=$($K -n $NS get pod "$RPOD" -o jsonpath='{.status.containerStatuses[0].restartCount}')
+  st=$($K -n $NS exec "$RPOD" -- wget -qO- -T 2 localhost:8080/admin/status 2>/dev/null || true)
+  [ "$rc" -gt "$RC0" ] && [ -n "$st" ] && break; sleep 0.5
+done
+echo "after container restart: restartCount=$rc status=$st" | tee "$OUT/replay.txt"
+$K -n $NS port-forward "pod/$RPOD" 19090:9090 >/dev/null 2>&1 & PF=$!
+for _ in $(seq 1 40); do curl -s -o /dev/null http://127.0.0.1:19090/healthz && break; sleep 0.25; done
+{
+  echo "--- pod admin state (token): stable / high-water mark"
+  $PC status -url http://127.0.0.1:19090 -token-file "$WORK/token" | tail -n +2 | python3 -c 'import json,sys; d=json.load(sys.stdin); print("stable=%s previous=%s high_water_mark=%s" % (d["stable"], d.get("previous"), d.get("high_water_mark")))' || true
+  echo "--- replay: push the older signed v1.5 (base v1 == running v1) WITH a valid token (expect 409 VersionPolicy)"
+  $PC push -bundle "$WORK/b/v1.5" -url http://127.0.0.1:19090 -token-file "$WORK/token" -strategy immediate -reconcile || true
+  echo
+  echo "--- unauthenticated admin calls (expect 401)"
+  for c in "POST /admin/patch" "GET /admin/rollout" "POST /admin/rollback" "POST /admin/rollout/abort"; do
+    set -- $c
+    echo "$c no token:    HTTP $(curl -s -o /dev/null -w '%{http_code}' -X "$1" -d '{}' "http://127.0.0.1:19090$2")"
+    echo "$c wrong token: HTTP $(curl -s -o /dev/null -w '%{http_code}' -X "$1" -H 'Authorization: Bearer nope' -d '{}' "http://127.0.0.1:19090$2")"
+  done
+} 2>&1 | tee -a "$OUT/replay.txt"
+kill $PF 2>/dev/null || true
+say "5b) resume operator: it detects the container-restart drift and restores v2 (identical bundle, restorable floor)"
+T0=$(now_ms)
+$K -n dimp-system scale deploy/hotpatch-operator --replicas=1
+for _ in $(seq 1 240); do
+  st=$($K -n $NS exec "$RPOD" -- wget -qO- -T 2 localhost:8080/admin/status 2>/dev/null || true)
+  echo "$st" | grep -q '"version":"v2"' && break; sleep 0.5
+done
+echo "restored after $(( $(now_ms) - T0 )) ms (incl. operator start): $st" | tee -a "$OUT/replay.txt"
+podtable | tee "$OUT/pods-after-replay.txt"
+
 say "events, operator log, pod event logs"
 $K -n $NS get events --sort-by=.lastTimestamp -o custom-columns='TIME:.lastTimestamp,OBJ:.involvedObject.name,REASON:.reason,MSG:.message' | grep -E 'hotpatch|HotPatch|s7-v' > "$OUT/k8s-events.txt" || true
 grep -E 'Promoted|Rollback|RolledBack|Rejected|Succeeded|Repatched|AnalysisFailed' "$OUT/k8s-events.txt" | head -40 || true
@@ -193,7 +243,8 @@ $K -n dimp-system logs deploy/hotpatch-operator > "$OUT/operator.log" 2>&1 || tr
 for p in $($K -n $NS get pods -l app=s7-inplace -o name); do
   $K -n $NS logs "$p" > "$OUT/$(basename "$p").events.log" 2>&1 || true
 done
-grep -h -E '"ev":"(upgrade_start|rollout_rollback|new_version_serving|upgrade_done|upgrade_failed|patch_rejected|shadow_mismatch)"' "$OUT"/*.events.log | cut -c1-300 | head -40
+$K -n $NS logs "$RPOD" --previous > "$OUT/$RPOD.previous-container.events.log" 2>&1 || true
+grep -h -E '"ev":"(upgrade_start|rollout_rollback|new_version_serving|upgrade_done|upgrade_failed|patch_rejected|shadow_mismatch|admin_denied|high_water_mark)"' "$OUT"/*.events.log | cut -c1-300 | head -60
 
 say "done (cluster $CLUSTER kept=$KEEP, created_by_this_run=$CREATED); results in $OUT"
 if [ "$KEEP" = 0 ] && [ "$CREATED" = 1 ]; then "$KIND" delete cluster --name "$CLUSTER"; fi

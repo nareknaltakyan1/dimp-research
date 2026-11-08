@@ -143,13 +143,25 @@ func TestReplayAndDowngrade(t *testing.T) {
 	if err := pol.Check(m1, "v2", CheckOptions{}); !errors.Is(err, ErrDowngrade) {
 		t.Fatalf("downgrade: want ErrDowngrade, got %v", err)
 	}
-	// ... and allowed with it.
-	if err := pol.Check(m1, "v2", CheckOptions{Rollback: true}); err != nil {
-		t.Fatalf("explicit rollback: %v", err)
+	// There is no "rollback" admission at all: an older signed bundle can
+	// never be admitted, whatever the caller claims (review 2026-11-08 High 1).
+	f := &Floor{Version: "v2", Digest: m2.SHA256, Restorable: true}
+	// Restart case: the process came back with image code v1 but had promoted
+	// v2: the identical v2 bundle may be re-installed ...
+	if err := pol.Check(m2, "v1", CheckOptions{Floor: f}); err != nil {
+		t.Fatalf("restore of promoted floor: %v", err)
 	}
-	// "Rollback" to a newer version is not a rollback.
-	if err := pol.Check(m2, "v1", CheckOptions{Rollback: true}); !errors.Is(err, ErrDowngrade) {
-		t.Fatalf("fake rollback: want ErrDowngrade, got %v", err)
+	// ... but not once v2 was rolled back (floor no longer restorable) ...
+	if err := pol.Check(m2, "v1", CheckOptions{Floor: &Floor{Version: "v2", Digest: m2.SHA256}}); !errors.Is(err, ErrDowngrade) {
+		t.Fatalf("replay after rollback: want ErrDowngrade, got %v", err)
+	}
+	// ... nor different code under the same version ...
+	if err := pol.Check(m2, "v1", CheckOptions{Floor: &Floor{Version: "v2", Digest: "00", Restorable: true}}); !errors.Is(err, ErrDowngrade) {
+		t.Fatalf("same version, other digest: want ErrDowngrade, got %v", err)
+	}
+	// ... and nothing below the floor, even with Reconcile.
+	if err := pol.Check(m2, "v1", CheckOptions{Reconcile: true, Floor: &Floor{Version: "v3"}}); !errors.Is(err, ErrDowngrade) {
+		t.Fatalf("below floor: want ErrDowngrade, got %v", err)
 	}
 	// Semantic version ordering, not lexical: v10 > v9.
 	if c, _ := CompareVersions("v10", "v9"); c != 1 {
@@ -197,6 +209,18 @@ func TestPolicyTargetSchemaBaseAge(t *testing.T) {
 	pol.MaxAge = 24 * time.Hour
 	if err := pol.Check(m, "v1", CheckOptions{}); !errors.Is(err, ErrTooOld) {
 		t.Fatalf("want ErrTooOld, got %v", err)
+	}
+	future := manifest("v2", "v1")
+	future.Created = time.Now().Add(time.Hour)
+	b, _ = Sign(priv, future, module)
+	m, _ = v.Verify(b)
+	if err := pol.Check(m, "v1", CheckOptions{}); !errors.Is(err, ErrTooOld) {
+		t.Fatalf("future-dated: want ErrTooOld, got %v", err)
+	}
+	b, _ = Sign(priv, manifest("v2", "v1"), module)
+	m, _ = v.Verify(b)
+	if err := pol.Check(m, "v1", CheckOptions{}); err != nil {
+		t.Fatalf("fresh bundle with MaxAge: %v", err)
 	}
 }
 

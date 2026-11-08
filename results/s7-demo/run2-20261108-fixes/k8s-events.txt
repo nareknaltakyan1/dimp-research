@@ -1,0 +1,21 @@
+2026-11-08T06:48:08Z   s7-v2                         Started                 in-place patch to v2 on 3 pods
+2026-11-08T06:48:09Z   s7-v2                         PodPatching             s7-inplace-64dff6d869-22kr2 verified v2 (0.79ms) and started shadow/canary
+2026-11-08T06:48:20Z   s7-v2                         PodPromoted             s7-inplace-64dff6d869-22kr2 now runs v2 in place (decision 11002ms)
+2026-11-08T06:48:20Z   s7-v2                         PodPatching             s7-inplace-64dff6d869-kwrks verified v2 (0.82ms) and started shadow/canary
+2026-11-08T06:48:31Z   s7-v2                         PodPatching             s7-inplace-64dff6d869-ssxf8 verified v2 (0.76ms) and started shadow/canary
+2026-11-08T06:48:31Z   s7-v2                         PodPromoted             s7-inplace-64dff6d869-kwrks now runs v2 in place (decision 11003ms)
+2026-11-08T06:48:42Z   s7-v2                         PodPromoted             s7-inplace-64dff6d869-ssxf8 now runs v2 in place (decision 11002ms)
+2026-11-08T06:48:42Z   s7-v2                         Succeeded               all pods run v2 in place
+2026-11-08T06:48:43Z   s7-v3                         PodPatching             s7-inplace-64dff6d869-22kr2 verified v3 (0.69ms) and started shadow/canary
+2026-11-08T06:48:43Z   s7-v3                         Started                 in-place patch to v3 on 3 pods
+2026-11-08T06:48:44Z   s7-v4-tampered                Rejected                pod s7-inplace-64dff6d869-22kr2 rejected the bundle: HTTP 403 SignatureInvalid: signing: module digest does not match signed manifest
+2026-11-08T06:48:44Z   s7-v3                         PodPatching             s7-inplace-64dff6d869-kwrks verified v3 (0.67ms) and started shadow/canary
+2026-11-08T06:48:44Z   s7-v3                         PodPatching             s7-inplace-64dff6d869-ssxf8 verified v3 (0.67ms) and started shadow/canary
+2026-11-08T06:48:44Z   s7-v4-tampered                PatchRejected           s7-inplace-64dff6d869-22kr2 rejected v4: SignatureInvalid signing: module digest does not match signed manifest
+2026-11-08T06:48:44Z   s7-v4-tampered                Started                 in-place patch to v4 on 3 pods
+2026-11-08T06:48:44Z   s7-v3                         RolledBack              rolled back: pod s7-inplace-64dff6d869-22kr2 failed in-process analysis: stage shadow: shadow mismatch rate 0.0435 > 0.0000 (1/23) [fail-fast]
+2026-11-08T06:48:44Z   s7-v3                         FleetRollback           a pod's in-process analysis failed; halting and reverting the fleet
+2026-11-08T06:48:44Z   s7-v3                         PodAnalysisFailed       s7-inplace-64dff6d869-22kr2 rolled back v3 in-process: stage shadow: shadow mismatch rate 0.0435 > 0.0000 (1/23) [fail-fast]
+2026-11-08T06:48:49Z   s7-v2                         Repatched               s7-inplace-64dff6d869-pvj66 (new pod running image code v1) re-patched to v2
+2026-11-08T06:48:56Z   s7-v2                         Repatched               s7-inplace-64dff6d869-kwrks restored to v2 after a container restart
+2026-11-08T06:48:56Z   s7-v2                         ContainerRestartDrift   s7-inplace-64dff6d869-kwrks is annotated v2 but runs v1 (container restarted); restoring

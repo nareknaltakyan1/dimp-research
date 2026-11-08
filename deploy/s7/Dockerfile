@@ -24,4 +24,8 @@ COPY --from=build /out/ /app/
 USER 10001
 EXPOSE 8080 9090
 ENTRYPOINT ["/app/s7-inplace"]
-CMD ["-addr", ":8080", "-admin-addr", ":9090", "-module-dir", "/app/modules", "-trusted-keys", "/etc/dimp/keys", "-admin-token-file", "/etc/dimp/token/token", "-contract-upgrade=false"]
+# Admin endpoints listen on :9090 only and REQUIRE the token (the binary
+# refuses to start a non-loopback admin listener without one). The
+# anti-rollback high-water mark is persisted in /var/lib/dimp (an emptyDir in
+# deploy/s7/app.yaml: it survives container restarts within the pod).
+CMD ["-addr", ":8080", "-admin-addr", ":9090", "-module-dir", "/app/modules", "-trusted-keys", "/etc/dimp/keys", "-admin-token-file", "/etc/dimp/token/token", "-contract-upgrade=false", "-state-dir", "/var/lib/dimp", "-max-bundle-age", "720h"]

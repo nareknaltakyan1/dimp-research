@@ -5,6 +5,7 @@ package controller
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net"
 	"sort"
@@ -50,6 +51,28 @@ type bundle struct {
 	manifest manifest
 }
 
+// MaxAttempts bounds consecutive transient failures (artifact load, push,
+// abort, rollback) before the operator gives up and records a terminal
+// condition instead of retrying forever.
+const MaxAttempts = 8
+
+// Backoff returns the requeue delay after n consecutive failures
+// (1s, 2s, 4s, ... capped at 30s).
+func Backoff(n int32) time.Duration {
+	if n < 1 {
+		return time.Second
+	}
+	d := time.Second << min(n-1, 5)
+	return min(d, 30*time.Second)
+}
+
+// transientError marks a failure worth retrying (API read errors, a
+// ConfigMap that does not exist yet).
+type transientError struct{ err error }
+
+func (e *transientError) Error() string { return e.err.Error() }
+func (e *transientError) Unwrap() error { return e.err }
+
 func cmKey(cm *corev1.ConfigMap, key string) ([]byte, bool) {
 	if b, ok := cm.BinaryData[key]; ok {
 		return b, true
@@ -71,7 +94,7 @@ func (r *HotPatchReconciler) loadBundle(ctx context.Context, hp *v1.HotPatch) (*
 	}
 	var cm corev1.ConfigMap
 	if err := r.Get(ctx, types.NamespacedName{Namespace: hp.Namespace, Name: ref.Name}, &cm); err != nil {
-		return nil, fmt.Errorf("artifact configmap: %w", err)
+		return nil, &transientError{fmt.Errorf("artifact configmap: %w", err)}
 	}
 	man, ok1 := cmKey(&cm, "manifest.json")
 	gz, ok2 := cmKey(&cm, "module.wasm.gz")
@@ -86,7 +109,7 @@ func (r *HotPatchReconciler) loadBundle(ctx context.Context, hp *v1.HotPatch) (*
 		if sr.Name != "" && sr.Name != ref.Name {
 			sigCM = &corev1.ConfigMap{}
 			if err := r.Get(ctx, types.NamespacedName{Namespace: hp.Namespace, Name: sr.Name}, sigCM); err != nil {
-				return nil, fmt.Errorf("signature configmap: %w", err)
+				return nil, &transientError{fmt.Errorf("signature configmap: %w", err)}
 			}
 		}
 	}
@@ -232,13 +255,37 @@ func (r *HotPatchReconciler) reconcile(ctx context.Context, hp *v1.HotPatch) (ct
 	switch st.Phase {
 	case v1.PhaseRolledBack, v1.PhaseFailed:
 		return ctrl.Result{}, nil
+	case v1.PhaseRollingBack:
+		// A fleet rollback needs no artifact: never let an artifact read
+		// error interrupt it.
+		pods, err := r.targetPods(ctx, hp)
+		if err != nil {
+			return ctrl.Result{}, err
+		}
+		return r.rollBack(ctx, hp, pods)
 	}
 	b, err := r.loadBundle(ctx, hp)
 	if err != nil {
-		st.Phase, st.Message = v1.PhaseFailed, err.Error()
-		r.setCondition(hp, "Ready", false, "ArtifactInvalid", err.Error())
-		r.Recorder.Event(hp, corev1.EventTypeWarning, "ArtifactInvalid", err.Error())
+		var te *transientError
+		if errors.As(err, &te) && st.Attempts+1 < MaxAttempts {
+			st.Attempts++
+			st.Message = fmt.Sprintf("artifact unavailable (attempt %d/%d, retrying): %v", st.Attempts, MaxAttempts, err)
+			r.setCondition(hp, "ArtifactAvailable", false, "Retrying", st.Message)
+			return ctrl.Result{RequeueAfter: Backoff(st.Attempts)}, nil
+		}
+		reason := "ArtifactInvalid"
+		if te != nil {
+			reason = "ArtifactUnavailable"
+			err = fmt.Errorf("gave up after %d attempts: %w", st.Attempts+1, err)
+		}
+		st.Phase, st.Message, st.CompletedAt = v1.PhaseFailed, err.Error(), now()
+		r.setCondition(hp, "Ready", false, reason, err.Error())
+		r.Recorder.Event(hp, corev1.EventTypeWarning, reason, err.Error())
 		return ctrl.Result{}, nil
+	}
+	if st.Attempts != 0 {
+		st.Attempts = 0
+		r.setCondition(hp, "ArtifactAvailable", true, "Loaded", "artifact loaded")
 	}
 	if b.manifest.Version != hp.Spec.Version {
 		msg := fmt.Sprintf("manifest version %q != spec.version %q", b.manifest.Version, hp.Spec.Version)
@@ -259,8 +306,6 @@ func (r *HotPatchReconciler) reconcile(ctx context.Context, hp *v1.HotPatch) (ct
 	switch st.Phase {
 	case v1.PhaseProgressing:
 		return r.progress(ctx, hp, b, pods)
-	case v1.PhaseRollingBack:
-		return r.rollBack(ctx, hp, pods)
 	case v1.PhaseSucceeded:
 		return r.repatch(ctx, hp, b, pods)
 	}
@@ -336,17 +381,21 @@ func (r *HotPatchReconciler) progress(ctx context.Context, hp *v1.HotPatch, b *b
 				ps.Phase = v1.PodWaiting
 				continue
 			}
-			ps.FromVersion = d.Stable
 			switch {
 			case d.Stable == hp.Spec.Version:
-				// Already patched (e.g. operator restarted mid-rollout).
+				// Already patched (e.g. operator restarted mid-rollout): the
+				// pre-patch version is the pod's RETAINED previous version,
+				// not d.Stable (which is the patch itself).
+				ps.FromVersion, ps.FromDigest = d.Previous, d.PreviousDigest
 				ps.Phase, ps.Version, ps.FinishedAt = v1.PodPromoted, d.Stable, now()
 				if err := r.annotate(ctx, pod, hp.Spec.Version, d.RunningDigest, hp.Name); err != nil {
 					return ctrl.Result{}, err
 				}
 			case b.manifest.BaseVersion == "" || d.Stable == b.manifest.BaseVersion:
+				ps.FromVersion, ps.FromDigest = d.Stable, d.RunningDigest
 				ps.Phase = v1.PodPending
 			default:
+				ps.FromVersion, ps.FromDigest = d.Stable, d.RunningDigest
 				// Not on the base version yet (e.g. a fresh pod still being
 				// re-patched by an earlier HotPatch): wait, don't fail.
 				ps.Phase, ps.Message = v1.PodWaiting, fmt.Sprintf("pod runs %s, patch base is %s", d.Stable, b.manifest.BaseVersion)
@@ -386,6 +435,20 @@ func (r *HotPatchReconciler) progress(ctx context.Context, hp *v1.HotPatch, b *b
 	// 3. Start the next wave.
 	maxU := int(hp.Spec.MaxUnavailablePods)
 	strategy := PodStrategy(hp.Spec.Strategy)
+	requeue := time.Second
+	// transient records a retryable push failure; after MaxAttempts the pod
+	// is marked Rejected (which fails or rolls back the fleet).
+	transient := func(ps *v1.PodStatus, pod *corev1.Pod, msg string) {
+		ps.Attempts++
+		if ps.Attempts >= MaxAttempts {
+			ps.Phase, ps.FinishedAt = v1.PodRejected, now()
+			ps.Message = fmt.Sprintf("gave up after %d attempts: %s", ps.Attempts, msg)
+			r.Recorder.Eventf(hp, corev1.EventTypeWarning, "PatchRejected", "%s: %s", pod.Name, ps.Message)
+			return
+		}
+		ps.Message = fmt.Sprintf("%s (attempt %d/%d, retrying)", msg, ps.Attempts, MaxAttempts)
+		requeue = max(requeue, Backoff(ps.Attempts))
+	}
 	for _, i := range NextWave(st.Pods, maxU) {
 		ps := &st.Pods[i]
 		pod := byUID[ps.UID]
@@ -395,7 +458,7 @@ func (r *HotPatchReconciler) progress(ctx context.Context, hp *v1.HotPatch, b *b
 		code, rec, err := r.Pods.Push(ctx, r.podURL(pod, r.adminPort(hp)), b.envelope, strategy, "", false)
 		ps.StartedAt = now()
 		if err != nil {
-			ps.Message = "push: " + err.Error() // transient: retry next reconcile
+			transient(ps, pod, "push: "+err.Error())
 			continue
 		}
 		ps.Metrics = &v1.PodMetrics{VerifyMs: fmtF(rec.VerifyMs), CompileMs: fmtF(rec.CompileMs)}
@@ -413,16 +476,22 @@ func (r *HotPatchReconciler) progress(ctx context.Context, hp *v1.HotPatch, b *b
 				}
 			}
 		}
+		if code == 409 && rec.Reason == "RolloutInProgress" || code >= 500 {
+			// The pod is busy with another rollout (e.g. a re-patch by an
+			// earlier HotPatch) or failed transiently: retry with backoff.
+			transient(ps, pod, fmt.Sprintf("HTTP %d %s: %s", code, rec.Reason, rec.Error))
+			continue
+		}
 		if code >= 300 {
 			ps.Phase, ps.FinishedAt, ps.Message = v1.PodRejected, now(), fmt.Sprintf("HTTP %d %s: %s", code, rec.Reason, rec.Error)
 			r.Recorder.Eventf(hp, corev1.EventTypeWarning, "PatchRejected", "%s rejected %s: %s %s", pod.Name, hp.Spec.Version, rec.Reason, rec.Error)
 			continue
 		}
-		ps.Phase, ps.Message = v1.PodPatching, "accepted"
+		ps.Phase, ps.Message, ps.Attempts = v1.PodPatching, "accepted", 0
 		r.Recorder.Eventf(hp, corev1.EventTypeNormal, "PodPatching", "%s verified %s (%.2fms) and started shadow/canary", pod.Name, hp.Spec.Version, rec.VerifyMs)
 	}
 	r.count(hp)
-	return ctrl.Result{RequeueAfter: time.Second}, nil
+	return ctrl.Result{RequeueAfter: requeue}, nil
 }
 
 func (r *HotPatchReconciler) count(hp *v1.HotPatch) {
@@ -434,8 +503,18 @@ func (r *HotPatchReconciler) count(hp *v1.HotPatch) {
 	}
 }
 
+func progressing(d *podclient.RolloutDoc) bool {
+	return d.Rollout != nil && d.Rollout.Phase == "progressing"
+}
+
 // rollBack reverts every pod this HotPatch promoted and aborts running
-// rollouts, then marks the HotPatch RolledBack.
+// rollouts, then marks the HotPatch RolledBack. Every pod-side action is
+// verified by re-reading the pod's state: a pod is Reverted/Aborted only if
+// it is observed NOT to run spec.version. A pod whose rollout was promoted
+// before the abort took effect is moved back to Promoted and reverted.
+// Transient failures are retried with backoff; after MaxAttempts the pod is
+// RollbackFailed and the HotPatch ends Failed (RollbackIncomplete) instead of
+// looping forever.
 func (r *HotPatchReconciler) rollBack(ctx context.Context, hp *v1.HotPatch, pods []corev1.Pod) (ctrl.Result, error) {
 	st := &hp.Status
 	byUID := map[string]*corev1.Pod{}
@@ -443,6 +522,19 @@ func (r *HotPatchReconciler) rollBack(ctx context.Context, hp *v1.HotPatch, pods
 		byUID[string(pods[i].UID)] = &pods[i]
 	}
 	pending := false
+	requeue := time.Second
+	retry := func(ps *v1.PodStatus, pod *corev1.Pod, what string, err error) {
+		ps.Attempts++
+		if ps.Attempts >= MaxAttempts {
+			ps.Phase, ps.FinishedAt = v1.PodRollbackFailed, now()
+			ps.Message = fmt.Sprintf("%s gave up after %d attempts: %v", what, ps.Attempts, err)
+			r.Recorder.Eventf(hp, corev1.EventTypeWarning, "RollbackFailed", "%s: %s", pod.Name, ps.Message)
+			return
+		}
+		ps.Message = fmt.Sprintf("%s (attempt %d/%d, retrying): %v", what, ps.Attempts, MaxAttempts, err)
+		pending = true
+		requeue = max(requeue, Backoff(ps.Attempts))
+	}
 	for i := range st.Pods {
 		ps := &st.Pods[i]
 		pod := byUID[ps.UID]
@@ -452,33 +544,65 @@ func (r *HotPatchReconciler) rollBack(ctx context.Context, hp *v1.HotPatch, pods
 		base := r.podURL(pod, r.adminPort(hp))
 		switch ps.Phase {
 		case v1.PodPromoted:
-			if err := r.Pods.Rollback(ctx, base, ps.FromVersion); err != nil {
-				ps.Message, pending = "rollback: "+err.Error(), true
+			rerr := r.Pods.Rollback(ctx, base, ps.FromVersion, ps.FromDigest)
+			d, derr := r.Pods.Rollout(ctx, base)
+			if derr == nil && ps.FromVersion != "" && d.Stable == ps.FromVersion && !progressing(d) {
+				ps.Phase, ps.Version, ps.Message, ps.Attempts = v1.PodReverted, d.Stable, "fleet rollback (verified)", 0
+				if err := r.annotate(ctx, pod, d.Stable, d.RunningDigest, hp.Name); err != nil {
+					return ctrl.Result{}, err
+				}
 				continue
 			}
-			ps.Phase, ps.Version, ps.Message = v1.PodReverted, ps.FromVersion, "fleet rollback"
-			d, _ := r.Pods.Rollout(ctx, base)
-			dig := ""
-			if d != nil {
-				dig = d.RunningDigest
+			err := errors.Join(rerr, derr)
+			if err == nil {
+				err = fmt.Errorf("pod runs %s, expected %q", d.Stable, ps.FromVersion)
 			}
-			if err := r.annotate(ctx, pod, ps.FromVersion, dig, hp.Name); err != nil {
-				return ctrl.Result{}, err
-			}
+			retry(ps, pod, "rollback", err)
 		case v1.PodPatching:
-			if err := r.Pods.Abort(ctx, base, "fleet-rollback"); err != nil {
-				ps.Message, pending = "abort: "+err.Error(), true
-				continue
+			ar, aerr := r.Pods.Abort(ctx, base, "fleet-rollback")
+			d, derr := r.Pods.Rollout(ctx, base)
+			switch {
+			case derr == nil && !progressing(d) && d.Stable == hp.Spec.Version:
+				// Promoted before the abort took effect: revert explicitly.
+				ps.Phase, ps.Version, ps.Message = v1.PodPromoted, d.Stable, "promoted before the abort took effect; rolling back"
+				r.Recorder.Eventf(hp, corev1.EventTypeWarning, "AbortTooLate", "%s promoted %s before the abort; reverting", pod.Name, hp.Spec.Version)
+				pending = true
+			case aerr == nil && derr == nil && ar.Aborted && !progressing(d):
+				ps.Phase, ps.Version, ps.Message, ps.Attempts = v1.PodAborted, d.Stable, "aborted by fleet rollback (verified: runs "+d.Stable+")", 0
+			default:
+				err := errors.Join(aerr, derr)
+				if err == nil {
+					phase := ""
+					if ar != nil {
+						phase = ar.Phase
+					}
+					err = fmt.Errorf("abort not confirmed (phase %s, stable %s)", phase, d.Stable)
+				}
+				retry(ps, pod, "abort", err)
 			}
-			ps.Phase, ps.Message = v1.PodAborted, "aborted by fleet rollback"
 		case v1.PodPending, v1.PodWaiting:
 			ps.Phase, ps.Message = v1.PodAborted, "not started (fleet halted)"
 		}
 	}
 	if pending {
-		return ctrl.Result{RequeueAfter: time.Second}, nil
+		return ctrl.Result{RequeueAfter: requeue}, nil
 	}
-	st.Phase, st.CompletedAt = v1.PhaseRolledBack, now()
+	var failedPods []string
+	for _, ps := range st.Pods {
+		if ps.Phase == v1.PodRollbackFailed {
+			failedPods = append(failedPods, ps.Name)
+		}
+	}
+	st.CompletedAt = now()
+	if len(failedPods) > 0 {
+		st.Phase = v1.PhaseFailed
+		st.Message = fmt.Sprintf("fleet rollback incomplete: %s could not be reverted (see pod status); manual action required", strings.Join(failedPods, ", "))
+		r.setCondition(hp, "Ready", false, "RollbackIncomplete", st.Message)
+		r.Recorder.Event(hp, corev1.EventTypeWarning, "RollbackIncomplete", st.Message)
+		r.count(hp)
+		return ctrl.Result{}, nil
+	}
+	st.Phase = v1.PhaseRolledBack
 	for _, ps := range st.Pods {
 		if ps.Phase == v1.PodFailed {
 			st.Message = fmt.Sprintf("rolled back: pod %s failed in-process analysis: %s", ps.Name, ps.Message)
@@ -527,8 +651,9 @@ func (r *HotPatchReconciler) repatch(ctx context.Context, hp *v1.HotPatch, b *bu
 	again := false
 	for i := range pods {
 		pod := &pods[i]
-		if _, ok := pod.Annotations[v1.AnnotationPatchVersion]; ok {
-			continue
+		ann, annotated := pod.Annotations[v1.AnnotationPatchVersion]
+		if annotated && ann != hp.Spec.Version {
+			continue // managed by another HotPatch (or reverted)
 		}
 		latest, err := LatestSucceeded(ctx, r.Client, pod)
 		if err != nil || latest == nil || latest.UID != hp.UID {
@@ -539,6 +664,23 @@ func (r *HotPatchReconciler) repatch(ctx context.Context, hp *v1.HotPatch, b *bu
 		if err != nil {
 			again = true
 			continue
+		}
+		if annotated {
+			// The annotation says this pod runs spec.version. A container
+			// restart (crash, OOM, SIGTERM) keeps the annotation but brings
+			// back the image's code: verify, and restore if needed. The pod
+			// accepts the identical bundle again because its persisted
+			// high-water mark marks spec.version as restorable.
+			if d.Stable == hp.Spec.Version || progressing(d) {
+				if ps := findPod(st, pod); ps != nil && ps.Phase == v1.PodPatching && d.Stable == hp.Spec.Version {
+					ps.Phase, ps.Version, ps.FinishedAt, ps.Message = v1.PodRepatched, d.Stable, now(), "restored after container restart"
+					r.Recorder.Eventf(hp, corev1.EventTypeNormal, "Repatched", "%s restored to %s after a container restart", pod.Name, hp.Spec.Version)
+				} else if progressing(d) {
+					again = true
+				}
+				continue
+			}
+			r.Recorder.Eventf(hp, corev1.EventTypeWarning, "ContainerRestartDrift", "%s is annotated %s but runs %s (container restarted); restoring", pod.Name, ann, d.Stable)
 		}
 		ps := findPod(st, pod)
 		if ps == nil {

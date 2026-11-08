@@ -13,8 +13,9 @@
 //
 // Verification order (cheap and fail-closed): key lookup -> signature ->
 // manifest parse -> digest of module -> policy (target name, state schema,
-// monotonic version / explicit rollback). Nothing is compiled or executed
-// before every check has passed.
+// max age, version strictly newer than running and than the persisted
+// high-water mark). Nothing is compiled or executed before every check has
+// passed. Rollback is never a bundle admission (see CheckOptions).
 package signing
 
 import (
@@ -200,18 +201,39 @@ func (v *Verifier) Verify(b *Bundle) (*Manifest, error) {
 type Policy struct {
 	Service     string        // required manifest name
 	StateSchema string        // required compatible_state_schema ("" = any)
-	MaxAge      time.Duration // 0 = no limit
-	Now         func() time.Time
+	MaxAge      time.Duration // 0 = no limit (production callers should set it)
+	// MaxClockSkew bounds how far in the future manifest.created may lie when
+	// MaxAge is set (default 5 min).
+	MaxClockSkew time.Duration
+	Now          func() time.Time
 }
 
-// CheckOptions modify a single admission.
+// Floor is the persisted anti-rollback high-water mark of a process: the
+// highest version it ever promoted or refused (after analysis or an explicit
+// rollback). A bundle must be strictly newer than Floor.Version; the single
+// exception is re-installing the IDENTICAL code (same version and digest) of
+// a Floor that was promoted and never rolled back (Restorable), which is how
+// a restarted container that came back with the image's built-in code gets
+// its in-place version again.
+type Floor struct {
+	Version    string `json:"version"`
+	Digest     string `json:"digest,omitempty"`
+	Restorable bool   `json:"restorable"`
+}
+
+// CheckOptions modify a single admission. There is deliberately NO option
+// that admits an older version: rollback is not a bundle admission but a
+// re-install of the artifact the process itself retained (see cmd/s7-inplace
+// /admin/rollback), so a replayed old signed bundle can never be used to
+// downgrade.
 type CheckOptions struct {
-	// Rollback explicitly allows a version <= current (operator-initiated
-	// rollback). Without it, replays and downgrades are rejected.
-	Rollback bool
 	// Reconcile allows base_version != current. Used when re-patching a
-	// fresh pod that still runs the image's built-in code (spec drift).
+	// fresh pod that still runs the image's built-in code (spec drift). It
+	// relaxes ONLY the base_version chaining; monotonicity against current
+	// and Floor is always enforced.
 	Reconcile bool
+	// Floor, if non-nil, is the persisted high-water mark (see Floor).
+	Floor *Floor
 }
 
 // Check admits m for a process currently running version current.
@@ -227,22 +249,36 @@ func (p Policy) Check(m *Manifest, current string, o CheckOptions) error {
 		if p.Now != nil {
 			now = p.Now
 		}
-		if now().Sub(m.Created) > p.MaxAge {
-			return ErrTooOld
+		skew := p.MaxClockSkew
+		if skew <= 0 {
+			skew = 5 * time.Minute
+		}
+		t := now()
+		if m.Created.IsZero() || t.Sub(m.Created) > p.MaxAge {
+			return fmt.Errorf("%w: created %s, max age %s", ErrTooOld, m.Created.Format(time.RFC3339), p.MaxAge)
+		}
+		if m.Created.Sub(t) > skew {
+			return fmt.Errorf("%w: created %s is in the future", ErrTooOld, m.Created.Format(time.RFC3339))
 		}
 	}
 	c, err := CompareVersions(m.Version, current)
 	if err != nil {
 		return err
 	}
-	if o.Rollback {
-		if c >= 0 {
-			return fmt.Errorf("%w: rollback target %s is not older than %s", ErrDowngrade, m.Version, current)
-		}
-		return nil
-	}
 	if c <= 0 {
-		return fmt.Errorf("%w: %s <= %s", ErrDowngrade, m.Version, current)
+		return fmt.Errorf("%w: %s <= running %s", ErrDowngrade, m.Version, current)
+	}
+	if f := o.Floor; f != nil && f.Version != "" {
+		cf, err := CompareVersions(m.Version, f.Version)
+		if err != nil {
+			return err
+		}
+		switch {
+		case cf < 0:
+			return fmt.Errorf("%w: %s < high-water mark %s", ErrDowngrade, m.Version, f.Version)
+		case cf == 0 && !(f.Restorable && f.Digest != "" && strings.EqualFold(f.Digest, m.SHA256)):
+			return fmt.Errorf("%w: %s was already installed or refused here (high-water mark %s, restorable=%v)", ErrDowngrade, m.Version, f.Version, f.Restorable)
+		}
 	}
 	if !o.Reconcile && m.BaseVersion != "" && m.BaseVersion != current {
 		return fmt.Errorf("%w: base %s, running %s", ErrBaseMismatch, m.BaseVersion, current)

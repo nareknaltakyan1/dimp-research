@@ -1,0 +1,8 @@
+{"ev":"high_water_mark","persisted":true,"pid":1,"restorable":false,"ts_ns":1794120529000175388,"version":"v1"}
+{"addr":":8080","admin_addr":":9090","admin_token":true,"ev":"listening","insecure_admin":false,"pid":1,"state_dir":"/var/lib/dimp","tokenless_admin":false,"trusted_keys":["d1c07fd0bde259a8"],"ts_ns":1794120529304467263,"version":"v1"}
+{"ev":"rollout_start","from":"v1","pid":1,"stages":1,"to":"v2","ts_ns":1794120529742905930}
+{"compile_ms":305.754667,"ev":"upgrade_start","from":"v1","pid":1,"source":"admin","to":"v2","ts_ns":1794120529742928722,"verify_ms":0.769041}
+{"ev":"high_water_mark","persisted":true,"pid":1,"restorable":true,"ts_ns":1794120529745848638,"version":"v2"}
+{"ev":"new_version_serving","pid":1,"ts_ns":1794120529745876722,"version":"v2"}
+{"ev":"old_version_drained","pid":1,"ts_ns":1794120529745890013,"version":"v1"}
+{"ev":"upgrade_done","from":"v1","pid":1,"to":"v2","ts_ns":1794120529745891847}

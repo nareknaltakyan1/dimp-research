@@ -21,6 +21,7 @@ import (
 func main() {
 	tokenFile := flag.String("admin-token-file", os.Getenv("ADMIN_TOKEN_FILE"), "bearer token for pod admin endpoints")
 	metricsAddr := flag.String("metrics-addr", ":8082", "metrics address")
+	insecure := flag.Bool("insecure-no-token", false, "allow running without an admin token (pods then refuse every admin call unless they run in tokenless loopback mode)")
 	opts := zap.Options{Development: true}
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
@@ -39,6 +40,10 @@ func main() {
 			os.Exit(1)
 		}
 		token = strings.TrimSpace(string(b))
+	}
+	if token == "" && !*insecure {
+		lg.Error(nil, "no admin token: set -admin-token-file (Secret dimp-admin-token) or pass -insecure-no-token")
+		os.Exit(1)
 	}
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{Scheme: scheme, Metrics: metricsserver.Options{BindAddress: *metricsAddr}})
 	if err != nil {

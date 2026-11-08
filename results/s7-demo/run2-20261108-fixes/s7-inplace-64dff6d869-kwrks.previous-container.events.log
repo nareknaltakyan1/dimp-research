@@ -1,0 +1,21 @@
+{"ev":"high_water_mark","persisted":true,"pid":1,"restorable":false,"ts_ns":1794120476090627919,"version":"v1"}
+{"addr":":8080","admin_addr":":9090","admin_token":true,"ev":"listening","insecure_admin":false,"pid":1,"state_dir":"/var/lib/dimp","tokenless_admin":false,"trusted_keys":["d1c07fd0bde259a8"],"ts_ns":1794120476428103794,"version":"v1"}
+{"ev":"rollout_start","from":"v1","pid":1,"stages":4,"to":"v2","ts_ns":1794120500502344972}
+{"compile_ms":317.923458,"ev":"upgrade_start","from":"v1","pid":1,"source":"admin","to":"v2","ts_ns":1794120500502369639,"verify_ms":0.823375}
+{"candidate":"v2","ev":"rollout_stage","mode":"shadow","pid":1,"stage":"shadow","ts_ns":1794120500502477722,"weight":0}
+{"err":"canary: rollout already in progress","ev":"patch_rejected","pid":1,"reason":"RolloutInProgress","source":"admin","ts_ns":1794120500525129764,"version":"v2"}
+{"candidate":"v2","ev":"rollout_stage","mode":"canary","pid":1,"stage":"canary-10","ts_ns":1794120505503684835,"weight":0.1}
+{"candidate":"v2","ev":"rollout_stage","mode":"canary","pid":1,"stage":"canary-50","ts_ns":1794120508504319586,"weight":0.5}
+{"ev":"high_water_mark","persisted":true,"pid":1,"restorable":true,"ts_ns":1794120511507469463,"version":"v2"}
+{"ev":"new_version_serving","pid":1,"ts_ns":1794120511507484921,"version":"v2"}
+{"ev":"old_version_drained","pid":1,"ts_ns":1794120511507507505,"version":"v1"}
+{"ev":"upgrade_done","from":"v1","pid":1,"to":"v2","ts_ns":1794120511507510796}
+{"ev":"rollout_start","from":"v2","pid":1,"stages":4,"to":"v3","ts_ns":1794120524016373636}
+{"compile_ms":349.221042,"ev":"upgrade_start","from":"v2","pid":1,"source":"admin","to":"v3","ts_ns":1794120524016397886,"verify_ms":0.670875}
+{"candidate":"v3","ev":"rollout_stage","mode":"shadow","pid":1,"stage":"shadow","ts_ns":1794120524016484844,"weight":0}
+{"candidate":"{\"version\":\"v3\",\"pid\":1,\"count\":2294,\"ts_ns\":1794120524336625344,\"x\":754503,\"result\":389532}","ev":"shadow_mismatch","pid":1,"stable":"{\"version\":\"v2\",\"pid\":1,\"count\":2294,\"ts_ns\":1794120524336625344,\"x\":754503,\"result\":389531}","ts_ns":1794120524340682094,"x":754503}
+{"decision_ms":353.204917,"ev":"rollout_rollback","pid":1,"reason":"fleet-rollback","ts_ns":1794120524369580052,"version":"v3"}
+{"candidate":"v3","ev":"rollout_abort_request","phase":"aborted","pid":1,"sent":true,"stable":"v2","ts_ns":1794120524369589761}
+{"ev":"old_version_drained","pid":1,"ts_ns":1794120524369597261,"version":"v3"}
+{"candidate":"v3","err":"aborted: fleet-rollback","ev":"upgrade_failed","pid":1,"ts_ns":1794120524369610094}
+{"ev":"admin_denied","path":"/admin/upgrade","pid":1,"remote":"10.244.0.10:43344","ts_ns":1794120528034306221}

@@ -77,9 +77,13 @@ flowchart LR
 Inside one pod (`cmd/s7-inplace`):
 
 ```
- POST /admin/patch ─► token ─► decode envelope (gzip, size cap) ─► ed25519 verify ─► sha256(module)==manifest
-     ─► policy (target, schema, version > running | explicit rollback, base == running | reconcile)
-     ─► wazero compile + instantiate + version() smoke test + pre-warm pools ─► canary.Engine.Start(strategy)
+ POST /admin/patch (admin port only) ─► bearer token (constant time) ─► decode envelope (gzip, size cap)
+     ─► ed25519 verify ─► sha256(module)==manifest
+     ─► policy (target, schema, max age, version > running AND > persisted high-water mark
+                [= only to restore the identical promoted digest], base == running | reconcile)
+     ─► wazero compile + instantiate + version() smoke test + pre-warm pools
+     ─► under one lock: re-check policy, canary.Engine.StartFrom(expected stable, strategy)
+ POST /admin/rollback ─► re-install the RETAINED previous artifact (bytes kept in memory; ?to= and ?digest= must match)
 
  /api ─► Engine.Serve:  pin plan (hotswap.Acquire)
                         Admit: count := counter.Add(1)   (host-owned state, once per client request)
@@ -223,8 +227,31 @@ stateDiagram-v2
   Canary10 --> Aborted
   RolledBack --> Idle: candidate drained then unloaded
   Aborted --> Idle
-  Promoted --> Idle: previous artifact retained for POST /admin/rollback
+  Promoted --> Idle: previous artifact retained for POST /admin/rollback;<br/>high-water mark raised and persisted
 ```
+
+Ordering guarantees (fixed after the 2026-11-08 review):
+
+* The engine calls `Config.OnDecision` after it has published the final plan
+  and **before** the final phase is visible. `cmd/s7-inplace` updates
+  `current`, `previous` and the high-water mark there, so whoever sees
+  `phase: promoted` also sees the new running digest and retained artifact
+  (`TestAbortOutcomeAndSynchronousBookkeeping`). Previously a goroutine did
+  this asynchronously.
+* Each rollout has its own control block. The post-decision drain bookkeeping
+  (`Finished`, `ReleaseMs`) can no longer be written into the *next* rollout's
+  record (`TestFinishWritesOwnRollout`).
+* `StartFrom(expectedStable, ...)` checks the stable version and starts under
+  one lock, and the server re-checks its admission policy under its own lock
+  right before it. Check-then-start is therefore atomic with respect to
+  promotions.
+* `Abort` returns true only if the abort was registered before the decision.
+  In that case the candidate is never promoted, because the promotion path
+  drains a pending abort under the same lock. `POST /admin/rollout/abort`
+  waits for the decision and reports the **real outcome**: 200 means the
+  candidate is not stable, 409 means it was promoted first
+  (`TestAbortPromotionInterleaving`: 300 interleavings, 0 acknowledged aborts
+  that ended promoted).
 
 ## 5. Operator control loop (`operator/`)
 
@@ -238,7 +265,8 @@ stateDiagram-v2
   Progressing --> Succeeded: all pods Promoted (pods annotated)
   Progressing --> RollingBack: any pod's in-process analysis failed
   Progressing --> Failed: a pod REJECTED the bundle (signature/policy) and none run it
-  RollingBack --> RolledBack: Promoted pods -> POST /admin/rollback (retained previous version),<br/>Patching pods -> POST /admin/rollout/abort, Pending pods never started
+  RollingBack --> RolledBack: Promoted pods -> POST /admin/rollback (retained previous version),<br/>Patching pods -> POST /admin/rollout/abort, Pending pods never started;<br/>every action verified by re-reading the pod
+  RollingBack --> Failed: a pod could not be reverted within MaxAttempts (RollbackIncomplete)
   Succeeded --> Succeeded: spec drift - re-patch fresh pods (no annotation) when this is<br/>the latest Succeeded HotPatch selecting them
 ```
 
@@ -250,15 +278,34 @@ stateDiagram-v2
   rollout at once. No pod ever becomes unavailable; the field name mirrors
   Deployment semantics.
 * **Idempotency.** A pod that already runs the target version is marked
-  Promoted (operator restart). A duplicate push answered with `409
-  RolloutInProgress` or `VersionPolicy` is resolved by asking the pod what it
-  runs (section 9.4).
+  Promoted (operator restart). Its rollback target is then the pod's *retained
+  previous* version (`fromVersion`/`fromDigest` from `/admin/rollout`), not
+  the target itself. Before the fix, the operator recorded the target as
+  `fromVersion` and retried `rollback?to=<target>` forever. A duplicate push
+  answered with `409` is resolved by asking the pod what it runs (finding 4).
+* **Verified fleet rollback.** An abort or rollback counts only after the
+  operator re-reads the pod and sees that it no longer runs `spec.version`. If
+  the pod promoted before the abort arrived (abort answers `409`), the
+  operator moves it back to Promoted and reverts it explicitly
+  (`TestRollBackAbortTooLate`).
+* **Bounded retries.** Transient failures are retried with exponential
+  backoff (1 s to 30 s) for at most `MaxAttempts` (8) consecutive attempts per
+  pod. These cover a ConfigMap read error or a not-yet-created ConfigMap,
+  push network errors and 5xx, `409 RolloutInProgress` from a busy pod, and
+  failed or unconfirmed aborts and rollbacks. After that the operator records
+  a terminal state instead of looping: pod `Rejected`, `RollbackFailed`, or
+  HotPatch `Failed` with condition `ArtifactUnavailable` or
+  `RollbackIncomplete`. A fleet rollback in progress never reloads the
+  artifact, so an artifact error cannot interrupt it.
 * **Pods on another version** (for example a fresh pod still being re-patched by
   an earlier HotPatch) are `Waiting`, not failed.
 * **Trust split.** The operator never needs to be trusted for code integrity. It
-  forwards bytes and the pod verifies them. A compromised operator can at most
-  push *validly signed* older or newer patches, and replays and downgrades are
-  refused by the pod (section 6).
+  forwards bytes and the pod verifies them. A compromised operator (or token
+  holder) can push *validly signed* bundles and can trigger a one-step rollback
+  to the artifact the pod itself retained. It cannot install an older signed
+  release: the pod refuses anything not newer than its running version and
+  its persisted high-water mark (section 6). One residual window remains: a
+  *freshly created* pod starts at the image version (see section 6).
 
 ## 6. Security model
 
@@ -272,9 +319,9 @@ and secrets (H3 of paper idea 4).
 | Tampering: substitute module | registry, ConfigMap or network attacker | ed25519 signature over manifest; manifest binds `sha256` and `size` of uncompressed module; domain-separated message `dimp-patch-v1\0` | `TestTamperedModule`, demo step 3 (HTTP 403) |
 | Tampering: edit manifest (bump version) | same | signature covers manifest bytes; `DisallowUnknownFields` | `TestTamperedManifest` |
 | Spoofing: rogue signer | anyone with a key | only keys in `-trusted-keys` (ConfigMap mounted read-only); key id = `sha256(pub)[:8]` | `TestWrongKey`, `TestPatchAdmissionSecurity` |
-| Replay / downgrade (rollback attack) | holder of old *validly signed* bundles | `version` must be greater than running (semantic compare, `v10 > v9`), unless an explicit, authenticated rollback names a *retained* version; `base_version` must equal running unless the operator's `reconcile` flag is set | `TestReplayAndDowngrade`, `TestPatchAdmissionSecurity` |
+| Replay / downgrade (rollback attack) | holder of old *validly signed* bundles (plus the admin token) | `version` must be greater than running **and** than the pod's persisted high-water mark (highest version it ever promoted; file `floor.json` on an emptyDir, `-state-dir`). Equality is allowed only to restore the *identical* digest of a promoted, never-rolled-back version after a container restart. No request flag admits an older bundle. Rollback is `POST /admin/rollback`, which only re-installs the artifact the pod retained (optionally pinned by `?digest=`). After a rollback the rolled-back version can never be re-installed from a bundle. Bundles older than `-max-bundle-age` (720 h in the deployment) or dated more than 5 min in the future are rejected. `reconcile` relaxes only `base_version` chaining | `TestReplayAndDowngrade`, `TestReplayOfOldBundleAfterRestartRejected`, `TestRollbackOnlyToRetainedVersion`, demo step 5 |
 | Wrong target / incompatible state | misconfiguration, confused deputy | `name` must equal service; `compatible_state_schema` must equal host schema; module's own `version()` must equal manifest version | `TestPolicyTargetSchemaBaseAge`, version-lie test |
-| Elevation via endpoint access | any pod in the cluster | admin API on a separate port (`:9090`); constant-time bearer token from a Secret; NetworkPolicy allows `:9090` only from the operator pod | `TestPatchAdmissionSecurity` (401), demo: "admin port BLOCKED" |
+| Elevation via endpoint access | any pod in the cluster | privileged endpoints are never served on the API port, except the contract `/admin/upgrade`, which is authenticated like the others and disabled in the deployment. The admin listener defaults to `127.0.0.1:9090` (`:9090` in the pod). Auth **fails closed**: the binary refuses to start a non-loopback listener that serves privileged endpoints without `-admin-token-file`, unless `-insecure-admin` is given, and a server without a token denies every privileged request unless main enabled tokenless mode for loopback-only listeners. Tokens are compared in constant time over SHA-256 digests; the token comes from a Secret, and the operator refuses to start without one. NetworkPolicy allows `:9090` only from the operator pod | `TestAdminAuthFailClosed`, `TestIsLoopback`, `TestPatchAdmissionSecurity` (401), demo steps 3 and 5 (401, "admin port BLOCKED") |
 | DoS: zip bomb / huge bundle | endpoint caller | gzip decompression capped (`MaxBundleBytes` 8 MiB, verifier cap 64 MiB); request size capped | `TestZipBombAndSizeLimits` |
 | DoS: patch that hangs or traps | malicious or buggy signed code | wazero sandbox; memory cap (32 MiB per instance); trapped instance discarded; shadow calls time out and `CloseOnContextDone` interrupts loops; panics recovered as errors | `TestAbortAndPanicIsolation` |
 | Repudiation | insider | signed manifest (who signed, by key id); `/admin/rollout` keeps the last 20 admission decisions with reason; HotPatch status and Kubernetes events; pod annotations record the running digest | demo `k8s-events.txt` |
@@ -295,8 +342,32 @@ ms), which supports H2 of idea 4 by a wide margin.
 *Not implemented, and discussed as future work:* mTLS between operator and pods
 (SPIFFE identities instead of a shared token, which every pod also holds);
 Sigstore/cosign keyless signing with transparency-log inclusion (a stolen key is
-currently undetectable); TUF-style key rotation and expiry (`Policy.MaxAge`
-exists but is unused in the demo); in-toto attestations of the guest build.
+currently undetectable); TUF-style key rotation and signed freshness/floor
+statements (see the residual window below); in-toto attestations of the guest
+build.
+
+**Anti-rollback state: what is persisted, and the residual window.** The
+high-water mark is persisted per pod on an `emptyDir`. It survives container
+restarts (crash, OOM kill, SIGTERM), which are the case the review found
+("current is in-memory only and resets to v1 on restart"; demo step 5). It
+does **not** survive pod deletion. A replacement pod starts at the image's
+built-in version, and a token holder could install any signed release newer
+than the image but older than the fleet's version, as long as it is younger
+than `-max-bundle-age`. Three controls bound this window: (1) the operator
+re-patches fresh pods to the latest Succeeded HotPatch; (2) the readiness
+gate keeps such a pod out of Service endpoints until then; (3) the max-age
+policy limits which old releases remain replayable. Closing it fully would
+need state that outlives the pod: a PVC per pod (StatefulSet), or a
+*signed* fleet floor statement from the release pipeline that the pod
+verifies. Accepting a minimum version from the operator was rejected because
+the operator is authenticated only by the shared token, so it would not
+raise the bar against the token holder.
+
+**Benchmark mode.** The contract harness runs `s7-inplace -addr
+127.0.0.1:$PORT -admin-addr=none` (`cmd/s7-inplace/bench.env`). Its listener
+is loopback-only, so tokenless `/admin/upgrade` is allowed by the
+startup rule above, and nothing changes for the harness. The anti-rollback state stays in
+memory there (no `-state-dir`), so every benchmark run starts at v1.
 
 ## 7. Consistency model and spec drift
 
@@ -346,28 +417,33 @@ answers "which **code version inside each pod** handles this request?". The two
 compose: a mesh could still split traffic between pods, and S7 makes each pod's
 own upgrade safe.
 
-## 9. Measured demo results (`results/s7-demo/`, kind v0.29, 1 node, Docker Desktop on M4 Pro)
+## 9. Measured demo results (`results/s7-demo/run2-20261108-fixes/`, kind v0.29, k8s v1.33.1, 1 node, Docker Desktop on M4 Pro)
 
-Setup: 3 replicas of `s7-inplace` (image code v1), in-cluster load at 150 rps
-(`s7-load`, open loop, one TCP connection per request). The load generator
-checks every status code, every `result` against the v1 reference semantics,
-and per-pod counter continuity.
+This run is after the 2026-11-08 review fixes. The first run (before the
+fixes) is kept in `results/s7-demo/*.txt|log|yaml` and gave the same outcomes
+for steps 1-4. Setup: 3 replicas of `s7-inplace` (image code v1),
+in-cluster load at 150 rps (`s7-load`, open loop, one TCP connection per
+request). The load generator checks every status code, every `result`
+against the v1 reference semantics, and per-pod counter continuity.
 
-| Step | Outcome | Time | Client impact (load covering steps 1-3: 7,618 requests) |
+| Step | Outcome | Time | Client impact (load covering steps 1-3: 7,515 requests) |
 |---|---|---|---|
-| 1. HotPatch v2 (good), `maxUnavailablePods: 1` | **Succeeded**, 3/3 pods promoted in place, waves of 1 pod; per pod: shadow 5 s -> 10% -> 50% -> promote (in-pod decision 11.0 s) | 34.9 s apply -> Succeeded | **0 failed, 0 wrong results** |
-| Pods after v2 | **same 3 UIDs, restartCount 0**, annotation `patch-version=v2`; per-pod counters continued v1 -> v2 (max count matches requests served: 2471 / 2508 / 2644) | | **0 counter resets** |
-| 2. HotPatch v3 (buggy: wrong for `x%10==3`, +4 ms), `maxUnavailablePods: 3` | **RolledBack**. Pod `5rhjn` caught it **in shadow**: 3 mismatches in 23 mirrors (cand p99 4.02 ms vs stable 0.023 ms), fail-fast **602 ms** after the pod accepted the patch; operator aborted the other two pods (in-pod abort 5 ms and 351 ms after their own start) | **1.15 s** apply -> fleet RolledBack | **0 failed, 0 wrong**, 0 requests served by v3 |
-| 3. HotPatch v4 (tampered: signed v4 manifest, module swapped for v3) | **Failed**: pod answered `403 SignatureInvalid: module digest does not match signed manifest` (verify 0.055 ms, compile not attempted); fleet halted, other pods never contacted | 49 ms | none |
-| NetworkPolicy | load pod -> pod `:9090`: **blocked** (kindnet enforces policies) | | |
-| 4. Spec drift: delete one pod | replacement starts with image code v1: gate `patched=False (SpecDrift)` -> operator re-patched it to v2 (Immediate) -> gate True -> **Ready after 4.0 s**; never Ready while running v1 | 4.0 s | not measured (no load in step 4) |
+| 1. HotPatch v2 (good), `maxUnavailablePods: 1` | **Succeeded**, 3/3 pods promoted in place, waves of 1 pod; per pod: shadow 5 s -> 10% -> 50% -> promote (in-pod decision 11.0 s; verify 0.60-0.79 ms; compile 294 ms) | 34.3 s apply -> Succeeded | **0 failed, 0 wrong results** |
+| Pods after v2 | **same 3 UIDs, restartCount 0**, annotation `patch-version=v2`; per-pod counters continued v1 -> v2 (max count matches requests served: 2507 / 2485 / 2528) | | **0 counter resets** |
+| 2. HotPatch v3 (buggy: wrong for `x%10==3`, +4 ms), `maxUnavailablePods: 3` | **RolledBack**. Pod `22kr2` caught it **in shadow**: 1 mismatch in 23 mirrors (cand p99 4.03 ms vs stable 0.026 ms), fail-fast decision 400 ms after the pod started the rollout. The operator aborted the other two pods, and each abort was **verified** by re-reading the pod ("aborted by fleet rollback (verified: runs v2)") | **1.14 s** apply -> fleet RolledBack | **0 failed, 0 wrong**, 0 requests served by v3 |
+| 3. HotPatch v4 (tampered: signed v4 manifest, module swapped for v3) | **Failed**: pod answered `403 SignatureInvalid: module digest does not match signed manifest` (verify 0.051 ms, compile not attempted); fleet halted, other pods never contacted | 49 ms | none |
+| NetworkPolicy / auth | load pod -> pod `:9090`: **blocked** (kindnet enforces policies). Unauthenticated `POST /admin/upgrade` on the public port through the Service: **401** | | |
+| 4. Spec drift: delete one pod | replacement starts with image code v1: gate `patched=False (SpecDrift)` -> operator re-patched it to v2 (Immediate) -> gate True -> **Ready after 3.3 s**; never Ready while running v1 | 3.3 s | not measured (no load in step 4) |
+| 5. **Anti-rollback** (new): operator paused, container of pod `kwrks` restarted (`kill 1`; restartCount 0 -> 1, same pod, same emptyDir) | pod runs image v1; persisted high-water mark `{v2, digest 92fc43..., restorable}`. Replay of an **older, validly signed release v1.5** (base v1 == running v1) **with a valid token**: **409 VersionPolicy** "v1.5 < high-water mark v2" (verify 0.77 ms, nothing compiled). Before the fix this bundle would have been admitted (v1.5 > running v1). Unauthenticated / wrong-token `POST /admin/patch`, `GET /admin/rollout`, `POST /admin/rollback`, `POST /admin/rollout/abort` on the admin port (via port-forward, bypassing the NetworkPolicy): **401** in all 8 cases | | no load in step 5 |
+| 5b. Operator resumed | detected `ContainerRestartDrift` (annotation v2, pod runs v1) and restored the identical v2 bundle (restorable floor) | **1.27 s** from scale-up to pod running v2 (includes operator start) | |
 
-Client latency over the whole run: p50 1.29 ms, p99 4.46 ms, p99.9 48.9 ms,
-max 1009 ms. These are end-to-end numbers through kube-proxy with a new TCP
-connection per request. The single request of about 1 s matches a TCP SYN
-retransmission timeout, but this is **unverified**: the request did not fail,
-and it would need a packet capture to confirm. The per-pod in-process latency
-of the stable version was 0.02-0.2 ms (HotPatch status `stableP99Ms`).
+Client latency over steps 1-3: p50 0.43 ms, p99 1.23 ms, p99.9 2.32 ms,
+max 1002 ms. These are end-to-end numbers through kube-proxy with a new TCP
+connection per request. A single request of about 1 s matches a TCP SYN
+retransmission timeout; this is **unverified**, because the request did not
+fail and confirming it would need a packet capture. The previous run showed the same pattern
+(max 1009 ms). The per-pod in-process latency of the stable version was
+0.02-0.04 ms (HotPatch status `stableP99Ms`).
 
 ### Research-relevant findings
 
@@ -406,17 +482,26 @@ of the stable version was 0.02-0.2 ms (HotPatch status `stableP99Ms`).
    compiling (about 300 ms) and with pod replacement (seconds). Security does
    not compete with speed here.
 
-Unit-level results (`go test -race`, macOS and `golang:1.25` Linux/arm64):
-`internal/signing` 9 tests (tamper, wrong key, replay, downgrade, base, schema,
-age, zip bomb, key files); `internal/canary` 10 tests, including a buggy
-candidate caught in shadow with **0 client errors and 0 wrong answers** (decision
-about 10 ms), the same bug without a shadow stage limited (in one run) to **9 errors in 4,736
-requests (0.19%)**, none after the decision, a latency regression rolled back on
-p99, and panic isolation; `cmd/s7-inplace` 3 integration tests with real WASM
-modules (contract harness upgrade under load, v3 caught in shadow, admission
-security matrix). Engine overhead: `Serve` 238 ns/op stable-only and 252 ns/op
-during shadow (parallel benchmark, M4 Pro; most mirrors are dropped at that
-rate by design).
+Unit-level results (`go test -race`, macOS and `golang:1.25` Linux):
+`internal/signing` 9 tests (tamper, wrong key, replay, downgrade, high-water
+mark and restore rule, base, schema, max age including future-dated
+manifests, zip bomb, key files). `internal/canary` 13 tests, including a buggy
+candidate caught in shadow with **0 client errors and 0 wrong answers**
+(decision about 10 ms), the same bug without a shadow stage limited (in one
+run) to **9 errors in 4,736 requests (0.19%)** with none after the decision,
+a latency regression rolled back on p99, panic isolation, and the new
+regression tests for abort/promotion interleaving, per-rollout bookkeeping
+and hook ordering. `cmd/s7-inplace` 8 integration tests with real WASM
+modules: contract harness upgrade under load, v3 caught in shadow, the
+admission security matrix, replay after restart, rollback only to the
+retained version, fail-closed admin auth, loopback detection, and abort
+outcome with synchronous bookkeeping. `operator/internal/controller` adds
+`TestRollBackAbortTooLate`, `TestRollBackAbortVerified`,
+`TestRollBackBoundedRetries`, `TestAlreadyPatchedRecordsTruePreviousVersion`,
+`TestPushBusyIsRetriedThenBounded` and `TestArtifactLoadRetried`, which run
+against a fake pod admin server. Engine overhead (measured before the fixes,
+not re-measured): `Serve` 238 ns/op stable-only and 252 ns/op during shadow
+(parallel benchmark, M4 Pro); the fixes do not touch the `Serve` path.
 
 ## 10. Limitations
 
@@ -445,6 +530,17 @@ rate by design).
   and one run per scenario (plus the first run, kept as evidence). These are
   feasibility results, not a statistically powered comparison with rolling
   update or OpenKruise. Those comparisons belong to the benchmark harness.
+* **Anti-rollback state is per pod and emptyDir-backed** (section 6). It
+  survives container restarts but not pod replacement. The floor is raised
+  only on promotion, so a candidate refused by analysis may be re-submitted
+  and re-analysed. A crash between a promotion and the fsync of `floor.json`
+  leaves the floor one version behind.
+* **Container-restart drift.** After a container restart the pod keeps its
+  `patch-version` annotation but runs image code. The operator now detects
+  this (it compares the annotation with the version the pod reports) and
+  restores the identical bundle. Until it does (seconds; demo step 5b), the
+  readiness gate still reports the pod as patched, so the pod can serve the
+  image version.
 * `HotPatch` deep copies use a JSON round trip instead of generated code.
   `spec.artifact.url` is not implemented. The admin token is shared by all pods.
 
@@ -471,8 +567,8 @@ rate by design).
 ```bash
 go test -race ./internal/signing/... ./internal/canary/... ./cmd/s7-inplace/...
 (cd operator && go build ./... && go vet ./... && go test ./...)
-cmd/s7-inplace/build.sh && cmd/s7-inplace/bin/s7-inplace &      # local
+cmd/s7-inplace/build.sh && cmd/s7-inplace/bin/s7-inplace -addr 127.0.0.1:8080 -state-dir /tmp/s7state &   # loopback: tokenless admin allowed
 curl -XPOST 'localhost:8080/admin/upgrade?to=v2'                # contract harness (fast schedule)
-cmd/s7-inplace/bin/s7-patchctl push -bundle cmd/s7-inplace/bin/bundles/v3 -url http://localhost:8080 -strategy fast
+cmd/s7-inplace/bin/s7-patchctl push -bundle cmd/s7-inplace/bin/bundles/v3 -url http://localhost:9090 -strategy fast   # admin port
 scripts/s7_kind_demo.sh                                          # kind cluster "dimp-s7" (kept; KEEP=0 deletes it if this run created it)
 ```
