@@ -37,6 +37,6 @@ DONE: README, paper ideas 9-12 (transactional patch sets, update-class MSR study
       Needs per-solution cmd/<sol>/bench.env (SERVER_ARGS, TRIGGER, FAIL_TARGET) + build.sh; contract gaps:
       E5 needs upgrade back to v1 (alternate v1/v2), E6 needs a per-solution failure target (default to=v2-broken).
       Run (E1-E6) for B0, B1(kind), S1-S7 in Docker; results/ plus plots
-- [ ] Code-review agent across all code; fix findings
+- [~] Code review DONE -> .coordinator/review-2026-11-08.md (2 high, 7 medium). FIX AFTER the matrix finishes (dispatch fixer agents by area: S7/operator/canary/signing; handoff S5; patchable+hotswap), then re-run E1+E6 for s5/s7 and correct the docs
 - [ ] Lead: README, results chapter docs/results.md, paper draft outline paper/, update paper-ideas with real numbers
 - [ ] Commit and push after each wave; final report to the user
