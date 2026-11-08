@@ -31,6 +31,8 @@ NOTE 2026-11-08 05:37: S6, S7 and S8 were cut off by the 5h usage limit (reset 0
       and pick S1/S3/S6 vs S5 vs rolling update. Small; can be done by the lead or S7 agent.
 
 ## Wave 3
+DISPATCHED 06:00: experiment runner (sole Docker user; owns bench.env, scripts, results, docs/results.md) + read-only code reviewer.
+DONE: README, paper ideas 9-12 (transactional patch sets, update-class MSR study, Shutdown loss, in-process canary).
 - [ ] Run the full experiment matrix ONLY when no other agent uses Docker (noisy-neighbour warning).
       Needs per-solution cmd/<sol>/bench.env (SERVER_ARGS, TRIGGER, FAIL_TARGET) + build.sh; contract gaps:
       E5 needs upgrade back to v1 (alternate v1/v2), E6 needs a per-solution failure target (default to=v2-broken).
