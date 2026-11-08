@@ -199,6 +199,93 @@ A reusable artifact: the shared workload contract, an open-loop load generator, 
 
 ---
 
+## Ideas added after implementation (grounded in measured results)
+
+These came out of building S1-S8 and are backed by data already in this
+repository. Each is a strong candidate for a first publication because the
+core evidence exists.
+
+### Idea 9. Transactional Patch Sets: Request-Scoped Consistency for Live Updates of Go Services
+
+**Evidence:** S6 ([docs/solutions/S6-hotpatch-ready-compilation.md](solutions/S6-hotpatch-ready-compilation.md)).
+Across 3,200 requests spanning upgrades and rollbacks, **0** requests saw a mixed
+patch set with per-request epoch pinning, and **78** did with pinning disabled.
+Apply time for 100 functions is 110 µs, and the visibility switch is a single atomic store (<100 ns).
+
+**RQ.** Can a compiler-assisted (source-to-source) transformation give Go the
+"patchable function entry" capability of `-fpatchable-function-entry` / MSVC
+`/hotpatch` with a *request-level* consistency model, analogous to Linux
+livepatch's per-task model, at negligible cost?
+
+**Contributions:** (1) the `hotpatchgen` transformation and its rules; (2) the
+transactional, epoch-pinned patch-set protocol; (3) striped reference counts that cut
+multi-core trampoline cost from ~120 ns to 1-5 ns; (4) evidence that refcount-only
+quiescence is unsound in Go (goroutines spawned by old code and captured function
+pointers), so a stack scan is needed; (5) hidden costs: trampolines are never
+inlined (defer) and cause argument heap escapes.
+
+**Venues:** ICSME, Middleware, EuroSys/ASPLOS workshops (e.g. PLOS, VMIL); a short version at ICSE NIER.
+**Fit:** a paper, and a thesis chapter in place of or next to Chapter 5.
+
+### Idea 10. How Hot-Patchable Is Real Go Code? An Empirical Study of Update Classes in Open-Source Go Projects
+
+**Evidence:** S8 ([docs/solutions/S8-update-classifier.md](solutions/S8-update-classifier.md),
+[results/dimpclass/](../results/dimpclass/)). On 450 consecutive real commit pairs
+(chi, gotify/server, microservices-demo frontend), **48.5%** of non-bot updates are
+hot-patchable in-process, only **2.7%** change in-memory state schemas, and most
+restarts are forced by **dependency bumps** (bots make up 91% of the frontend's commits) and by
+changes to **initialisation-time code** (router/middleware/config built once at start-up),
+not by long-running loops (3 of 450).
+
+**RQ.** What fraction of real-world updates to Go services can be applied by each DSU
+mechanism, and what actually blocks in-process patching?
+
+**Why it is publishable:** classic DSU studies (Ginseng, Kitsune, Rubah) report
+update-class distributions for C/Java; none exist for Go or for cloud-native
+services. The "initialisation-time code" finding goes against the usual focus on
+long-running loops.
+
+**To strengthen it:** extend to 10-20 repositories and 2,000+ commits, add a second rater
+(Cohen's kappa), and analyse templates and config files as well as Go code.
+**Venues:** MSR (Mining Software Repositories), ICSME, EMSE journal.
+**Fit:** an excellent, low-risk first paper for the student.
+
+### Idea 11. Graceful Is Not Lossless: Request Loss in Go's http.Server.Shutdown and SO_REUSEPORT Handoffs
+
+**Evidence:** S4/S5 ([docs/solutions/S5-fd-passing.md](solutions/S5-fd-passing.md)).
+Draining with `http.Server.Shutdown` closes connections that were accepted but whose
+request has not yet been read, producing 1-8 EOF errors in about half of 15 S5 runs. A
+connection-tracking drain removed them (0 errors in all runs). `SO_REUSEPORT` handoff
+resets queued connections unless `net.ipv4.tcp_migrate_req=1` (0/5 runs with errors
+with the setting vs. 5/5 runs with 10-18 resets each under an induced accept stall).
+
+**RQ.** Do the "graceful" shutdown primitives of mainstream server stacks actually
+guarantee zero request loss during upgrades, and under which conditions do they fail?
+
+**Contributions:** a reproducible loss characterisation and root-cause analysis in the
+Go stdlib; a fix (connection-tracking drain); measured effect of the kernel's
+`tcp_migrate_req`; extension to other runtimes (Node, Java/Netty, Envoy) as future work.
+**Venues:** an experience/industry track (Middleware Industry, SoCC, USENIX ;login:), or a
+short paper; also a Go issue / upstream patch.
+**Fit:** a fast, high-impact short paper.
+
+### Idea 12. In-Process Progressive Delivery: Shadow-Then-Commit Canaries Inside a Single Pod (extends Idea 4 + 6 with results)
+
+**Evidence:** S7 ([docs/solutions/S7-k8s-inplace-patch-operator.md](solutions/S7-k8s-inplace-patch-operator.md)).
+On kind with 3 replicas: a good patch was applied in place to all pods with 0 failed requests,
+0 restarts and unchanged pod UIDs; a buggy patch was caught in shadow in 0.6 s (3 wrong
+answers in 23 mirrored requests) and rolled back fleet-wide in 1.15 s with 0 client-visible errors;
+a tampered bundle was rejected in 49 ms.
+
+**Findings worth a paper:** keep-alive connections starve per-pod analysis and make the
+fleet reject correct patches (a new failure mode of fleet-wide canary analysis);
+cold-start bias makes new code look slow, so the candidate must be warmed up before judging;
+exact differential testing is possible because both versions see identical state.
+
+**Venues:** SoCC, Middleware, IEEE CLOUD, ICSE-SEIP.
+
+---
+
 ## Recommended master's thesis structure
 
 **Working title.** *Zero-Downtime Upgrades of Go Microservices in Kubernetes: In-Process Hot Swapping versus Process-Level Handoff, with Verified Draining and Secure Orchestration.*
@@ -215,7 +302,15 @@ This combines **Idea 1** (empirical core) with **Idea 2** (theoretical and algor
 8. **Discussion.** When to use which mechanism (a decision guide); threats to validity (laptop testbed, a single synthetic workload, Go version); generalisation to other languages.
 9. **Conclusion and future work.** Wasm DSU (Idea 5), shadow validation (Idea 6), LLM-assisted transformers (Idea 7).
 
+**Updated recommendation (after implementation).** Use S1-S8 as the system chapters.
+Chapter 4 covers S1-S5 plus the "graceful is not lossless" finding (Idea 11). Chapter 5 is
+transactional patch sets (Idea 9, which subsumes most of Idea 2). Chapter 6 is the
+empirical comparison (Idea 1, with [docs/results.md](results.md)). Chapter 7 is the
+operator (Idea 12). Add a new chapter on update classes in real code (Idea 10),
+which also motivates the whole thesis ("half of real updates could be hot-patched").
+
 **Suggested publication path.**
+0. *Fastest wins with existing evidence:* Idea 10 (MSR / ICSME) and Idea 11 (short or industry paper).
 1. Idea 2 as a short paper (ICSE NIER, ICSME or a Middleware workshop), roughly 3 months.
 2. Idea 1 with the Idea 8 artifact at ICPE or IEEE CLOUD, roughly 6 months.
 3. Idea 4 at SoCC, Middleware or a security workshop (CCSW), at the end of the thesis.
