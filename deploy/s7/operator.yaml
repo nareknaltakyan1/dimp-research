@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hotpatch-operator
+  namespace: dimp-system
+  labels: {app: hotpatch-operator}
+spec:
+  replicas: 1
+  selector: {matchLabels: {app: hotpatch-operator}}
+  template:
+    metadata:
+      labels: {app: hotpatch-operator, dimp.research.io/role: patch-operator}
+    spec:
+      serviceAccountName: hotpatch-operator
+      containers:
+        - name: manager
+          image: dimp/hotpatch-operator:dev
+          imagePullPolicy: IfNotPresent
+          args: ["-admin-token-file=/etc/dimp/token/token"]
+          volumeMounts:
+            - {name: token, mountPath: /etc/dimp/token, readOnly: true}
+          resources:
+            requests: {cpu: 50m, memory: 64Mi}
+            limits: {memory: 256Mi}
+          securityContext: {allowPrivilegeEscalation: false, readOnlyRootFilesystem: true, runAsNonRoot: true}
+      volumes:
+        - name: token
+          secret: {secretName: dimp-admin-token}

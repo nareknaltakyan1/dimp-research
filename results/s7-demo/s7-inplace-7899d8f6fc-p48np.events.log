@@ -1,0 +1,6 @@
+{"addr":":8080","admin_addr":":9090","admin_token":true,"ev":"listening","pid":1,"trusted_keys":["a1231290454f17dc"],"ts_ns":1794102797979182428,"version":"v1"}
+{"compile_ms":292.203708,"ev":"upgrade_start","from":"v1","pid":1,"source":"admin","to":"v2","ts_ns":1794102799085700928,"verify_ms":1.160875}
+{"ev":"rollout_start","from":"v1","pid":1,"stages":1,"to":"v2","ts_ns":1794102799085727011}
+{"ev":"new_version_serving","pid":1,"ts_ns":1794102799085859345,"version":"v2"}
+{"ev":"old_version_drained","pid":1,"ts_ns":1794102799085873136,"version":"v1"}
+{"ev":"upgrade_done","from":"v1","pid":1,"to":"v2","ts_ns":1794102799085875470}

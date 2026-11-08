@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: s7-load
+  namespace: dimp-s7
+  labels: {app: s7-load}
+spec:
+  restartPolicy: Never
+  containers:
+    - name: load
+      image: dimp/s7-inplace:dev
+      imagePullPolicy: IfNotPresent
+      command: ["/app/s7-load", "-url", "http://s7-inplace:8080", "-rps", "150", "-workers", "32", "-report", "5s", "-ctl-addr", ":8081", "-keepalive=false"]

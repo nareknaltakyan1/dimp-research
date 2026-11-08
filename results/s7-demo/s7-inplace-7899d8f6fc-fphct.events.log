@@ -1,0 +1,18 @@
+{"addr":":8080","admin_addr":":9090","admin_token":true,"ev":"listening","pid":1,"trusted_keys":["a1231290454f17dc"],"ts_ns":1794102744802792291,"version":"v1"}
+{"compile_ms":285.858167,"ev":"upgrade_start","from":"v1","pid":1,"source":"admin","to":"v2","ts_ns":1794102768728660845,"verify_ms":1.187458}
+{"ev":"rollout_start","from":"v1","pid":1,"stages":4,"to":"v2","ts_ns":1794102768728685428}
+{"candidate":"v2","ev":"rollout_stage","mode":"shadow","pid":1,"stage":"shadow","ts_ns":1794102768728754970,"weight":0}
+{"compile_ms":274.242292,"ev":"upgrade_start","from":"v1","pid":1,"source":"admin","to":"v2","ts_ns":1794102769021768386,"verify_ms":0.519583}
+{"err":"canary: rollout already in progress","ev":"patch_rejected","pid":1,"reason":"RolloutInProgress","source":"admin","ts_ns":1794102769021801011,"version":"v2"}
+{"candidate":"v2","ev":"rollout_stage","mode":"canary","pid":1,"stage":"canary-10","ts_ns":1794102773728967764,"weight":0.1}
+{"candidate":"v2","ev":"rollout_stage","mode":"canary","pid":1,"stage":"canary-50","ts_ns":1794102776730210501,"weight":0.5}
+{"ev":"new_version_serving","pid":1,"ts_ns":1794102779731740252,"version":"v2"}
+{"ev":"old_version_drained","pid":1,"ts_ns":1794102779731923335,"version":"v1"}
+{"ev":"upgrade_done","from":"v1","pid":1,"to":"v2","ts_ns":1794102779731933210}
+{"compile_ms":347.014542,"ev":"upgrade_start","from":"v2","pid":1,"source":"admin","to":"v3","ts_ns":1794102792981989592,"verify_ms":0.616209}
+{"ev":"rollout_start","from":"v2","pid":1,"stages":4,"to":"v3","ts_ns":1794102792982017633}
+{"candidate":"v3","ev":"rollout_stage","mode":"shadow","pid":1,"stage":"shadow","ts_ns":1794102792982095717,"weight":0}
+{"candidate":"{\"version\":\"v3\",\"pid\":1,\"count\":2322,\"ts_ns\":1794102793178424675,\"x\":808013,\"result\":48336}","ev":"shadow_mismatch","pid":1,"stable":"{\"version\":\"v2\",\"pid\":1,\"count\":2322,\"ts_ns\":1794102793178424675,\"x\":808013,\"result\":48335}","ts_ns":1794102793182565009,"x":808013}
+{"decision_ms":351.49825,"ev":"rollout_rollback","pid":1,"reason":"fleet-rollback","ts_ns":1794102793333520259,"version":"v3"}
+{"ev":"old_version_drained","pid":1,"ts_ns":1794102793333537759,"version":"v3"}
+{"candidate":"v3","err":"aborted: fleet-rollback","ev":"upgrade_failed","pid":1,"ts_ns":1794102793333549759}

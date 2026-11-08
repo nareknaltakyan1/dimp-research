@@ -1,0 +1,16 @@
+{"addr":":8080","admin_addr":":9090","admin_token":true,"ev":"listening","pid":1,"trusted_keys":["a1231290454f17dc"],"ts_ns":1794102744823495625,"version":"v1"}
+{"compile_ms":300.846791,"ev":"upgrade_start","from":"v1","pid":1,"source":"admin","to":"v2","ts_ns":1794102780428855502,"verify_ms":0.828334}
+{"ev":"rollout_start","from":"v1","pid":1,"stages":4,"to":"v2","ts_ns":1794102780428882086}
+{"candidate":"v2","ev":"rollout_stage","mode":"shadow","pid":1,"stage":"shadow","ts_ns":1794102780429033669,"weight":0}
+{"candidate":"v2","ev":"rollout_stage","mode":"canary","pid":1,"stage":"canary-10","ts_ns":1794102785429656630,"weight":0.1}
+{"candidate":"v2","ev":"rollout_stage","mode":"canary","pid":1,"stage":"canary-50","ts_ns":1794102788430812673,"weight":0.5}
+{"ev":"new_version_serving","pid":1,"ts_ns":1794102791431590216,"version":"v2"}
+{"ev":"old_version_drained","pid":1,"ts_ns":1794102791431687091,"version":"v1"}
+{"ev":"upgrade_done","from":"v1","pid":1,"to":"v2","ts_ns":1794102791431698799}
+{"compile_ms":330.279084,"ev":"upgrade_start","from":"v2","pid":1,"source":"admin","to":"v3","ts_ns":1794102793328278092,"verify_ms":0.621708}
+{"ev":"rollout_start","from":"v2","pid":1,"stages":4,"to":"v3","ts_ns":1794102793328301634}
+{"candidate":"v3","ev":"rollout_stage","mode":"shadow","pid":1,"stage":"shadow","ts_ns":1794102793328371092,"weight":0}
+{"decision_ms":5.433833,"ev":"rollout_rollback","pid":1,"reason":"fleet-rollback","ts_ns":1794102793333740592,"version":"v3"}
+{"candidate":"{\"version\":\"v3\",\"pid\":1,\"count\":2452,\"ts_ns\":1794102793330268967,\"x\":215123,\"result\":668803}","ev":"shadow_mismatch","pid":1,"stable":"{\"version\":\"v2\",\"pid\":1,\"count\":2452,\"ts_ns\":1794102793330268967,\"x\":215123,\"result\":668802}","ts_ns":1794102793334365050,"x":215123}
+{"ev":"old_version_drained","pid":1,"ts_ns":1794102793334388675,"version":"v3"}
+{"candidate":"v3","err":"aborted: fleet-rollback","ev":"upgrade_failed","pid":1,"ts_ns":1794102793334400759}

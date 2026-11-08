@@ -1,0 +1,87 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: hotpatches.dimp.research.io
+spec:
+  group: dimp.research.io
+  scope: Namespaced
+  names:
+    kind: HotPatch
+    listKind: HotPatchList
+    plural: hotpatches
+    singular: hotpatch
+    shortNames: [hp]
+  versions:
+    - name: v1alpha1
+      served: true
+      storage: true
+      subresources:
+        status: {}
+      additionalPrinterColumns:
+        - {name: Version, type: string, jsonPath: .spec.version}
+        - {name: Phase, type: string, jsonPath: .status.phase}
+        - {name: Promoted, type: integer, jsonPath: .status.promoted}
+        - {name: Pods, type: integer, jsonPath: .status.total}
+        - {name: Message, type: string, jsonPath: .status.message, priority: 1}
+        - {name: Age, type: date, jsonPath: .metadata.creationTimestamp}
+      schema:
+        openAPIV3Schema:
+          type: object
+          required: [spec]
+          properties:
+            spec:
+              type: object
+              required: [selector, version, artifact]
+              properties:
+                selector:
+                  type: object
+                  description: Pod label selector of the target workload.
+                  x-kubernetes-preserve-unknown-fields: true
+                version:
+                  type: string
+                  pattern: '^v?[0-9]+(\.[0-9]+){0,2}$'
+                  description: Must equal the signed manifest's version.
+                artifact:
+                  type: object
+                  properties:
+                    configMapRef:
+                      type: object
+                      required: [name]
+                      properties:
+                        name: {type: string}
+                        key: {type: string}
+                    url: {type: string}
+                signatureRef:
+                  type: object
+                  properties:
+                    name: {type: string}
+                    key: {type: string}
+                strategy:
+                  type: object
+                  properties:
+                    shadowDuration: {type: string, description: "e.g. 10s; 0s skips shadow"}
+                    shadowSamples: {type: integer, minimum: 1}
+                    steps:
+                      type: array
+                      items:
+                        type: object
+                        required: [weight]
+                        properties:
+                          weight: {type: integer, minimum: 1, maximum: 100}
+                          pause: {type: string}
+                          minSamples: {type: integer, minimum: 1}
+                    slo:
+                      type: object
+                      properties:
+                        maxErrorRateDelta: {type: string}
+                        maxP99Factor: {type: string}
+                        p99SlackMs: {type: integer}
+                        maxMismatchRate: {type: string}
+                        failFastSamples: {type: integer}
+                        warmupSamples: {type: integer}
+                maxUnavailablePods: {type: integer, minimum: 1, default: 1}
+                adminPort: {type: integer, default: 9090}
+                repatchPolicy: {type: string, enum: [Immediate, Full, Never], default: Immediate}
+            status:
+              type: object
+              x-kubernetes-preserve-unknown-fields: true

@@ -1,0 +1,17 @@
+  t+199ms gate=False patch-version=<none> ready=False
+  t+819ms gate=False patch-version=<none> ready=False
+  t+1476ms gate=False patch-version=<none> ready=False
+  t+2110ms gate=True patch-version=v2 ready=False
+  t+2761ms gate=True patch-version=v2 ready=False
+  t+3420ms gate=True patch-version=v2 ready=False
+  t+4046ms gate=True patch-version=v2 ready=True
+dimp.research.io/patched=True Patched running in-place version v2
+PodReadyToStartContainers=True  
+Initialized=True  
+Ready=True  
+ContainersReady=True  
+PodScheduled=True  
+  s7-inplace-7899d8f6fc-5rhjn Promoted v1 -> v2 all stages passed
+  s7-inplace-7899d8f6fc-fphct Promoted v1 -> v2 all stages passed
+  s7-inplace-7899d8f6fc-jj4jz Promoted v1 -> v2 all stages passed
+  s7-inplace-7899d8f6fc-p48np Repatched v1 -> v2 re-patched after pod (re)start (spec drift)

@@ -1,0 +1,19 @@
+# BUGGY patch (wrong result for x%10==3, +4ms): must be caught in shadow.
+apiVersion: dimp.research.io/v1alpha1
+kind: HotPatch
+metadata:
+  name: s7-v3
+  namespace: dimp-s7
+spec:
+  selector: {matchLabels: {app: s7-inplace}}
+  version: v3
+  artifact: {configMapRef: {name: patch-v3}}
+  signatureRef: {name: patch-v3, key: manifest.sig}
+  maxUnavailablePods: 3
+  strategy:
+    shadowDuration: 5s
+    shadowSamples: 100
+    steps:
+      - {weight: 10, pause: 3s, minSamples: 10}
+      - {weight: 50, pause: 3s, minSamples: 30}
+    slo: {maxErrorRateDelta: "0.01", maxP99Factor: "2", p99SlackMs: 2, maxMismatchRate: "0"}

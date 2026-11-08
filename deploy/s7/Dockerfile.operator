@@ -1,0 +1,14 @@
+# HotPatch operator image.   docker build -f deploy/s7/Dockerfile.operator -t dimp/hotpatch-operator:dev operator/
+FROM golang:1.25 AS build
+ENV GOFLAGS=-buildvcs=false CGO_ENABLED=0
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN go build -trimpath -o /out/manager ./cmd/manager
+
+FROM alpine:3.20
+RUN adduser -D -u 10001 app
+COPY --from=build /out/manager /manager
+USER 10001
+ENTRYPOINT ["/manager"]

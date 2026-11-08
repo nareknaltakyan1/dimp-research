@@ -1,0 +1,107 @@
+
+=== [05:46:28.427] kind cluster dimp-s7
+Creating cluster "dimp-s7" ...
+ • Ensuring node image (kindest/node:v1.33.1) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.33.1) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦 
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+ • Waiting ≤ 2m0s for control-plane = Ready ⏳  ...
+ ✓ Waiting ≤ 2m0s for control-plane = Ready ⏳
+ • Ready after 18s 💚
+Set kubectl context to "kind-dimp-s7"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-dimp-s7
+
+Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+NAME                    STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                         KERNEL-VERSION     CONTAINER-RUNTIME
+dimp-s7-control-plane   Ready    control-plane   21s   v1.33.1   172.18.0.2    <none>        Debian GNU/Linux 12 (bookworm)   6.10.14-linuxkit   containerd://2.1.1
+
+=== [05:47:11.566] build images
+sha256:a4eb11580bd333cb8f3e84cc9c8e69ecdd782648431606ecdce6bc7d55a5a950
+sha256:31706d2512a1c888e5175e53dadbf9c9316f5440d720b78fe93b17a5419034c4
+Image: "dimp/s7-inplace:dev" with ID "sha256:a4eb11580bd333cb8f3e84cc9c8e69ecdd782648431606ecdce6bc7d55a5a950" not yet present on node "dimp-s7-control-plane", loading...
+Image: "dimp/hotpatch-operator:dev" with ID "sha256:31706d2512a1c888e5175e53dadbf9c9316f5440d720b78fe93b17a5419034c4" not yet present on node "dimp-s7-control-plane", loading...
+
+=== [05:47:45.720] build guest modules + release signing key + signed bundles (local)
+key_id=76c09c06c4e221f2 private=/tmp/dimp-s7-demo.4ojt/release.key public=/tmp/dimp-s7-demo.4ojt/release.pub
+signed /tmp/dimp-s7-demo.4ojt/b/v2: {"name":"s7-inplace","version":"v2","base_version":"v1","sha256":"9e306c5a8d95e94ee0aca3a2db8f926165a504282c67da1bec25a97503107920","size":1603733,"created":"2026-11-08T01:47:48Z","compatible_state_schema":"counter/v1"}
+signed /tmp/dimp-s7-demo.4ojt/b/v3: {"name":"s7-inplace","version":"v3","base_version":"v2","sha256":"909e0256de6371350d013f927ee3999311c3c2379c5f2c89d91fbb6c6c81d874","size":1843940,"created":"2026-11-08T01:47:48Z","compatible_state_schema":"counter/v1"}
+signed /tmp/dimp-s7-demo.4ojt/b/v4: {"name":"s7-inplace","version":"v4","base_version":"v2","sha256":"9e306c5a8d95e94ee0aca3a2db8f926165a504282c67da1bec25a97503107920","size":1603733,"created":"2026-11-08T01:47:48Z","compatible_state_schema":"counter/v1"}
+tampered bundle /tmp/dimp-s7-demo.4ojt/b/v4-tampered: module replaced (sha256 909e0256de6371350d013f927ee3999311c3c2379c5f2c89d91fbb6c6c81d874), signed manifest kept
+OK s7-inplace v2 sha256=9e306c5a8d95e94ee0aca3a2db8f926165a504282c67da1bec25a97503107920 verify=882.166µs
+s7-patchctl: REJECTED: signing: module digest does not match signed manifest
+(local verify of tampered bundle failed as expected)
+
+=== [05:47:48.669] install CRD, RBAC, secrets, operator, app
+customresourcedefinition.apiextensions.k8s.io/hotpatches.dimp.research.io created
+namespace/dimp-system created
+serviceaccount/hotpatch-operator created
+clusterrole.rbac.authorization.k8s.io/hotpatch-operator created
+clusterrolebinding.rbac.authorization.k8s.io/hotpatch-operator created
+clusterrole.rbac.authorization.k8s.io/hotpatch-publisher created
+namespace/dimp-s7 created
+secret/dimp-admin-token created
+secret/dimp-admin-token created
+configmap/dimp-trusted-keys created
+deployment.apps/hotpatch-operator created
+Waiting for deployment "hotpatch-operator" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "hotpatch-operator" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "hotpatch-operator" rollout to finish: 1 old replicas are pending termination...
+deployment "hotpatch-operator" successfully rolled out
+No resources found
+namespace/dimp-s7 configured
+deployment.apps/s7-inplace created
+service/s7-inplace created
+networkpolicy.networking.k8s.io/s7-admin-only-operator created
+Waiting for deployment "s7-inplace" rollout to finish: 0 of 3 updated replicas are available...
+Waiting for deployment "s7-inplace" rollout to finish: 1 of 3 updated replicas are available...
+Waiting for deployment "s7-inplace" rollout to finish: 2 of 3 updated replicas are available...
+deployment "s7-inplace" successfully rolled out
+NAME                          READY   STATUS    RESTARTS   AGE   IP           NODE                    NOMINATED NODE   READINESS GATES
+s7-inplace-7899d8f6fc-5sfpg   1/1     Running   0          1s    10.244.0.7   dimp-s7-control-plane   <none>           1/1
+s7-inplace-7899d8f6fc-vp8pl   1/1     Running   0          1s    10.244.0.9   dimp-s7-control-plane   <none>           1/1
+s7-inplace-7899d8f6fc-wx85v   1/1     Running   0          1s    10.244.0.8   dimp-s7-control-plane   <none>           1/1
+
+=== [05:47:51.811] pods BEFORE (v1 from image)
+s7-inplace-7899d8f6fc-5sfpg   cb7dc07d-0cfb-4eb3-adc9-1436036fe297   0     2026-11-08T01:47:50Z   <none>   True   True
+s7-inplace-7899d8f6fc-vp8pl   fd84f0fe-d243-4b99-994e-29a8ce713cc0   0     2026-11-08T01:47:50Z   <none>   True   True
+s7-inplace-7899d8f6fc-wx85v   75f771a0-608e-40d8-9990-ed186d958567   0     2026-11-08T01:47:50Z   <none>   True   True
+
+=== [05:47:51.849] start in-cluster load (150 rps, verifies results + per-pod counter continuity)
+pod/s7-load created
+pod/s7-load condition met
+{"version":"v1","pid":1,"count":1,"ts_ns":1794102482843043170,"x":13,"result":410}
+{"version":"v1","pid":1,"count":1590,"ts_ns":1794102482920484962,"x":13,"result":410}
+configmap/patch-v2 created
+configmap/patch-v3 created
+configmap/patch-v4-tampered created
+patch-v2: binaryData keys={"module.wasm.gz":"H4sIAAAAAAAC/+y9CXwcxZko3lXV16hH0vj
+
+
+=== [05:48:03.138] 1) apply HotPatch v2 (good patch)
+hotpatch.dimp.research.io/s7-v2 created
+HotPatch s7-v2 -> RolledBack after 92585 ms (wall clock, from apply)
+NAME    VERSION   PHASE        PROMOTED   PODS   MESSAGE                                                                                                                                                 AGE
+s7-v2   v2        RolledBack   0          3      rolled back: pod s7-inplace-7899d8f6fc-vp8pl failed in-process analysis: stage shadow: insufficient data: 0/100 samples after 1m20.002s (fail closed)   92s
+phase: RolledBack | message: rolled back: pod s7-inplace-7899d8f6fc-vp8pl failed in-process analysis: stage shadow: insufficient data: 0/100 samples after 1m20.002s (fail closed)
+started: 2026-11-08T01:48:03Z completed: 2026-11-08T01:49:35Z
+  s7-inplace-7899d8f6fc-5sfpg        Reverted  v1->v1 stage=canary-50 samples=219 mismatches=None candP99=0.069ms stableP99=0.064ms decision=11003.072ms verify=0.792ms compile=307.993ms | fleet rollback
+  s7-inplace-7899d8f6fc-vp8pl        Failed    v1->v1 stage=shadow samples=None mismatches=None candP99=0.000ms stableP99=0.000ms decision=80001.901ms verify=0.812ms compile=311.152ms | stage shadow: insufficient data: 0/100 samples after 1m20.002s (fail closed)
+  s7-inplace-7899d8f6fc-wx85v        Aborted   v1-> stage=None samples=None mismatches=None candP99=Nonems stableP99=Nonems decision=Nonems verify=Nonems compile=Nonems | not started (fleet halted)
+s7-inplace-7899d8f6fc-5sfpg   cb7dc07d-0cfb-4eb3-adc9-1436036fe297   0     2026-11-08T01:47:50Z   v1       True   True
+s7-inplace-7899d8f6fc-vp8pl   fd84f0fe-d243-4b99-994e-29a8ce713cc0   0     2026-11-08T01:47:50Z   <none>   True   True
+s7-inplace-7899d8f6fc-wx85v   75f771a0-608e-40d8-9990-ed186d958567   0     2026-11-08T01:47:50Z   <none>   True   True
+{"version":"v1","pid":1,"count":1,"ts_ns":1794102575988747172,"x":13,"result":410}
+{"version":"v1","pid":1,"count":2463,"ts_ns":1794102576052470297,"x":13,"result":410}
+
+=== [05:49:36.058] 2) apply HotPatch v3 (buggy: wrong result for x%10==3, +4ms latency)
+hotpatch.dimp.research.io/s7-v3 created

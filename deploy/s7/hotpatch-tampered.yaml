@@ -1,0 +1,19 @@
+# TAMPERED: signed v4 manifest, module substituted. Pods must reject it (SignatureInvalid).
+apiVersion: dimp.research.io/v1alpha1
+kind: HotPatch
+metadata:
+  name: s7-v4-tampered
+  namespace: dimp-s7
+spec:
+  selector: {matchLabels: {app: s7-inplace}}
+  version: v4
+  artifact: {configMapRef: {name: patch-v4-tampered}}
+  signatureRef: {name: patch-v4-tampered, key: manifest.sig}
+  maxUnavailablePods: 1
+  strategy:
+    shadowDuration: 5s
+    shadowSamples: 100
+    steps:
+      - {weight: 10, pause: 3s, minSamples: 10}
+      - {weight: 50, pause: 3s, minSamples: 30}
+    slo: {maxErrorRateDelta: "0.01", maxP99Factor: "2", p99SlackMs: 2, maxMismatchRate: "0"}

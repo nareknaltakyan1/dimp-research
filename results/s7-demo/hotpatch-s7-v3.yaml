@@ -1,0 +1,116 @@
+apiVersion: dimp.research.io/v1alpha1
+kind: HotPatch
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"dimp.research.io/v1alpha1","kind":"HotPatch","metadata":{"annotations":{},"name":"s7-v3","namespace":"dimp-s7"},"spec":{"artifact":{"configMapRef":{"name":"patch-v3"}},"maxUnavailablePods":3,"selector":{"matchLabels":{"app":"s7-inplace"}},"signatureRef":{"key":"manifest.sig","name":"patch-v3"},"strategy":{"shadowDuration":"5s","shadowSamples":100,"slo":{"maxErrorRateDelta":"0.01","maxMismatchRate":"0","maxP99Factor":"2","p99SlackMs":2},"steps":[{"minSamples":10,"pause":"3s","weight":10},{"minSamples":30,"pause":"3s","weight":50}]},"version":"v3"}}
+  creationTimestamp: "2026-11-08T01:53:12Z"
+  generation: 1
+  name: s7-v3
+  namespace: dimp-s7
+  resourceVersion: "1640"
+  uid: 06e2d7ff-4f78-4801-bb6b-7d1056d02ed2
+spec:
+  adminPort: 9090
+  artifact:
+    configMapRef:
+      name: patch-v3
+  maxUnavailablePods: 3
+  repatchPolicy: Immediate
+  selector:
+    matchLabels:
+      app: s7-inplace
+  signatureRef:
+    key: manifest.sig
+    name: patch-v3
+  strategy:
+    shadowDuration: 5s
+    shadowSamples: 100
+    slo:
+      maxErrorRateDelta: "0.01"
+      maxMismatchRate: "0"
+      maxP99Factor: "2"
+      p99SlackMs: 2
+    steps:
+    - minSamples: 10
+      pause: 3s
+      weight: 10
+    - minSamples: 30
+      pause: 3s
+      weight: 50
+  version: v3
+status:
+  baseVersion: v2
+  completedAt: "2026-11-08T01:53:13Z"
+  conditions:
+  - lastTransitionTime: "2026-11-08T01:53:13Z"
+    message: a pod's in-process analysis failed; halting and reverting the fleet
+    observedGeneration: 1
+    reason: AnalysisFailed
+    status: "False"
+    type: Progressing
+  - lastTransitionTime: "2026-11-08T01:53:13Z"
+    message: 'rolled back: pod s7-inplace-7899d8f6fc-5rhjn failed in-process analysis:
+      stage shadow: shadow mismatch rate 0.1304 > 0.0000 (3/23) [fail-fast]'
+    observedGeneration: 1
+    reason: RolledBack
+    status: "False"
+    type: Ready
+  digest: 909e0256de6371350d013f927ee3999311c3c2379c5f2c89d91fbb6c6c81d874
+  message: 'rolled back: pod s7-inplace-7899d8f6fc-5rhjn failed in-process analysis:
+    stage shadow: shadow mismatch rate 0.1304 > 0.0000 (3/23) [fail-fast]'
+  observedGeneration: 1
+  phase: RolledBack
+  pods:
+  - finishedAt: "2026-11-08T01:53:13Z"
+    fromVersion: v2
+    message: 'stage shadow: shadow mismatch rate 0.1304 > 0.0000 (3/23) [fail-fast]'
+    metrics:
+      candidateErrorRate: "0.000"
+      candidateP99Ms: "4.016"
+      candidateSamples: 23
+      compileMs: "337.477"
+      decisionMs: "601.937"
+      mismatchRate: "0.130"
+      mismatches: 3
+      stableP99Ms: "0.023"
+      stage: shadow
+      verifyMs: "0.676"
+    name: s7-inplace-7899d8f6fc-5rhjn
+    phase: Failed
+    startedAt: "2026-11-08T01:53:12Z"
+    uid: 64cc8c61-dc78-4f94-ab2c-fb1c0e34580e
+    version: v2
+  - fromVersion: v2
+    message: aborted by fleet rollback
+    metrics:
+      candidateErrorRate: "0.000"
+      candidateP99Ms: "0.000"
+      compileMs: "347.015"
+      decisionMs: "0.000"
+      mismatchRate: "0.000"
+      stableP99Ms: "0.000"
+      stage: shadow
+      verifyMs: "0.616"
+    name: s7-inplace-7899d8f6fc-fphct
+    phase: Aborted
+    startedAt: "2026-11-08T01:53:12Z"
+    uid: 9cbdc1c8-d54a-4f5f-ba34-6e573aaf4c05
+  - fromVersion: v2
+    message: aborted by fleet rollback
+    metrics:
+      candidateErrorRate: "0.000"
+      candidateP99Ms: "0.000"
+      compileMs: "330.279"
+      decisionMs: "0.000"
+      mismatchRate: "0.000"
+      stableP99Ms: "0.000"
+      stage: shadow
+      verifyMs: "0.622"
+    name: s7-inplace-7899d8f6fc-jj4jz
+    phase: Aborted
+    startedAt: "2026-11-08T01:53:13Z"
+    uid: 04ed3e21-c9ee-4e69-b271-16ff89df6e24
+  promoted: 0
+  startedAt: "2026-11-08T01:53:12Z"
+  total: 3

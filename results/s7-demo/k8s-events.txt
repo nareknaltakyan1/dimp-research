@@ -1,0 +1,19 @@
+2026-11-08T01:52:37Z   s7-v2                         PodPatching         s7-inplace-7899d8f6fc-5rhjn verified v2 (0.81ms) and started shadow/canary
+2026-11-08T01:52:37Z   s7-v2                         Started             in-place patch to v2 on 3 pods
+2026-11-08T01:52:48Z   s7-v2                         PodPromoted         s7-inplace-7899d8f6fc-5rhjn now runs v2 in place (decision 11001ms)
+2026-11-08T01:52:48Z   s7-v2                         PodPatching         s7-inplace-7899d8f6fc-fphct verified v2 (1.19ms) and started shadow/canary
+2026-11-08T01:53:00Z   s7-v2                         PodPromoted         s7-inplace-7899d8f6fc-fphct now runs v2 in place (decision 11003ms)
+2026-11-08T01:53:00Z   s7-v2                         PodPatching         s7-inplace-7899d8f6fc-jj4jz verified v2 (0.83ms) and started shadow/canary
+2026-11-08T01:53:11Z   s7-v2                         PodPromoted         s7-inplace-7899d8f6fc-jj4jz now runs v2 in place (decision 11003ms)
+2026-11-08T01:53:11Z   s7-v2                         Succeeded           all pods run v2 in place
+2026-11-08T01:53:12Z   s7-v3                         PodPatching         s7-inplace-7899d8f6fc-fphct verified v3 (0.62ms) and started shadow/canary
+2026-11-08T01:53:12Z   s7-v3                         PodPatching         s7-inplace-7899d8f6fc-5rhjn verified v3 (0.68ms) and started shadow/canary
+2026-11-08T01:53:12Z   s7-v3                         Started             in-place patch to v3 on 3 pods
+2026-11-08T01:53:13Z   s7-v3                         FleetRollback       a pod's in-process analysis failed; halting and reverting the fleet
+2026-11-08T01:53:13Z   s7-v3                         PodPatching         s7-inplace-7899d8f6fc-jj4jz verified v3 (0.62ms) and started shadow/canary
+2026-11-08T01:53:13Z   s7-v4-tampered                Rejected            pod s7-inplace-7899d8f6fc-5rhjn rejected the bundle: HTTP 403 SignatureInvalid: signing: module digest does not match signed manifest
+2026-11-08T01:53:13Z   s7-v4-tampered                PatchRejected       s7-inplace-7899d8f6fc-5rhjn rejected v4: SignatureInvalid signing: module digest does not match signed manifest
+2026-11-08T01:53:13Z   s7-v4-tampered                Started             in-place patch to v4 on 3 pods
+2026-11-08T01:53:13Z   s7-v3                         RolledBack          rolled back: pod s7-inplace-7899d8f6fc-5rhjn failed in-process analysis: stage shadow: shadow mismatch rate 0.1304 > 0.0000 (3/23) [fail-fast]
+2026-11-08T01:53:13Z   s7-v3                         PodAnalysisFailed   s7-inplace-7899d8f6fc-5rhjn rolled back v3 in-process: stage shadow: shadow mismatch rate 0.1304 > 0.0000 (3/23) [fail-fast]
+2026-11-08T01:53:19Z   s7-v2                         Repatched           s7-inplace-7899d8f6fc-p48np (new pod running image code v1) re-patched to v2

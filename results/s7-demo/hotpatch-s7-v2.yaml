@@ -1,0 +1,119 @@
+apiVersion: dimp.research.io/v1alpha1
+kind: HotPatch
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"dimp.research.io/v1alpha1","kind":"HotPatch","metadata":{"annotations":{},"name":"s7-v2","namespace":"dimp-s7"},"spec":{"artifact":{"configMapRef":{"name":"patch-v2"}},"maxUnavailablePods":1,"selector":{"matchLabels":{"app":"s7-inplace"}},"signatureRef":{"key":"manifest.sig","name":"patch-v2"},"strategy":{"shadowDuration":"5s","shadowSamples":100,"slo":{"maxErrorRateDelta":"0.01","maxMismatchRate":"0","maxP99Factor":"2","p99SlackMs":2},"steps":[{"minSamples":10,"pause":"3s","weight":10},{"minSamples":30,"pause":"3s","weight":50}]},"version":"v2"}}
+  creationTimestamp: "2026-11-08T01:52:37Z"
+  generation: 1
+  name: s7-v2
+  namespace: dimp-s7
+  resourceVersion: "1623"
+  uid: 97b73fb0-efe9-4656-931d-7e734bd9b25b
+spec:
+  adminPort: 9090
+  artifact:
+    configMapRef:
+      name: patch-v2
+  maxUnavailablePods: 1
+  repatchPolicy: Immediate
+  selector:
+    matchLabels:
+      app: s7-inplace
+  signatureRef:
+    key: manifest.sig
+    name: patch-v2
+  strategy:
+    shadowDuration: 5s
+    shadowSamples: 100
+    slo:
+      maxErrorRateDelta: "0.01"
+      maxMismatchRate: "0"
+      maxP99Factor: "2"
+      p99SlackMs: 2
+    steps:
+    - minSamples: 10
+      pause: 3s
+      weight: 10
+    - minSamples: 30
+      pause: 3s
+      weight: 50
+  version: v2
+status:
+  baseVersion: v1
+  completedAt: "2026-11-08T01:53:11Z"
+  conditions:
+  - lastTransitionTime: "2026-11-08T01:53:11Z"
+    message: all pods run v2 in place
+    observedGeneration: 1
+    reason: Succeeded
+    status: "False"
+    type: Progressing
+  - lastTransitionTime: "2026-11-08T01:53:11Z"
+    message: all pods run v2 in place
+    observedGeneration: 1
+    reason: Succeeded
+    status: "True"
+    type: Ready
+  digest: 9e306c5a8d95e94ee0aca3a2db8f926165a504282c67da1bec25a97503107920
+  message: all pods run v2 in place
+  observedGeneration: 1
+  phase: Succeeded
+  pods:
+  - finishedAt: "2026-11-08T01:52:48Z"
+    fromVersion: v1
+    message: all stages passed
+    metrics:
+      candidateErrorRate: "0.000"
+      candidateP99Ms: "0.096"
+      candidateSamples: 80
+      compileMs: "279.704"
+      decisionMs: "11001.311"
+      mismatchRate: "0.000"
+      stableP99Ms: "0.117"
+      stage: canary-50
+      verifyMs: "0.814"
+    name: s7-inplace-7899d8f6fc-5rhjn
+    phase: Promoted
+    startedAt: "2026-11-08T01:52:37Z"
+    uid: 64cc8c61-dc78-4f94-ab2c-fb1c0e34580e
+    version: v2
+  - finishedAt: "2026-11-08T01:53:00Z"
+    fromVersion: v1
+    message: all stages passed
+    metrics:
+      candidateErrorRate: "0.000"
+      candidateP99Ms: "0.181"
+      candidateSamples: 87
+      compileMs: "274.242"
+      decisionMs: "11003.021"
+      mismatchRate: "0.000"
+      stableP99Ms: "0.086"
+      stage: canary-50
+      verifyMs: "0.520"
+    name: s7-inplace-7899d8f6fc-fphct
+    phase: Promoted
+    startedAt: "2026-11-08T01:52:48Z"
+    uid: 9cbdc1c8-d54a-4f5f-ba34-6e573aaf4c05
+    version: v2
+  - finishedAt: "2026-11-08T01:53:11Z"
+    fromVersion: v1
+    message: all stages passed
+    metrics:
+      candidateErrorRate: "0.000"
+      candidateP99Ms: "0.086"
+      candidateSamples: 79
+      compileMs: "300.847"
+      decisionMs: "11002.680"
+      mismatchRate: "0.000"
+      stableP99Ms: "0.095"
+      stage: canary-50
+      verifyMs: "0.828"
+    name: s7-inplace-7899d8f6fc-jj4jz
+    phase: Promoted
+    startedAt: "2026-11-08T01:53:00Z"
+    uid: 04ed3e21-c9ee-4e69-b271-16ff89df6e24
+    version: v2
+  promoted: 3
+  startedAt: "2026-11-08T01:52:37Z"
+  total: 3

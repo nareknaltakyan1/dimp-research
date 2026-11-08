@@ -1,0 +1,108 @@
+apiVersion: dimp.research.io/v1alpha1
+kind: HotPatch
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"dimp.research.io/v1alpha1","kind":"HotPatch","metadata":{"annotations":{},"name":"s7-v2","namespace":"dimp-s7"},"spec":{"artifact":{"configMapRef":{"name":"patch-v2"}},"maxUnavailablePods":1,"selector":{"matchLabels":{"app":"s7-inplace"}},"signatureRef":{"key":"manifest.sig","name":"patch-v2"},"strategy":{"shadowDuration":"5s","shadowSamples":100,"slo":{"maxErrorRateDelta":"0.01","maxMismatchRate":"0","maxP99Factor":"2","p99SlackMs":2},"steps":[{"minSamples":10,"pause":"3s","weight":10},{"minSamples":30,"pause":"3s","weight":50}]},"version":"v2"}}
+  creationTimestamp: "2026-11-08T01:48:03Z"
+  generation: 1
+  name: s7-v2
+  namespace: dimp-s7
+  resourceVersion: "852"
+  uid: 35a4c7dd-d71d-4dcb-a328-2e41f8ddc9c5
+spec:
+  adminPort: 9090
+  artifact:
+    configMapRef:
+      name: patch-v2
+  maxUnavailablePods: 1
+  repatchPolicy: Immediate
+  selector:
+    matchLabels:
+      app: s7-inplace
+  signatureRef:
+    key: manifest.sig
+    name: patch-v2
+  strategy:
+    shadowDuration: 5s
+    shadowSamples: 100
+    slo:
+      maxErrorRateDelta: "0.01"
+      maxMismatchRate: "0"
+      maxP99Factor: "2"
+      p99SlackMs: 2
+    steps:
+    - minSamples: 10
+      pause: 3s
+      weight: 10
+    - minSamples: 30
+      pause: 3s
+      weight: 50
+  version: v2
+status:
+  baseVersion: v1
+  completedAt: "2026-11-08T01:49:35Z"
+  conditions:
+  - lastTransitionTime: "2026-11-08T01:49:35Z"
+    message: a pod's in-process analysis failed; halting and reverting the fleet
+    observedGeneration: 1
+    reason: AnalysisFailed
+    status: "False"
+    type: Progressing
+  - lastTransitionTime: "2026-11-08T01:49:35Z"
+    message: 'rolled back: pod s7-inplace-7899d8f6fc-vp8pl failed in-process analysis:
+      stage shadow: insufficient data: 0/100 samples after 1m20.002s (fail closed)'
+    observedGeneration: 1
+    reason: RolledBack
+    status: "False"
+    type: Ready
+  digest: 9e306c5a8d95e94ee0aca3a2db8f926165a504282c67da1bec25a97503107920
+  message: 'rolled back: pod s7-inplace-7899d8f6fc-vp8pl failed in-process analysis:
+    stage shadow: insufficient data: 0/100 samples after 1m20.002s (fail closed)'
+  observedGeneration: 1
+  phase: RolledBack
+  pods:
+  - finishedAt: "2026-11-08T01:48:14Z"
+    fromVersion: v1
+    message: fleet rollback
+    metrics:
+      candidateErrorRate: "0.000"
+      candidateP99Ms: "0.069"
+      candidateSamples: 219
+      compileMs: "307.993"
+      decisionMs: "11003.072"
+      mismatchRate: "0.000"
+      stableP99Ms: "0.064"
+      stage: canary-50
+      verifyMs: "0.792"
+    name: s7-inplace-7899d8f6fc-5sfpg
+    phase: Reverted
+    startedAt: "2026-11-08T01:48:03Z"
+    uid: cb7dc07d-0cfb-4eb3-adc9-1436036fe297
+    version: v1
+  - finishedAt: "2026-11-08T01:49:35Z"
+    fromVersion: v1
+    message: 'stage shadow: insufficient data: 0/100 samples after 1m20.002s (fail
+      closed)'
+    metrics:
+      candidateErrorRate: "0.000"
+      candidateP99Ms: "0.000"
+      compileMs: "311.152"
+      decisionMs: "80001.901"
+      mismatchRate: "0.000"
+      stableP99Ms: "0.000"
+      stage: shadow
+      verifyMs: "0.812"
+    name: s7-inplace-7899d8f6fc-vp8pl
+    phase: Failed
+    startedAt: "2026-11-08T01:48:15Z"
+    uid: fd84f0fe-d243-4b99-994e-29a8ce713cc0
+    version: v1
+  - fromVersion: v1
+    message: not started (fleet halted)
+    name: s7-inplace-7899d8f6fc-wx85v
+    phase: Aborted
+    uid: 75f771a0-608e-40d8-9990-ed186d958567
+  promoted: 0
+  startedAt: "2026-11-08T01:48:03Z"
+  total: 3

@@ -1,0 +1,219 @@
+
+=== [05:51:45.099] kind cluster dimp-s7
+NAME                    STATUS   ROLES           AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                         KERNEL-VERSION     CONTAINER-RUNTIME
+dimp-s7-control-plane   Ready    control-plane   4m55s   v1.33.1   172.18.0.2    <none>        Debian GNU/Linux 12 (bookworm)   6.10.14-linuxkit   containerd://2.1.1
+
+=== [05:51:45.272] build images
+sha256:241153adfa0ead9c00fc31eb5daac927cd4458ce89b76def3aee804b0da13a9a
+sha256:4d90a1da5e7480baec929c36c74a03ba2ec4848ed970a7a49866dfd7ad7e3b21
+Image: "dimp/s7-inplace:dev" with ID "sha256:241153adfa0ead9c00fc31eb5daac927cd4458ce89b76def3aee804b0da13a9a" not yet present on node "dimp-s7-control-plane", loading...
+Image: "dimp/hotpatch-operator:dev" with ID "sha256:4d90a1da5e7480baec929c36c74a03ba2ec4848ed970a7a49866dfd7ad7e3b21" not yet present on node "dimp-s7-control-plane", loading...
+
+=== [05:52:04.273] build guest modules + release signing key + signed bundles (local)
+key_id=a1231290454f17dc private=/tmp/dimp-s7-demo.3FRh/release.key public=/tmp/dimp-s7-demo.3FRh/release.pub
+signed /tmp/dimp-s7-demo.3FRh/b/v2: {"name":"s7-inplace","version":"v2","base_version":"v1","sha256":"9e306c5a8d95e94ee0aca3a2db8f926165a504282c67da1bec25a97503107920","size":1603733,"created":"2026-11-08T01:52:06Z","compatible_state_schema":"counter/v1"}
+signed /tmp/dimp-s7-demo.3FRh/b/v3: {"name":"s7-inplace","version":"v3","base_version":"v2","sha256":"909e0256de6371350d013f927ee3999311c3c2379c5f2c89d91fbb6c6c81d874","size":1843940,"created":"2026-11-08T01:52:06Z","compatible_state_schema":"counter/v1"}
+signed /tmp/dimp-s7-demo.3FRh/b/v4: {"name":"s7-inplace","version":"v4","base_version":"v2","sha256":"9e306c5a8d95e94ee0aca3a2db8f926165a504282c67da1bec25a97503107920","size":1603733,"created":"2026-11-08T01:52:06Z","compatible_state_schema":"counter/v1"}
+tampered bundle /tmp/dimp-s7-demo.3FRh/b/v4-tampered: module replaced (sha256 909e0256de6371350d013f927ee3999311c3c2379c5f2c89d91fbb6c6c81d874), signed manifest kept
+OK s7-inplace v2 sha256=9e306c5a8d95e94ee0aca3a2db8f926165a504282c67da1bec25a97503107920 verify=828.75µs
+s7-patchctl: REJECTED: signing: module digest does not match signed manifest
+(local verify of tampered bundle failed as expected)
+
+=== [05:52:06.873] install CRD, RBAC, secrets, operator, app
+customresourcedefinition.apiextensions.k8s.io/hotpatches.dimp.research.io unchanged
+namespace/dimp-system unchanged
+serviceaccount/hotpatch-operator unchanged
+clusterrole.rbac.authorization.k8s.io/hotpatch-operator unchanged
+clusterrolebinding.rbac.authorization.k8s.io/hotpatch-operator unchanged
+clusterrole.rbac.authorization.k8s.io/hotpatch-publisher unchanged
+namespace/dimp-s7 configured
+secret/dimp-admin-token configured
+secret/dimp-admin-token configured
+configmap/dimp-trusted-keys configured
+deployment.apps/hotpatch-operator unchanged
+Waiting for deployment "hotpatch-operator" rollout to finish: 1 old replicas are pending termination...
+Waiting for deployment "hotpatch-operator" rollout to finish: 1 old replicas are pending termination...
+deployment "hotpatch-operator" successfully rolled out
+hotpatch.dimp.research.io "s7-v2" deleted from dimp-s7 namespace
+hotpatch.dimp.research.io "s7-v3" deleted from dimp-s7 namespace
+hotpatch.dimp.research.io "s7-v4-tampered" deleted from dimp-s7 namespace
+deployment.apps "s7-inplace" deleted from dimp-s7 namespace
+configmap "patch-v2" deleted from dimp-s7 namespace
+configmap "patch-v3" deleted from dimp-s7 namespace
+configmap "patch-v4-tampered" deleted from dimp-s7 namespace
+namespace/dimp-s7 configured
+deployment.apps/s7-inplace created
+service/s7-inplace unchanged
+networkpolicy.networking.k8s.io/s7-admin-only-operator unchanged
+Waiting for deployment "s7-inplace" rollout to finish: 0 of 3 updated replicas are available...
+Waiting for deployment "s7-inplace" rollout to finish: 1 of 3 updated replicas are available...
+Waiting for deployment "s7-inplace" rollout to finish: 2 of 3 updated replicas are available...
+deployment "s7-inplace" successfully rolled out
+NAME                          READY   STATUS    RESTARTS   AGE   IP            NODE                    NOMINATED NODE   READINESS GATES
+s7-inplace-7899d8f6fc-5rhjn   1/1     Running   0          1s    10.244.0.20   dimp-s7-control-plane   <none>           1/1
+s7-inplace-7899d8f6fc-fphct   1/1     Running   0          1s    10.244.0.19   dimp-s7-control-plane   <none>           1/1
+s7-inplace-7899d8f6fc-jj4jz   1/1     Running   0          1s    10.244.0.18   dimp-s7-control-plane   <none>           1/1
+
+=== [05:52:25.690] pods BEFORE (v1 from image)
+s7-inplace-7899d8f6fc-5rhjn   64cc8c61-dc78-4f94-ab2c-fb1c0e34580e   0     2026-11-08T01:52:24Z   <none>   True   True
+s7-inplace-7899d8f6fc-fphct   9cbdc1c8-d54a-4f5f-ba34-6e573aaf4c05   0     2026-11-08T01:52:24Z   <none>   True   True
+s7-inplace-7899d8f6fc-jj4jz   04ed3e21-c9ee-4e69-b271-16ff89df6e24   0     2026-11-08T01:52:24Z   <none>   True   True
+
+=== [05:52:25.734] start in-cluster load (150 rps, verifies results + per-pod counter continuity)
+pod/s7-load created
+pod/s7-load condition met
+{"version":"v1","pid":1,"count":508,"ts_ns":1794102756747019797,"x":13,"result":410}
+{"version":"v1","pid":1,"count":510,"ts_ns":1794102756816180131,"x":13,"result":410}
+configmap/patch-v2 created
+configmap/patch-v3 created
+configmap/patch-v4-tampered created
+patch-v2: binaryData keys={"module.wasm.gz":"H4sIAAAAAAAC/+y9CXwcxZko3lXV16hH0vj
+
+
+=== [05:52:37.003] 1) apply HotPatch v2 (good patch)
+hotpatch.dimp.research.io/s7-v2 created
+HotPatch s7-v2 -> Succeeded after 34858 ms (wall clock, from apply)
+NAME    VERSION   PHASE       PROMOTED   PODS   MESSAGE                    AGE
+s7-v2   v2        Succeeded   3          3      all pods run v2 in place   34s
+phase: Succeeded | message: all pods run v2 in place
+started: 2026-11-08T01:52:37Z completed: 2026-11-08T01:53:11Z
+  s7-inplace-7899d8f6fc-5rhjn        Promoted  v1->v2 stage=canary-50 samples=80 mismatches=None candP99=0.096ms stableP99=0.117ms decision=11001.311ms verify=0.814ms compile=279.704ms | all stages passed
+  s7-inplace-7899d8f6fc-fphct        Promoted  v1->v2 stage=canary-50 samples=87 mismatches=None candP99=0.181ms stableP99=0.086ms decision=11003.021ms verify=0.520ms compile=274.242ms | all stages passed
+  s7-inplace-7899d8f6fc-jj4jz        Promoted  v1->v2 stage=canary-50 samples=79 mismatches=None candP99=0.086ms stableP99=0.095ms decision=11002.680ms verify=0.828ms compile=300.847ms | all stages passed
+s7-inplace-7899d8f6fc-5rhjn   64cc8c61-dc78-4f94-ab2c-fb1c0e34580e   0     2026-11-08T01:52:24Z   v2    True   True
+s7-inplace-7899d8f6fc-fphct   9cbdc1c8-d54a-4f5f-ba34-6e573aaf4c05   0     2026-11-08T01:52:24Z   v2    True   True
+s7-inplace-7899d8f6fc-jj4jz   04ed3e21-c9ee-4e69-b271-16ff89df6e24   0     2026-11-08T01:52:24Z   v2    True   True
+{"version":"v2","pid":1,"count":2260,"ts_ns":1794102792142803675,"x":13,"result":410}
+{"version":"v2","pid":1,"count":2237,"ts_ns":1794102792213873425,"x":13,"result":410}
+
+=== [05:53:12.221] 2) apply HotPatch v3 (buggy: wrong result for x%10==3, +4ms latency)
+hotpatch.dimp.research.io/s7-v3 created
+HotPatch s7-v3 -> RolledBack after 1147 ms (wall clock, from apply)
+NAME    VERSION   PHASE        PROMOTED   PODS   MESSAGE                                                                                                                                          AGE
+s7-v3   v3        RolledBack   0          3      rolled back: pod s7-inplace-7899d8f6fc-5rhjn failed in-process analysis: stage shadow: shadow mismatch rate 0.1304 > 0.0000 (3/23) [fail-fast]   1s
+phase: RolledBack | message: rolled back: pod s7-inplace-7899d8f6fc-5rhjn failed in-process analysis: stage shadow: shadow mismatch rate 0.1304 > 0.0000 (3/23) [fail-fast]
+started: 2026-11-08T01:53:12Z completed: 2026-11-08T01:53:13Z
+  s7-inplace-7899d8f6fc-5rhjn        Failed    v2->v2 stage=shadow samples=23 mismatches=3 candP99=4.016ms stableP99=0.023ms decision=601.937ms verify=0.676ms compile=337.477ms | stage shadow: shadow mismatch rate 0.1304 > 0.0000 (3/23) [fail-fast]
+  s7-inplace-7899d8f6fc-fphct        Aborted   v2-> stage=shadow samples=None mismatches=None candP99=0.000ms stableP99=0.000ms decision=0.000ms verify=0.616ms compile=347.015ms | aborted by fleet rollback
+  s7-inplace-7899d8f6fc-jj4jz        Aborted   v2-> stage=shadow samples=None mismatches=None candP99=0.000ms stableP99=0.000ms decision=0.000ms verify=0.622ms compile=330.279ms | aborted by fleet rollback
+s7-inplace-7899d8f6fc-5rhjn   64cc8c61-dc78-4f94-ab2c-fb1c0e34580e   0     2026-11-08T01:52:24Z   v2    True   True
+s7-inplace-7899d8f6fc-fphct   9cbdc1c8-d54a-4f5f-ba34-6e573aaf4c05   0     2026-11-08T01:52:24Z   v2    True   True
+s7-inplace-7899d8f6fc-jj4jz   04ed3e21-c9ee-4e69-b271-16ff89df6e24   0     2026-11-08T01:52:24Z   v2    True   True
+{"version":"v2","pid":1,"count":2296,"ts_ns":1794102793616094134,"x":13,"result":410}
+
+=== [05:53:13.621] 3) apply HotPatch v4 (TAMPERED: signed manifest, substituted module)
+hotpatch.dimp.research.io/s7-v4-tampered created
+HotPatch s7-v4-tampered -> Failed after 49 ms (wall clock, from apply)
+NAME             VERSION   PHASE    PROMOTED   PODS   MESSAGE                                                                                                                                 AGE
+s7-v4-tampered   v4        Failed   0          3      pod s7-inplace-7899d8f6fc-5rhjn rejected the bundle: HTTP 403 SignatureInvalid: signing: module digest does not match signed manifest   0s
+phase: Failed | message: pod s7-inplace-7899d8f6fc-5rhjn rejected the bundle: HTTP 403 SignatureInvalid: signing: module digest does not match signed manifest
+started: 2026-11-08T01:53:13Z completed: 2026-11-08T01:53:13Z
+  s7-inplace-7899d8f6fc-5rhjn        Rejected  v2-> stage=None samples=None mismatches=None candP99=Nonems stableP99=Nonems decision=Nonems verify=0.055ms compile=0.000ms | HTTP 403 SignatureInvalid: signing: module digest does not match signed manifest
+  s7-inplace-7899d8f6fc-fphct        Pending   v2-> stage=None samples=None mismatches=None candP99=Nonems stableP99=Nonems decision=Nonems verify=Nonems compile=Nonems | 
+  s7-inplace-7899d8f6fc-jj4jz        Pending   v2-> stage=None samples=None mismatches=None candP99=Nonems stableP99=Nonems decision=Nonems verify=Nonems compile=Nonems | 
+s7-inplace-7899d8f6fc-5rhjn   64cc8c61-dc78-4f94-ab2c-fb1c0e34580e   0     2026-11-08T01:52:24Z   v2    True   True
+s7-inplace-7899d8f6fc-fphct   9cbdc1c8-d54a-4f5f-ba34-6e573aaf4c05   0     2026-11-08T01:52:24Z   v2    True   True
+s7-inplace-7899d8f6fc-jj4jz   04ed3e21-c9ee-4e69-b271-16ff89df6e24   0     2026-11-08T01:52:24Z   v2    True   True
+
+=== [05:53:13.854] NetworkPolicy check: load pod -> pod admin port 9090 (should be blocked if the CNI enforces policies)
+admin port BLOCKED for non-operator pods (NetworkPolicy enforced)
+
+=== [05:53:16.961] stop load, collect summary (covers v2, v3, tampered phases)
+{
+ "counter_resets": 0,
+ "duration_s": 50.828956066,
+ "ev": "load_summary",
+ "failed": 0,
+ "first_errors": null,
+ "instances": {
+  "s7-inplace-7899d8f6fc-5rhjn": 2469,
+  "s7-inplace-7899d8f6fc-fphct": 2505,
+  "s7-inplace-7899d8f6fc-jj4jz": 2644
+ },
+ "max_count_per_instance": {
+  "s7-inplace-7899d8f6fc-5rhjn": 2471,
+  "s7-inplace-7899d8f6fc-fphct": 2508,
+  "s7-inplace-7899d8f6fc-jj4jz": 2644
+ },
+ "max_ms": 1009.381,
+ "ok": 7618,
+ "p50_ms": 1.29,
+ "p999_ms": 48.936,
+ "p99_ms": 4.463,
+ "skipped_slots": 0,
+ "status_codes": {
+  "200": 7618
+ },
+ "total": 7618,
+ "transport_errors": 0,
+ "versions": {
+  "v1": 4787,
+  "v2": 2831
+ },
+ "wrong_results": 0
+}
+per-10s version mix:
+  t=  0s- 10s versions={'v1': 1499} err=0 wrong=0
+  t= 10s- 20s versions={'v1': 1468, 'v2': 32} err=0 wrong=0
+  t= 20s- 30s versions={'v1': 1031, 'v2': 469} err=0 wrong=0
+  t= 30s- 40s versions={'v1': 628, 'v2': 866} err=0 wrong=0
+  t= 40s- 50s versions={'v1': 161, 'v2': 1339} err=0 wrong=0
+  t= 50s- 60s versions={'v2': 125} err=0 wrong=0
+pod "s7-load" deleted from dimp-s7 namespace
+
+=== [05:53:17.161] 4) spec drift: delete one pod; the replacement runs IMAGE code v1
+pod "s7-inplace-7899d8f6fc-5rhjn" deleted from dimp-s7 namespace
+replacement pod: s7-inplace-7899d8f6fc-p48np
+  t+199ms gate=False patch-version=<none> ready=False
+  t+819ms gate=False patch-version=<none> ready=False
+  t+1476ms gate=False patch-version=<none> ready=False
+  t+2110ms gate=True patch-version=v2 ready=False
+  t+2761ms gate=True patch-version=v2 ready=False
+  t+3420ms gate=True patch-version=v2 ready=False
+  t+4046ms gate=True patch-version=v2 ready=True
+dimp.research.io/patched=True Patched running in-place version v2
+PodReadyToStartContainers=True  
+Initialized=True  
+Ready=True  
+ContainersReady=True  
+PodScheduled=True  
+  s7-inplace-7899d8f6fc-5rhjn Promoted v1 -> v2 all stages passed
+  s7-inplace-7899d8f6fc-fphct Promoted v1 -> v2 all stages passed
+  s7-inplace-7899d8f6fc-jj4jz Promoted v1 -> v2 all stages passed
+  s7-inplace-7899d8f6fc-p48np Repatched v1 -> v2 re-patched after pod (re)start (spec drift)
+s7-inplace-7899d8f6fc-fphct   9cbdc1c8-d54a-4f5f-ba34-6e573aaf4c05   0     2026-11-08T01:52:24Z   v2    True   True
+s7-inplace-7899d8f6fc-jj4jz   04ed3e21-c9ee-4e69-b271-16ff89df6e24   0     2026-11-08T01:52:24Z   v2    True   True
+s7-inplace-7899d8f6fc-p48np   aca8fe73-b776-4ae7-a232-fc710549cff6   0     2026-11-08T01:53:17Z   v2    True   True
+
+=== [05:53:21.363] events, operator log, pod event logs
+2026-11-08T01:52:48Z   s7-v2                         PodPromoted         s7-inplace-7899d8f6fc-5rhjn now runs v2 in place (decision 11001ms)
+2026-11-08T01:53:00Z   s7-v2                         PodPromoted         s7-inplace-7899d8f6fc-fphct now runs v2 in place (decision 11003ms)
+2026-11-08T01:53:11Z   s7-v2                         PodPromoted         s7-inplace-7899d8f6fc-jj4jz now runs v2 in place (decision 11003ms)
+2026-11-08T01:53:11Z   s7-v2                         Succeeded           all pods run v2 in place
+2026-11-08T01:53:13Z   s7-v3                         FleetRollback       a pod's in-process analysis failed; halting and reverting the fleet
+2026-11-08T01:53:13Z   s7-v4-tampered                Rejected            pod s7-inplace-7899d8f6fc-5rhjn rejected the bundle: HTTP 403 SignatureInvalid: signing: module digest does not match signed manifest
+2026-11-08T01:53:13Z   s7-v4-tampered                PatchRejected       s7-inplace-7899d8f6fc-5rhjn rejected v4: SignatureInvalid signing: module digest does not match signed manifest
+2026-11-08T01:53:13Z   s7-v3                         RolledBack          rolled back: pod s7-inplace-7899d8f6fc-5rhjn failed in-process analysis: stage shadow: shadow mismatch rate 0.1304 > 0.0000 (3/23) [fail-fast]
+2026-11-08T01:53:13Z   s7-v3                         PodAnalysisFailed   s7-inplace-7899d8f6fc-5rhjn rolled back v3 in-process: stage shadow: shadow mismatch rate 0.1304 > 0.0000 (3/23) [fail-fast]
+2026-11-08T01:53:19Z   s7-v2                         Repatched           s7-inplace-7899d8f6fc-p48np (new pod running image code v1) re-patched to v2
+{"compile_ms":285.858167,"ev":"upgrade_start","from":"v1","pid":1,"source":"admin","to":"v2","ts_ns":1794102768728660845,"verify_ms":1.187458}
+{"compile_ms":274.242292,"ev":"upgrade_start","from":"v1","pid":1,"source":"admin","to":"v2","ts_ns":1794102769021768386,"verify_ms":0.519583}
+{"err":"canary: rollout already in progress","ev":"patch_rejected","pid":1,"reason":"RolloutInProgress","source":"admin","ts_ns":1794102769021801011,"version":"v2"}
+{"ev":"new_version_serving","pid":1,"ts_ns":1794102779731740252,"version":"v2"}
+{"ev":"upgrade_done","from":"v1","pid":1,"to":"v2","ts_ns":1794102779731933210}
+{"compile_ms":347.014542,"ev":"upgrade_start","from":"v2","pid":1,"source":"admin","to":"v3","ts_ns":1794102792981989592,"verify_ms":0.616209}
+{"candidate":"{\"version\":\"v3\",\"pid\":1,\"count\":2322,\"ts_ns\":1794102793178424675,\"x\":808013,\"result\":48336}","ev":"shadow_mismatch","pid":1,"stable":"{\"version\":\"v2\",\"pid\":1,\"count\":2322,\"ts_ns\":1794102793178424675,\"x\":808013,\"result\":48335}","ts_ns":1794102793182565009,"x"
+{"decision_ms":351.49825,"ev":"rollout_rollback","pid":1,"reason":"fleet-rollback","ts_ns":1794102793333520259,"version":"v3"}
+{"candidate":"v3","err":"aborted: fleet-rollback","ev":"upgrade_failed","pid":1,"ts_ns":1794102793333549759}
+{"compile_ms":300.846791,"ev":"upgrade_start","from":"v1","pid":1,"source":"admin","to":"v2","ts_ns":1794102780428855502,"verify_ms":0.828334}
+{"ev":"new_version_serving","pid":1,"ts_ns":1794102791431590216,"version":"v2"}
+{"ev":"upgrade_done","from":"v1","pid":1,"to":"v2","ts_ns":1794102791431698799}
+{"compile_ms":330.279084,"ev":"upgrade_start","from":"v2","pid":1,"source":"admin","to":"v3","ts_ns":1794102793328278092,"verify_ms":0.621708}
+{"decision_ms":5.433833,"ev":"rollout_rollback","pid":1,"reason":"fleet-rollback","ts_ns":1794102793333740592,"version":"v3"}
+{"candidate":"{\"version\":\"v3\",\"pid\":1,\"count\":2452,\"ts_ns\":1794102793330268967,\"x\":215123,\"result\":668803}","ev":"shadow_mismatch","pid":1,"stable":"{\"version\":\"v2\",\"pid\":1,\"count\":2452,\"ts_ns\":1794102793330268967,\"x\":215123,\"result\":668802}","ts_ns":1794102793334365050,"
+{"candidate":"v3","err":"aborted: fleet-rollback","ev":"upgrade_failed","pid":1,"ts_ns":1794102793334400759}
+{"compile_ms":292.203708,"ev":"upgrade_start","from":"v1","pid":1,"source":"admin","to":"v2","ts_ns":1794102799085700928,"verify_ms":1.160875}
+{"ev":"new_version_serving","pid":1,"ts_ns":1794102799085859345,"version":"v2"}
+{"ev":"upgrade_done","from":"v1","pid":1,"to":"v2","ts_ns":1794102799085875470}
+
+=== [05:53:21.616] done (cluster dimp-s7 kept=1, created_by_this_run=0); results in /Users/nareknaltakyan/research/dimp-research/results/s7-demo
