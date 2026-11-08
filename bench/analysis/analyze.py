@@ -228,8 +228,18 @@ def analyze_run(d):
                                 and m["n_errors"] == 0)
 
     # ---- state continuity (counter), ordered by server timestamp
-    s = okp.sort_values(["server_ts_ns", "count"])["count"].to_numpy()
-    J = int(meta["concurrency"])  # tolerance for increment/timestamp reordering under concurrency
+    # Reset/regression detection uses only work_ms=0 responses: S6 assigns the count when a request is
+    # admitted, and S4/S5 reserve count values for requests in flight at the handoff seal, so a long
+    # (work_ms>0) request's count can lag its response timestamp by ~rate*work_ms increments. That is
+    # reordering, not state loss. Duplicates and lost increments below use all successful responses.
+    s_all = okp.sort_values(["server_ts_ns", "count"])["count"].to_numpy()
+    s = okp[okp.work_ms == 0].sort_values(["server_ts_ns", "count"])["count"].to_numpy()
+    # Tolerance for increment-vs-timestamp reordering under concurrency: the number of requests
+    # that can be in flight within 50 ms at the offered rate (min 16), capped by the concurrency cap.
+    # (Using the cap alone (512-2048) hid resets at low rates, e.g. B0 in E5 where the counter
+    # only reaches ~200-400 between restarts.)
+    J = int(min(meta["concurrency"], max(16, math.ceil(meta["rate"] * 0.05))))
+    m["count_tolerance"] = J
     resets = regress = 0
     run_max = -1
     for c in s:
@@ -243,8 +253,8 @@ def analyze_run(d):
             run_max = max(run_max, c)
     m["count_resets"] = resets
     m["count_regressions"] = regress
-    m["count_duplicates"] = int(len(s) - len(np.unique(s)))
-    m["count_lost_increments"] = int(s.max() - s.min() + 1 - len(np.unique(s))) if len(s) and resets == 0 else float("nan")
+    m["count_duplicates"] = int(len(s_all) - len(np.unique(s_all)))
+    m["count_lost_increments"] = int(s_all.max() - s_all.min() + 1 - len(np.unique(s_all))) if len(s_all) and resets == 0 else float("nan")
 
     # ---- memory (sum over all processes of the server session)
     if len(rss):
