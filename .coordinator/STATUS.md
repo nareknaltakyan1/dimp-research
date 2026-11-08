@@ -17,6 +17,7 @@ wait for the reset and continue. The user is the supervisor; the student repo is
 - [x] Benchmark engineer (committed; validated on mock + kind)  -> bench/, scripts/, deploy/, docs/evaluation-methodology.md, kind baseline
 
 ## Wave 2 (advanced / novel)
+NOTE 2026-11-08 05:37: S6, S7 and S8 were cut off by the 5h usage limit (reset 04:40) and were resumed via SendMessage with their context intact. If they die again, resume the same agents rather than re-dispatching.
 - [~] S6 RE-SCOPED: the raw machine-code patching attempt stopped (part of its output was safety-filtered);
       internal/livepatch is quarantined behind build tag `livepatch_raw` (do NOT resume raw code-page rewriting).
       New S6 = hotpatch-ready compilation: tools/hotpatchgen (AST transformer that makes functions patchable),
