@@ -74,8 +74,12 @@ Files: `internal/hotswap/wasmimpl` (host), `cmd/s3-wasm/main.go`,
 * Swap safety and draining are inherited from `internal/hotswap` (S1
   section 3).
 * **Unload safety.** `Close()` is invoked only from the `Unload` hook, which
-  `svc` calls after `old.Drained()` is closed, that is, once no request holds
-  the old version. Every use of a module instance happens strictly inside an
+  `svc` calls through `Registry.Unload` after `old.Drained()` is closed, that
+  is, once no request holds the old version. The registry refuses the
+  unload if the module was made current again by a rollback, and once a
+  module is closed, `Rollback()` refuses to republish it (`ErrUnloaded`);
+  the module must be loaded again from disk, which is what an upgrade
+  back to `v1` does anyway (fixed after review, see S1 section 4). Every use of a module instance happens strictly inside an
   `Acquire ... Release` window (the instance is returned to the pool before
   `Release`). Therefore no instance is in use when `Close` runs. The
   end-to-end test checks this: after the upgrade, it calls the old module

@@ -5,13 +5,19 @@
 // (./gen/biz). At run time a new version arrives as a Go plugin with an
 // ed25519-signed manifest; its replacement functions are verified and
 // published as ONE patch-set transaction (one atomic pointer store). Every
-// request pins the patch set at entry, so it runs entirely on the old or
-// entirely on the new code. The counter (service state) lives in the same
+// request pins the patch set at entry, so every context-carrying patchable
+// call it makes while the pin is live runs on the old or on the new code,
+// never a mix (functions without a context parameter get per-call
+// consistency; see the solution doc). The counter (service state) lives in the same
 // process and is untouched by the patch.
 //
 //	POST /admin/upgrade?to=v2   load plugins/v2.so (+ v2.manifest.json), verify, apply (202)
 //	POST /admin/rollback        revert the most recent transaction (202)
 //	SIGHUP                      upgrade to v2, or roll back if a patch is applied
+//
+// The mutating admin endpoints require "Authorization: Bearer <token>" when
+// -admin-token (or $DIMP_ADMIN_TOKEN) is set; without a token they accept
+// only loopback clients, unless -insecure-admin is given.
 //
 // See docs/solutions/S6-hotpatch-ready-compilation.md.
 package main
@@ -21,12 +27,14 @@ package main
 import (
 	"context"
 	"crypto/ed25519"
+	"crypto/subtle"
 	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -69,6 +77,9 @@ type server struct {
 	ev      *events
 	upMu    sync.Mutex // one upgrade/rollback at a time
 	pid     int
+
+	adminToken    string // "" = loopback clients only (unless insecureAdmin)
+	insecureAdmin bool
 }
 
 func newServer(reg *patchable.Registry, plugins string, keys []ed25519.PublicKey, drain time.Duration, ev *events) *server {
@@ -87,6 +98,9 @@ func main() {
 	drain := flag.Duration("drain-timeout", 30*time.Second, "max time to wait for replaced code to become quiescent")
 	consistency := flag.String("consistency", "request", "request (pin patch set per request) | call (ablation: resolve per call)")
 	stackScan := flag.Bool("stackscan", true, "confirm quiescence with a runtime.Stack scan")
+	state := flag.String("state", filepath.Join(exeDir, "state", "hotpatch-hwm.json"), "file persisting the patch serial high-water mark (replay/downgrade protection); empty = in memory only")
+	adminToken := flag.String("admin-token", os.Getenv("DIMP_ADMIN_TOKEN"), "bearer token required by /admin/upgrade and /admin/rollback (default $DIMP_ADMIN_TOKEN)")
+	insecureAdmin := flag.Bool("insecure-admin", false, "allow unauthenticated admin requests from non-loopback clients when no token is set")
 	flag.Parse()
 
 	ev := &events{w: os.Stderr, pid: os.Getpid()}
@@ -99,6 +113,8 @@ func main() {
 		log.Printf("s6: no trusted keys (%v): every upgrade will be rejected", err)
 	}
 	s := newServer(reg, *plugins, keys, *drain, ev)
+	s.loader.StateFile = *state
+	s.adminToken, s.insecureAdmin = *adminToken, *insecureAdmin
 
 	hup := make(chan os.Signal, 1)
 	signal.Notify(hup, syscall.SIGHUP)
@@ -123,6 +139,9 @@ func (s *server) routes() http.Handler {
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) { io.WriteString(w, "ok") })
 	mux.HandleFunc("/admin/status", s.status)
 	mux.HandleFunc("/admin/upgrade", func(w http.ResponseWriter, r *http.Request) {
+		if !s.adminAllowed(w, r) {
+			return
+		}
 		if r.Method != http.MethodPost {
 			http.Error(w, "POST only", http.StatusMethodNotAllowed)
 			return
@@ -140,6 +159,9 @@ func (s *server) routes() http.Handler {
 		fmt.Fprintf(w, "{\"accepted\":true,\"to\":%q}\n", to)
 	})
 	mux.HandleFunc("/admin/rollback", func(w http.ResponseWriter, r *http.Request) {
+		if !s.adminAllowed(w, r) {
+			return
+		}
 		if r.Method != http.MethodPost {
 			http.Error(w, "POST only", http.StatusMethodNotAllowed)
 			return
@@ -149,6 +171,37 @@ func (s *server) routes() http.Handler {
 		io.WriteString(w, "{\"accepted\":true}\n")
 	})
 	return mux
+}
+
+// adminAllowed authorises a mutating admin request: a matching bearer token
+// if one is configured; otherwise only loopback clients (the benchmark
+// harness and local operators), unless -insecure-admin. Note that a reverse
+// proxy on the same host makes every client look like loopback: configure a
+// token in that deployment.
+func (s *server) adminAllowed(w http.ResponseWriter, r *http.Request) bool {
+	if s.adminToken != "" {
+		got := r.Header.Get("Authorization")
+		want := "Bearer " + s.adminToken
+		if subtle.ConstantTimeCompare([]byte(got), []byte(want)) == 1 {
+			return true
+		}
+		http.Error(w, "admin token required", http.StatusUnauthorized)
+		return false
+	}
+	if s.insecureAdmin || isLoopback(r.RemoteAddr) {
+		return true
+	}
+	http.Error(w, "admin endpoints accept only loopback clients (set -admin-token for remote use)", http.StatusForbidden)
+	return false
+}
+
+func isLoopback(remote string) bool {
+	host, _, err := net.SplitHostPort(remote)
+	if err != nil {
+		host = remote
+	}
+	ip := net.ParseIP(host)
+	return ip != nil && ip.IsLoopback()
 }
 
 type apiResp struct {
@@ -226,6 +279,14 @@ func (s *server) upgrade(to string) {
 	label, patches, rep, err := s.loader.Load(s.plugins, to)
 	if err != nil {
 		s.ev.emit("upgrade_failed", "to", to, "err", err.Error(), "stage", "load", "load", rep)
+		return
+	}
+	// Raise the replay high-water mark BEFORE publishing: if it cannot be
+	// persisted, nothing is applied (fail closed). If Apply then fails, the
+	// mark only blocks serials below this valid, signed one; re-applying
+	// this same patch stays allowed.
+	if err := s.loader.Commit(rep); err != nil {
+		s.ev.emit("upgrade_failed", "to", to, "err", err.Error(), "stage", "commit", "load", rep)
 		return
 	}
 	txn, err := s.reg.Apply(label, patches)

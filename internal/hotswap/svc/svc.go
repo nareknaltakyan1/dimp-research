@@ -220,19 +220,32 @@ func (s *Server) upgradeLocked(to string) error {
 		},
 	})
 	if err != nil {
-		if s.cfg.Unload != nil {
-			s.cfg.Unload(to, impl)
+		if errors.Is(err, hotswap.ErrVerify) && u != nil {
+			// Published, then rolled back: the failed version may still have
+			// requests; unload it only after it drained.
+			go func() {
+				<-u.New.Drained()
+				s.unload(u.New)
+			}()
+		} else if s.cfg.Unload != nil {
+			s.cfg.Unload(to, impl) // never published: nothing can reference it
 		}
 		return s.fail(err)
 	}
 	if err := u.Wait(context.Background(), s.cfg.DrainTimeout); err != nil {
-		// The new version keeps serving; the old one is never cut off. Finish
-		// draining (and unloading) in the background.
+		// The new version is serving and the upgrade is NOT rolled back; the
+		// old version is never cut off. This is "drain_timeout", not
+		// "upgrade_failed" (which the contract reserves for upgrades that left
+		// or put the old version back in service). Finish draining (and
+		// unloading) in the background.
+		s.Log.Emit("drain_timeout", "version", u.Old.Name, "new_version", u.New.Name,
+			"inflight", u.Old.Refs(), "err", err.Error())
 		go func() {
 			<-u.Drained()
 			s.finishDrain(u)
 		}()
-		return s.fail(err)
+		s.Log.Emit("upgrade_done", "from", from, "to", to, "total_ns", time.Since(t0).Nanoseconds(), "drained", false)
+		return err
 	}
 	s.finishDrain(u)
 	s.Log.Emit("upgrade_done", "from", from, "to", to, "total_ns", time.Since(t0).Nanoseconds())
@@ -242,8 +255,18 @@ func (s *Server) upgradeLocked(to string) error {
 func (s *Server) finishDrain(u *hotswap.Upgrade[Impl]) {
 	s.Log.Emit("old_version_drained", "version", u.Old.Name,
 		"drain_ns", u.Old.DrainedAt().Sub(u.New.PublishedAt).Nanoseconds())
-	if s.cfg.Unload != nil {
-		s.cfg.Unload(u.Old.Name, u.Old.Impl)
+	s.unload(u.Old)
+}
+
+// unload releases a drained version through the registry, which refuses if
+// the same implementation was republished (so Rollback can never publish a
+// closed module, and a closed module is never current).
+func (s *Server) unload(v *hotswap.Version[Impl]) {
+	if s.cfg.Unload == nil {
+		return
+	}
+	if err := s.Reg.Unload(v, func(impl Impl) { s.cfg.Unload(v.Name, impl) }); err != nil {
+		s.Log.Emit("unload_skipped", "version", v.Name, "err", err.Error())
 	}
 }
 

@@ -76,15 +76,23 @@ Plugins add the following:
 ## 4. How to run
 
 ```bash
-cmd/s2-plugin/build.sh                         # bin/s2-plugin, bin/plugins/{v1,v2}.so  (needs cgo)
-cmd/s2-plugin/bin/s2-plugin -addr :8080        # -plugin-dir defaults to <exe dir>/plugins
+cmd/s2-plugin/build.sh /tmp/s2                 # /tmp/s2/server, plugins/{v1,v2,v2-broken}.so  (needs cgo)
+/tmp/s2/server -addr :8080                     # -plugin-dir defaults to <exe dir>/plugins
 curl -XPOST 'localhost:8080/admin/upgrade?to=v2'   # or kill -HUP <pid> (toggles v1<->v2)
-cmd/s1-epoch-swap/smoke.sh cmd/s2-plugin/bin/s2-plugin 18082
-GENS=20 cmd/s2-plugin/build.sh && cmd/s2-plugin/bin/memgrowth -n 20   # memory growth CSV
+cmd/s1-epoch-swap/smoke.sh /tmp/s2/server 18082
+GENS=20 cmd/s2-plugin/build.sh /tmp/s2 && /tmp/s2/memgrowth -n 20   # plugins/v2.{1..20}.so, memory growth CSV
 go test -race ./cmd/s2-plugin/     # builds plugins with the test binary's flags (-race)
 # Linux:
-docker run --rm -v $PWD:/src -w /src golang:1.25 bash -c 'OUT=/tmp/s2 cmd/s2-plugin/build.sh && go test -race ./cmd/s2-plugin/'
+docker run --rm -v $PWD:/src -w /src golang:1.25 bash -c 'cmd/s2-plugin/build.sh /tmp/s2 && go test -race ./cmd/s2-plugin/'
 ```
+
+`build.sh <out_dir>` follows the harness convention (`<out_dir>/server`; the
+benchmark uses it directly, `bench.env` only sets `GENS` for E5). Plugin
+generations are built from copies of the v2 source in throw-away modules
+under `<out_dir>/_gen`, which use the host module's `go` line and
+`GOTOOLCHAIN=local`. A different toolchain makes `plugin.Open` fail with
+"built with a different version of package". Nothing is written into the
+source tree.
 
 `/admin/upgrade?to=<name>` loads `<plugin-dir>/<name>.so`. Names are
 restricted to `[A-Za-z0-9_.-]{1,64}`, so no path traversal is possible.
@@ -99,7 +107,7 @@ took 52 us. On macOS the first `plugin.Open` of v2.so takes about 280-300 ms
 (dyld), but serving is unaffected because loading happens before the swap.
 
 **Memory growth over repeated upgrades** (`memgrowth`): each generation is a
-distinct v2 build (`v2_genN.so`) swapped in under 4 concurrent request
+distinct v2 build (`v2.N.so`, named `v2_genN.so` when these numbers were taken) swapped in under 4 concurrent request
 loops. RSS was sampled after `runtime.GC()`. Go heap in use stayed flat at
 about 4-19 MiB, so the growth is mapped plugin code and data, not Go heap.
 

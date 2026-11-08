@@ -4,8 +4,11 @@ import (
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"plugin"
@@ -19,6 +22,7 @@ import (
 // Report breaks down the cost of a load.
 type Report struct {
 	Label        string        `json:"label"`
+	Serial       uint64        `json:"serial"`
 	SHA256       string        `json:"sha256"`
 	VerifySig    time.Duration `json:"verify_sig_ns"`
 	PreCheck     time.Duration `json:"precheck_ns"`
@@ -30,14 +34,128 @@ type Report struct {
 }
 
 // Loader loads signed patches into a registry.
+//
+// Replay / downgrade policy. The loader keeps a high-water mark (HWM): the
+// highest manifest serial that was applied (Commit), with that manifest's
+// plugin hash. A manifest is accepted only if
+//
+//	serial > HWM                          (a newer patch), or
+//	serial == HWM and sha256 == HWM hash  (re-applying the same patch, e.g.
+//	                                       upgrade -> local rollback -> upgrade)
+//
+// and it has not expired. Rolling back is a local operation
+// (Registry.Revert, /admin/rollback), never "apply an older signed patch".
+// The HWM is in memory unless StateFile is set, in which case it is loaded
+// at first use and rewritten atomically on every Commit, so it also survives
+// restarts. Without StateFile a restarted process accepts any unexpired
+// manifest again (the expiry bounds that window).
 type Loader struct {
 	Reg     *patchable.Registry
 	Trusted []ed25519.PublicKey
 	// WorkDir receives private copies of plugins (default: a fresh temp dir).
 	WorkDir string
+	// StateFile persists the replay high-water mark ("" = in memory only).
+	StateFile string
+	// Now is the clock for expiry checks (default time.Now).
+	Now func() time.Time
 
-	mu     sync.Mutex
-	opened map[string]*plugin.Plugin // by sha256: a plugin can be opened once per process
+	mu        sync.Mutex
+	opened    map[string]*plugin.Plugin // by sha256: a plugin can be opened once per process
+	hwm       hwmState
+	hwmLoaded bool
+}
+
+type hwmState struct {
+	Serial uint64 `json:"serial"`
+	SHA256 string `json:"sha256"`
+}
+
+func (l *Loader) now() time.Time {
+	if l.Now != nil {
+		return l.Now()
+	}
+	return time.Now()
+}
+
+// loadHWMLocked reads StateFile once. A missing file means "nothing applied
+// yet"; an unreadable or corrupt one fails closed.
+func (l *Loader) loadHWMLocked() error {
+	if l.hwmLoaded {
+		return nil
+	}
+	if l.StateFile != "" {
+		b, err := os.ReadFile(l.StateFile)
+		switch {
+		case errors.Is(err, fs.ErrNotExist):
+		case err != nil:
+			return fmt.Errorf("delivery: read state %s: %w", l.StateFile, err)
+		default:
+			if err := json.Unmarshal(b, &l.hwm); err != nil {
+				return fmt.Errorf("delivery: corrupt state %s: %w", l.StateFile, err)
+			}
+		}
+	}
+	l.hwmLoaded = true
+	return nil
+}
+
+// checkFresh applies the expiry and replay policy to a verified manifest.
+func (l *Loader) checkFresh(m Manifest) error {
+	if now := l.now().Unix(); now >= m.ExpiresUnix {
+		return fmt.Errorf("%w: expired at %s", ErrExpired, time.Unix(m.ExpiresUnix, 0).UTC().Format(time.RFC3339))
+	}
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if err := l.loadHWMLocked(); err != nil {
+		return err
+	}
+	switch {
+	case m.Serial > l.hwm.Serial:
+	case m.Serial == l.hwm.Serial && m.SHA256 == l.hwm.SHA256:
+	default:
+		return fmt.Errorf("%w: serial %d, high-water mark %d", ErrReplay, m.Serial, l.hwm.Serial)
+	}
+	return nil
+}
+
+// HighWaterMark returns the highest committed serial.
+func (l *Loader) HighWaterMark() (uint64, error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if err := l.loadHWMLocked(); err != nil {
+		return 0, err
+	}
+	return l.hwm.Serial, nil
+}
+
+// Commit records that the patch described by rep (from a successful Load)
+// was applied, raising the high-water mark. It is idempotent for the same
+// patch and refuses to lower the mark.
+func (l *Loader) Commit(rep Report) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if err := l.loadHWMLocked(); err != nil {
+		return err
+	}
+	if rep.Serial < l.hwm.Serial || (rep.Serial == l.hwm.Serial && rep.SHA256 != l.hwm.SHA256) {
+		return fmt.Errorf("%w: commit of serial %d below high-water mark %d", ErrReplay, rep.Serial, l.hwm.Serial)
+	}
+	next := hwmState{Serial: rep.Serial, SHA256: rep.SHA256}
+	if l.StateFile != "" && next != l.hwm {
+		b, _ := json.Marshal(next)
+		if err := os.MkdirAll(filepath.Dir(l.StateFile), 0o700); err != nil {
+			return err
+		}
+		tmp := l.StateFile + ".tmp"
+		if err := os.WriteFile(tmp, b, 0o600); err != nil {
+			return err
+		}
+		if err := os.Rename(tmp, l.StateFile); err != nil {
+			return err
+		}
+	}
+	l.hwm = next
+	return nil
 }
 
 // Load verifies and opens patch `name` from dir and returns the label and the
@@ -48,11 +166,14 @@ func (l *Loader) Load(dir, name string) (string, map[string]any, Report, error) 
 	if err != nil {
 		return "", nil, rep, err
 	}
-	rep.Label = m.Label
+	rep.Label, rep.Serial = m.Label, m.Serial
 
-	// 1. signature
+	// 1. signature, then freshness (expiry, replay/downgrade) of the signed fields
 	t := time.Now()
 	if err := m.Verify(l.Trusted); err != nil {
+		return "", nil, rep, err
+	}
+	if err := l.checkFresh(m); err != nil {
 		return "", nil, rep, err
 	}
 	rep.VerifySig = time.Since(t)
@@ -88,6 +209,12 @@ func (l *Loader) Load(dir, name string) (string, map[string]any, Report, error) 
 	// 4. open + post-check
 	t = time.Now()
 	p, cached, err := l.open(sum, priv)
+	if err != nil || cached {
+		// The private copy is not mapped (open failed, or the plugin with
+		// this hash was already mapped from an earlier copy): delete it, or
+		// every upgrade -> rollback -> upgrade cycle leaks one .so copy.
+		os.Remove(priv)
+	}
 	if err != nil {
 		return "", nil, rep, fmt.Errorf("plugin.Open: %w", err)
 	}
@@ -179,9 +306,11 @@ func (l *Loader) copyHashed(src string) (string, string, error) {
 		return "", "", err
 	}
 	if err := out.Close(); err != nil {
+		os.Remove(out.Name())
 		return "", "", err
 	}
 	if err := os.Chmod(out.Name(), 0o500); err != nil {
+		os.Remove(out.Name())
 		return "", "", err
 	}
 	return out.Name(), hex.EncodeToString(h.Sum(nil)), nil

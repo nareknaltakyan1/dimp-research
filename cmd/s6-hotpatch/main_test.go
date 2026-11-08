@@ -170,3 +170,48 @@ func TestTransactionsUnderLoad(t *testing.T) {
 	}
 	t.Logf("requests=%d by_version=%v", len(got), by)
 }
+
+// Regression (review H2): mutating admin endpoints are not open to the world.
+func TestAdminAuth(t *testing.T) {
+	s, _, _ := newTest(t)
+	h := s.routes()
+	do := func(remote, auth string) int {
+		req := httptest.NewRequest(http.MethodPost, "/admin/rollback", nil)
+		req.RemoteAddr = remote
+		if auth != "" {
+			req.Header.Set("Authorization", auth)
+		}
+		rec := httptest.NewRecorder()
+		h.ServeHTTP(rec, req)
+		return rec.Code
+	}
+	// no token: loopback only
+	if c := do("203.0.113.7:4000", ""); c != http.StatusForbidden {
+		t.Fatalf("remote without token: %d", c)
+	}
+	if c := do("127.0.0.1:4000", ""); c != http.StatusAccepted {
+		t.Fatalf("loopback: %d", c)
+	}
+	if c := do("[::1]:4000", ""); c != http.StatusAccepted {
+		t.Fatalf("loopback v6: %d", c)
+	}
+	s.insecureAdmin = true
+	if c := do("203.0.113.7:4000", ""); c != http.StatusAccepted {
+		t.Fatalf("insecure-admin: %d", c)
+	}
+	// token: required from everyone, loopback included
+	s.adminToken = "s3cret"
+	for _, tc := range []struct {
+		remote, auth string
+		want         int
+	}{
+		{"127.0.0.1:1", "", http.StatusUnauthorized},
+		{"127.0.0.1:1", "Bearer wrong", http.StatusUnauthorized},
+		{"203.0.113.7:1", "Bearer s3cret", http.StatusAccepted},
+	} {
+		if c := do(tc.remote, tc.auth); c != tc.want {
+			t.Errorf("%+v: got %d", tc, c)
+		}
+	}
+	time.Sleep(50 * time.Millisecond) // let the async rollbacks (nothing to roll back) finish
+}

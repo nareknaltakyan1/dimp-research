@@ -119,11 +119,40 @@ non-200 responses, contiguous counts, ordered events).
   version keeps serving.
 * A `Verify` failure after publication triggers an automatic re-publication
   of the old implementation (state is handed back through the same hooks),
-  and returns `ErrVerify`.
+  and returns `ErrVerify`. The registry is then back where it was before the
+  `Swap`, **including the rollback target**. (Fixed after review: the
+  rollback target used to be the failed version, so a later `Rollback()`
+  republished it.) The returned `Upgrade.New` is the failed version. It may
+  still have in-flight requests, so its implementation may be unloaded only
+  after `New.Drained()`; `svc` does exactly that.
 * On a drain timeout, `Wait` returns `ErrDrainTimeout`. The old version is
-  **never cut off**: it keeps draining in the background, and `svc` still
-  emits `old_version_drained` and runs `Unload` when the drain completes.
-* `Rollback()` re-publishes the previous implementation explicitly.
+  **never cut off**: it keeps draining in the background, and `svc` emits
+  `old_version_drained` and runs `Unload` when the drain completes. `svc`
+  reports the timeout as the `drain_timeout` event (new version serving,
+  old not yet drained), followed by `upgrade_done` with `"drained":false`.
+  It used to emit `upgrade_failed`, which the contract reserves for
+  upgrades that left or put the old version in service, so the analysis
+  could misclassify such runs (e.g. in E3).
+* `Rollback()` re-publishes the previous implementation explicitly. Because
+  a retired `Version`'s drained signal cannot be revoked, a rollback (and
+  the automatic one after `Verify`) publishes the *same implementation* in
+  a fresh `Version`; the two share a lineage.
+* **Unloading goes through the registry** (`Registry.Unload(v, fn)`). It runs
+  `fn` only if `v` has drained and its implementation is neither current
+  again nor still draining in another `Version`, and it marks the lineage
+  unloaded. `Rollback()` refuses an unloaded implementation with
+  `ErrUnloaded`; the caller must load it again and `Swap`. (Fixed after
+  review: before, `svc` closed an S3 module directly after the drain while
+  the registry still listed it as the rollback target, so `Rollback()`
+  could republish a closed module, and an automatic `Verify` rollback could
+  make a module current that was about to be closed.) `svc` logs a refused
+  unload as `unload_skipped`. Tests: `TestVerifyFailureRestoresPrev`,
+  `TestRollbackRefusesUnloadedImpl`, `TestUnloadRefusesLiveImpl`,
+  `internal/hotswap/svc/svc_test.go`.
+* The S1 to S3 admin endpoint `/admin/upgrade` is unauthenticated (contract
+  section 2). Only names of compiled-in versions, or files in the
+  configured plugin or module directory, can be loaded. Do not expose the
+  port beyond a trusted network.
 
 ## 5. How to run
 

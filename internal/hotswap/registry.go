@@ -59,6 +59,7 @@ type Version[T any] struct {
 	Impl T
 
 	seq       uint64
+	lineage   *lineage // shared by every Version that publishes the same Impl
 	refs      atomic.Int64
 	retired   atomic.Bool
 	drained   chan struct{}
@@ -69,9 +70,25 @@ type Version[T any] struct {
 	drainedAt   atomic.Int64 // unix nanos
 }
 
-func newVersion[T any](name string, impl T, seq uint64) *Version[T] {
-	return &Version[T]{Name: name, Impl: impl, seq: seq, drained: make(chan struct{}), PublishedAt: time.Now()}
+// lineage identifies one loaded implementation across re-publications
+// (Rollback and the automatic rollback after a failed Verify publish the
+// SAME Impl again in a fresh Version, because a retired Version's drained
+// signal cannot be revoked). Unloading is a property of the implementation,
+// not of one Version, so it is tracked here.
+type lineage struct {
+	unloaded atomic.Bool
 }
+
+func newVersion[T any](name string, impl T, seq uint64, lin *lineage) *Version[T] {
+	if lin == nil {
+		lin = new(lineage)
+	}
+	return &Version[T]{Name: name, Impl: impl, seq: seq, lineage: lin, drained: make(chan struct{}), PublishedAt: time.Now()}
+}
+
+// Unloaded reports whether this version's implementation has been unloaded
+// through Registry.Unload (it must never be published again).
+func (v *Version[T]) Unloaded() bool { return v.lineage.unloaded.Load() }
 
 // Release drops the reference obtained by Acquire. It must be called exactly
 // once per successful Acquire.
@@ -123,7 +140,7 @@ type Registry[T any] struct {
 // New creates a registry with an initial version.
 func New[T any](name string, impl T) *Registry[T] {
 	r := &Registry[T]{live: make(map[*Version[T]]struct{})}
-	v := newVersion(name, impl, 0)
+	v := newVersion(name, impl, 0, nil)
 	r.cur.Store(v)
 	r.live[v] = struct{}{}
 	return r
@@ -175,6 +192,13 @@ var (
 	ErrVerify       = errors.New("hotswap: post-publish verification failed (rolled back)")
 	ErrDrainTimeout = errors.New("hotswap: old version did not drain before timeout")
 	ErrNoPrevious   = errors.New("hotswap: no previous version to roll back to")
+	// ErrUnloaded: Rollback target's implementation was already unloaded
+	// (e.g. an S3 module closed after it drained); it cannot be republished.
+	ErrUnloaded = errors.New("hotswap: previous implementation was unloaded; load it again instead of rolling back")
+	// ErrInUse / ErrNotDrained: Unload refused because the implementation is
+	// current again (republished by a rollback) or still has requests.
+	ErrInUse      = errors.New("hotswap: implementation is current (republished), not unloading")
+	ErrNotDrained = errors.New("hotswap: version has not drained, not unloading")
 )
 
 // SwapOptions customise a Swap.
@@ -190,6 +214,12 @@ type SwapOptions[T any] struct {
 }
 
 // Upgrade describes a published swap whose old version may still be draining.
+//
+// After ErrVerify, New is the failed version: it was published, then
+// retired by the automatic rollback, and may still have in-flight requests;
+// wait for New.Drained() before unloading its implementation. Old's
+// implementation is current again (in a fresh Version), so Unload(Old)
+// returns ErrInUse.
 type Upgrade[T any] struct {
 	Old, New *Version[T]
 }
@@ -224,11 +254,14 @@ func (u *Upgrade[T]) Drained() <-chan struct{} { return u.Old.Drained() }
 func (r *Registry[T]) Swap(name string, impl T, opts SwapOptions[T]) (*Upgrade[T], error) {
 	r.swapMu.Lock()
 	defer r.swapMu.Unlock()
-	return r.swapLocked(name, impl, opts)
+	return r.swapLocked(name, impl, nil, opts)
 }
 
-func (r *Registry[T]) swapLocked(name string, impl T, opts SwapOptions[T]) (*Upgrade[T], error) {
+// swapLocked publishes impl. lin is non-nil when impl is a re-publication of
+// an existing implementation (rollback), nil for a freshly loaded one.
+func (r *Registry[T]) swapLocked(name string, impl T, lin *lineage, opts SwapOptions[T]) (*Upgrade[T], error) {
 	old := r.cur.Load()
+	prevBefore := r.prev
 
 	// 1. State hand-over (before publication: new never serves without state).
 	if exp, ok := any(old.Impl).(StateExporter); ok {
@@ -249,14 +282,20 @@ func (r *Registry[T]) swapLocked(name string, impl T, opts SwapOptions[T]) (*Upg
 		}
 	}
 	// 3. Publish.
-	u := r.publishLocked(name, impl)
+	u := r.publishLocked(name, impl, lin)
 	if opts.OnPublished != nil {
 		opts.OnPublished(u.New, u.Old)
 	}
-	// 4. Post-publish verification with automatic rollback.
+	// 4. Post-publish verification with automatic rollback. The old
+	// implementation cannot have been unloaded yet (Unload refuses until a
+	// version has drained, and we hold swapMu, which Unload also takes).
 	if opts.Verify != nil {
 		if err := opts.Verify(impl); err != nil {
-			if _, rbErr := r.swapLocked(old.Name, old.Impl, SwapOptions[T]{}); rbErr != nil {
+			_, rbErr := r.swapLocked(old.Name, old.Impl, old.lineage, SwapOptions[T]{})
+			// The failed version must not become the rollback target: the
+			// registry is back where it was before this Swap, including prev.
+			r.prev = prevBefore
+			if rbErr != nil {
 				return u, fmt.Errorf("%w: %v; rollback also failed: %v", ErrVerify, err, rbErr)
 			}
 			return u, fmt.Errorf("%w: %v", ErrVerify, err)
@@ -265,9 +304,9 @@ func (r *Registry[T]) swapLocked(name string, impl T, opts SwapOptions[T]) (*Upg
 	return u, nil
 }
 
-func (r *Registry[T]) publishLocked(name string, impl T) *Upgrade[T] {
+func (r *Registry[T]) publishLocked(name string, impl T, lin *lineage) *Upgrade[T] {
 	r.seq++
-	nv := newVersion(name, impl, r.seq)
+	nv := newVersion(name, impl, r.seq, lin)
 	r.liveMu.Lock()
 	r.live[nv] = struct{}{}
 	r.liveMu.Unlock()
@@ -289,12 +328,56 @@ func (r *Registry[T]) publishLocked(name string, impl T) *Upgrade[T] {
 }
 
 // Rollback re-publishes the implementation that was current before the last
-// Swap (state is handed back through the same export/import hooks).
+// Swap (state is handed back through the same export/import hooks). It
+// refuses with ErrUnloaded if that implementation was unloaded through
+// Unload; the caller must then load it again and Swap.
 func (r *Registry[T]) Rollback(opts SwapOptions[T]) (*Upgrade[T], error) {
 	r.swapMu.Lock()
 	defer r.swapMu.Unlock()
 	if r.prev == nil {
 		return nil, ErrNoPrevious
 	}
-	return r.swapLocked(r.prev.Name, r.prev.Impl, opts)
+	if r.prev.lineage.unloaded.Load() {
+		return nil, fmt.Errorf("%w (%s)", ErrUnloaded, r.prev.Name)
+	}
+	return r.swapLocked(r.prev.Name, r.prev.Impl, r.prev.lineage, opts)
+}
+
+// Unload releases v's implementation by calling fn(v.Impl), and marks it so
+// that Rollback never republishes it. It is serialised with Swap/Rollback
+// and refuses (without calling fn) if v has not drained (ErrNotDrained) or
+// if the same implementation is current again or still draining in another
+// Version (ErrInUse), e.g. after a rollback republished it. Unloading an
+// already unloaded implementation is a no-op.
+func (r *Registry[T]) Unload(v *Version[T], fn func(T)) error {
+	r.swapMu.Lock()
+	defer r.swapMu.Unlock()
+	select {
+	case <-v.drained:
+	default:
+		return fmt.Errorf("%w (%s, %d in flight)", ErrNotDrained, v.Name, v.refs.Load())
+	}
+	if v.lineage.unloaded.Load() {
+		return nil
+	}
+	if r.cur.Load().lineage == v.lineage {
+		return fmt.Errorf("%w (%s)", ErrInUse, v.Name)
+	}
+	r.liveMu.Lock()
+	for o := range r.live {
+		if o != v && o.lineage == v.lineage {
+			select {
+			case <-o.drained:
+			default:
+				r.liveMu.Unlock()
+				return fmt.Errorf("%w (%s, still draining in another version)", ErrInUse, v.Name)
+			}
+		}
+	}
+	r.liveMu.Unlock()
+	v.lineage.unloaded.Store(true)
+	if fn != nil {
+		fn(v.Impl)
+	}
+	return nil
 }

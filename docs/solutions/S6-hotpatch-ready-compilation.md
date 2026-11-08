@@ -5,8 +5,13 @@
 `/hotpatch` do, so that redirecting a function at run time is an ordinary
 atomic pointer store. The process never writes to a code page. New code
 arrives as a signed Go plugin. Its replacements are published as a
-**transactional patch set**, and each request **pins** one patch-set epoch,
-so a request never runs v1 of one function together with v2 of another.
+**transactional patch set**, and each request **pins** one patch-set epoch.
+Precisely: while a request's pin is live, every patchable function **with a
+`context.Context` parameter** that the request calls with that context (or a
+context derived from it) runs the pinned epoch's version, so such calls never
+mix v1 of one function with v2 of another. Functions without a context
+parameter get per-call consistency only, and a context used after its pin was
+released is treated as unpinned (section 2.2).
 
 | Component | Path |
 |---|---|
@@ -118,14 +123,34 @@ Registry ──cur (atomic.Pointer)──▶ PatchSet{Epoch 3, Label "v2", pins}
 
 Functions **with** a `context.Context` parameter use `Slot.Enter(ctx)`:
 
-* If `ctx` carries a pinned set (from `Registry.Pin` at request entry, or
-  from an outer trampoline), take `set.versions[slot]` and increment that
-  version's counter. No recheck is needed because the pinned set cannot be
-  drained under us.
+* If `ctx` carries a **live** pin (from `Registry.Pin` at request entry, or
+  from an outer trampoline), take `set.versions[slot]`, increment that
+  version's counter, then recheck that the pin is still live. The context
+  value is the pin handle itself (`pinCtx`, one allocation per pin); `Unpin`
+  / `Exit` set its `released` flag *before* decrementing the pin count, so a
+  call that saw the pin live after its increment is counted by any drainer.
 * Otherwise, pin the *current* set with **increment-then-recheck** (`load
   cur; pins++; if cur changed {pins--; retry}`), put it into the context
   that is passed to the callee, and release it on exit. Nested calls then
   inherit the epoch automatically.
+
+**Stale contexts (fixed after review, finding M7).** A context can outlive
+its pin: a goroutine started by the request keeps running after the handler
+returned, the context is stored in a struct, or a callee keeps the
+`Call.Ctx()` of a trampoline call that has exited. Previously `Enter`
+trusted such a context without any check, so a late call could run the
+versions of a set that `Txn.Wait` had already declared quiescent and that
+had been pruned from the live list, and a nested `Pin` re-incremented the
+pruned set where no drainer looked. **Policy now:** a released pin makes the
+context *unpinned*. `Enter` pins the then-current set for that call (per-call
+consistency for the work that outlived its request), `Pin` pins the current
+set afresh, `FromContext` returns nil, and `Registry.StaleUses()` counts the
+fallbacks. Code from a set that nobody pins is never executed. A request's
+own work keeps request consistency as long as it finishes before `Unpin`.
+Tests: `internal/patchable/stale_test.go` (stale ctx after Unpin, Pin on a
+stale ctx, nested Pin independence, escaped `Call.Ctx()`, and a stress test
+in which goroutines keep calling through their request's context after
+`Unpin` while generations are applied and declared dead: 0 violations).
 
 Functions **without** a context use `Slot.Acquire()`: increment-then-recheck
 directly on the *version's* counter (`v = cur.versions[slot]; v.active++;
@@ -151,6 +176,18 @@ stripe stays >= 0, so `sum()==0` after publication still implies
 quiescence. Result: **1.1 to 5.5 ns/call** in parallel. This is
 bimodal because of stripe collisions; one run of the pinned variant hit
 27 ns.
+
+*Stripe hash (fixed after review).* The original hash
+`((a>>13)^(a>>17)) % 32` ignored address bits 11 and 12, although goroutine
+stacks start at 2 KiB, and neighbouring stacks mapped onto few stripes:
+12 fresh goroutines landed on only 4 to 9 of the 32 stripes, with up to 4
+goroutines on one stripe. The stripe is now the top 5 bits of
+`(a>>11) * 0x9E3779B97F4A7C15` (Fibonacci hashing), and the same 12
+goroutines land on 11 to 12 stripes (uniform random placement would give
+about 10; `TestStripeSpread` asserts an average of at least 8). A spot check
+on the macOS host after the fix gave 1.5 to 7.8 ns for the parallel pinned
+trampoline, against 21 ns with the old hash in the same session. The
+Docker table in section 5.1 predates the fix.
 
 ### 2.3 Transactional patch sets (the novel element)
 
@@ -178,8 +215,16 @@ the "safe point" is request entry.
 
 Revert is a new transaction (a new epoch with the previous versions
 restored), so it has the same guarantees. `Revert` requires the
-transaction to be the most recent one (stack discipline), otherwise
-`ErrNotTop`.
+transaction to be the most recent one that has not been reverted (stack
+discipline), otherwise `ErrNotTop`. It builds the new set from the
+*current* set, so slots the transaction did not touch keep their current
+versions. *Fixed after review:* `Revert` used to compare the current set's
+pointer with `txn.To`. That made nested reverts fail (after `Apply(t1)`,
+`Apply(t2)`, `Revert(t2)`, the call `Revert(t1)` returned `ErrNotTop`), and
+so did any revert after `Register` or `SetBaseLabel`, which republish the
+current set under a new pointer. The check now looks at the transaction
+stack and at the versions the transaction installed
+(`TestRevertNestedAndAfterRelabel`).
 
 ### 2.4 Quiescence: refcount + stack scan (defence in depth)
 
@@ -267,18 +312,56 @@ plugin's `Patches` map for the manifest. `hotpatchgen check` fails CI if
 
 ## 4. Patch delivery and safety
 
-A patch is `name.so` plus `name.manifest.json`: `{format, label, plugin,
-sha256, symbols{sym: {fingerprint, signature}}, key_id, sig}`, signed with
-ed25519 over the canonical JSON (`signtool`). The loader **fails closed**
-in this order:
+A patch is `name.so` plus `name.manifest.json`: `{format
+("dimp-hotpatch/v2"), label, serial, expires_unix, plugin, sha256,
+symbols{sym: {fingerprint, signature}}, key_id, sig}`, signed with ed25519
+over the canonical JSON (`signtool sign -serial N -ttl D`). The loader
+**fails closed** in this order:
 
 | Step | What | Plugin case rejected (smoke) | When |
 |---|---|---|---|
 | 1 | trusted key id, ed25519 signature | `badsig` (v2 signed by an attacker key) | 0.3 to 0.7 ms |
+| 1b | freshness: not expired; serial above the high-water mark, or equal to it with the same plugin hash | `expired` (1 s validity), `old` (serial below the applied v2's) | with step 1 |
 | 2 | manifest fingerprints vs running binary, **before dlopen** | `badfp` (`int` instead of `int64`) | 0.5 to 0.7 ms |
 | 3 | copy into a private 0700 dir while hashing, compare sha256, open the *copy* (closes the check-then-open race) | `tampered` (1 byte appended after signing) | ~11 ms |
 | 4 | `plugin.Open`, `Patches` set == manifest set, run-time fingerprints | `badfp-liar` (manifest claims the right fingerprint) | ~9 to 14 ms |
 | 5 | `Registry.Apply` (types, all-or-nothing) | n/a | n/a |
+
+**Replay, downgrade and expiry (added after review).** Before the fix,
+any manifest ever signed by a trusted key could be applied again at any
+time, including an older patch over a newer one. Now the loader keeps a
+high-water mark: the highest serial it has applied, plus that patch's hash.
+It accepts a manifest only if the serial is higher than the mark, or equal
+to it with the same hash. The equal case is re-applying the same patch,
+e.g. upgrade -> rollback -> upgrade. Rolling back is a local operation
+(`/admin/rollback`, `Registry.Revert`); applying an older signed patch is
+never a rollback. The server raises the mark (`Loader.Commit`) *before*
+`Apply`. If the mark cannot be persisted, nothing is applied. If `Apply`
+then fails, the mark only blocks serials below a valid signed patch. The
+mark is persisted atomically to `-state` (default
+`<exe dir>/state/hotpatch-hwm.json`; empty = memory only). A corrupt state
+file fails closed. Without persisted state a restarted process accepts
+any unexpired manifest again, which is why every manifest also expires
+(`-ttl`, default 30 days). `build.sh` uses the build time as the serial.
+Tests: `TestLoaderRejectsExpiredReplayDowngrade`,
+`TestManifestRequiresSerialAndExpiry`.
+
+**Private copy leak (fixed).** In the cached-plugin case (upgrade ->
+rollback -> upgrade) the loader made a fresh private copy, did not open it
+(the plugin was already mapped) and never deleted it, so it leaked one
+`.so` copy per cycle. The copy is now deleted when it is not mapped, i.e.
+when the plugin was cached or `plugin.Open` failed
+(`TestCachedPluginDoesNotLeakCopy`).
+
+**Admin authentication (added after review, finding H2).**
+`/admin/upgrade` and `/admin/rollback` used to accept anyone who could reach
+the service port. They now require `Authorization: Bearer <token>` when
+`-admin-token` (or `$DIMP_ADMIN_TOKEN`) is set. Without a token they accept
+only loopback clients, unless the server runs with `-insecure-admin`. The
+benchmark harness triggers upgrades from 127.0.0.1, so it needs no change.
+A reverse proxy on the same host makes every client look like loopback;
+such deployments must set a token. `/admin/status` stays open (read-only).
+SIGHUP remains a local trigger. Test: `TestAdminAuth`.
 
 Step 2 matters because **`plugin.Open` is irreversible**: it runs the
 plugin's `init` and the plugin can never be unloaded. In the liar case the
@@ -349,8 +432,12 @@ with it.
 Setup: 16 clients, 8 s; every 10th request has `work_ms=300` (it
 straddles the switch), and the others have 0 to 19 ms. The script runs:
 upgrade v2 -> rollback -> badsig -> tampered -> badfp -> badfp-liar ->
-upgrade v2 -> rollback -> upgrade v2 (re-upgrade uses the cached plugin),
-then SIGHUP (rollback).
+upgrade v2 -> old (downgrade) -> expired -> rollback -> upgrade v2
+(re-upgrade uses the cached plugin), then SIGHUP (rollback). The `old` and
+`expired` steps were added with the freshness checks. The table below is
+from the original run; the re-run after the fixes (2026-11-08) gave
+3,198 / 0 non-200 / 0 mixed in request mode and 80 mixed in the call
+ablation, and all six bad patches were rejected at the intended stage.
 
 | | `-consistency=request` (design) | `-consistency=call` (ablation) |
 |---|---|---|
@@ -415,10 +502,16 @@ killing processes.
   and helpers are invisible to plugin code. Patches can delegate to the
   exported `F_v0` originals.
 * **Context-less functions get per-call consistency only.** hotpatchgen warns
-  about them.
+  about them. So does work that outlives its request's pin (a goroutine
+  that keeps using the request context after `Unpin`): it falls back to the
+  current set call by call (see 2.2), so such work can observe a mix.
+* **Replay protection is per process unless `-state` is persisted.** The
+  high-water mark lives in a local file, not in a fleet-wide store. Expiry
+  bounds the replay window for a fresh process without that file.
 * **Generics are skipped.** So are directive-carrying, assembly and
   build-tagged functions.
-* **Overhead.** About 4 to 14 ns per trampoline call, no inlining, and
+* **Overhead.** About 4 to 14 ns per trampoline call (the live-pin recheck
+  adds one atomic load on the pinned path), no inlining, and
   argument escapes. This makes fine-grained `-all` unattractive.
 * **Plugins are never unloaded** (P8). Each distinct patch leaks its `.so`
   (5.3 MB here; see S2's memory-growth study). There is also no pure-Go
@@ -450,7 +543,7 @@ killing processes.
 
 ```bash
 # build host + plugins + keys + signed manifests (Linux, matching toolchains)
-docker run --rm -v "$PWD":/src -w /src golang:1.25 cmd/s6-hotpatch/build.sh
+docker run --rm -v "$PWD":/src -w /src golang:1.25 cmd/s6-hotpatch/build.sh   # SERIAL=, TTL= override
 # end-to-end smoke (design + ablation)
 docker run --rm -v "$PWD":/src -w /src golang:1.25 cmd/s6-hotpatch/smoke.sh
 # tests / benchmarks

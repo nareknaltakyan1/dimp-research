@@ -32,6 +32,10 @@
 // published meanwhile. This is the analogue of the Linux livepatch per-task
 // consistency model, with the request instead of the task as the unit.
 //
+// The guarantee holds while the pin is live. A context used after its pin
+// was released (Unpin, or Exit of the trampoline call that took the pin) is
+// treated as unpinned: each call then pins the current set (see pinCtx).
+//
 // Functions without a context parameter cannot see the pin; they get
 // per-call consistency (each call resolves the then-current version, with
 // increment-then-recheck on that version's counter). hotpatchgen warns about
@@ -131,6 +135,7 @@ type Registry struct {
 	stackScan atomic.Bool
 	txns      []*Txn // applied, not reverted (stack)
 	key       *pinKey
+	stale     atomic.Int64 // uses of released pins (see pinCtx)
 }
 
 // Default is the process-wide registry that generated code registers into.
@@ -292,42 +297,105 @@ func (r *Registry) pin() (*PatchSet, uint32) {
 // equality call on every trampoline).
 type pinKey struct{ _ byte }
 
+// pinCtx is the context that carries a pin, and at the same time the pin
+// handle itself (one allocation per pin). A pin is LIVE from Pin/Enter until
+// its Unpin/Exit; afterwards the context may still exist (a goroutine that
+// outlived its request, a context stored in a struct, the Call.Ctx() of a
+// finished call), but it no longer holds the patch set: released is set
+// BEFORE the pin count is decremented, and every use of the context checks
+// released AFTER its own increment (increment-then-recheck, as in pin()).
+//
+// Stale-context policy (documented in docs/solutions/S6-...): a context
+// whose pin was released is treated as UNPINNED. Enter pins the then-current
+// set for that call (per-call consistency for the stale part of the work),
+// nested Pin pins the current set afresh, and FromContext returns nil.
+// Registry.StaleUses counts such uses so tests and status pages can see
+// them. It never executes code from a patch set that is not pinned.
+type pinCtx struct {
+	context.Context
+	key      *pinKey
+	ps       *PatchSet
+	st       uint32
+	released atomic.Bool
+}
+
+func (c *pinCtx) Value(k any) any {
+	if k == any(c.key) {
+		return c
+	}
+	return c.Context.Value(k)
+}
+
+// release ends the pin exactly once (later calls are no-ops).
+func (c *pinCtx) release() {
+	if c.released.CompareAndSwap(false, true) {
+		c.ps.pins.add(c.st, -1)
+	}
+}
+
+func (r *Registry) newPin(parent context.Context, ps *PatchSet, st uint32) *pinCtx {
+	return &pinCtx{Context: parent, key: r.key, ps: ps, st: st}
+}
+
+// lookupPin returns the pin carried by ctx, live or not.
+func (r *Registry) lookupPin(ctx context.Context) *pinCtx {
+	if ctx == nil {
+		return nil
+	}
+	pc, _ := ctx.Value(r.key).(*pinCtx)
+	return pc
+}
+
 // Pinned is a request's hold on a patch set.
 type Pinned struct {
-	ps *PatchSet
-	st uint32
+	pc *pinCtx
 }
 
 // Set is the pinned patch set.
-func (p Pinned) Set() *PatchSet { return p.ps }
+func (p Pinned) Set() *PatchSet { return p.pc.ps }
 
-// Unpin releases the pin; call exactly once when the request ends.
-func (p Pinned) Unpin() { p.ps.pins.add(p.st, -1) }
+// Unpin releases the pin; call once when the request ends. Afterwards the
+// context returned by Pin is stale (see pinCtx) and further Unpins are no-ops.
+func (p Pinned) Unpin() { p.pc.release() }
 
 // Pin pins the current patch set for a request and returns a context that
-// carries it. Call Unpin when the request ends. If ctx is already pinned to
-// this registry, that set is reused (and its pin count bumped), so Pin nests.
+// carries it. Call Unpin when the request ends. If ctx carries a LIVE pin of
+// this registry, the nested pin holds the same set (Pin nests); if ctx
+// carries a released pin, the current set is pinned instead.
 func (r *Registry) Pin(ctx context.Context) (context.Context, Pinned) {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-	if ps, ok := ctx.Value(r.key).(*PatchSet); ok {
-		st := stripeOf()
-		ps.pins.add(st, 1) // already held by the outer pin; cannot be drained under us
-		return ctx, Pinned{ps, st}
+	st := stripeOf()
+	if outer := r.lookupPin(ctx); outer != nil {
+		ps := outer.ps
+		ps.pins.add(st, 1)
+		if !outer.released.Load() {
+			// The outer pin was live after our increment, so ps could not
+			// have been observed drained without seeing our pin.
+			pc := r.newPin(ctx, ps, st)
+			return pc, Pinned{pc}
+		}
+		ps.pins.add(st, -1) // stale outer context: do not resurrect its set
+		r.stale.Add(1)
 	}
 	ps, st := r.pin()
-	return context.WithValue(ctx, r.key, ps), Pinned{ps, st}
+	pc := r.newPin(ctx, ps, st)
+	return pc, Pinned{pc}
 }
 
-// FromContext returns the patch set pinned in ctx, or nil.
+// FromContext returns the patch set pinned in ctx, or nil if ctx carries no
+// pin or only a released one.
 func (r *Registry) FromContext(ctx context.Context) *PatchSet {
-	if ctx == nil {
-		return nil
+	if pc := r.lookupPin(ctx); pc != nil && !pc.released.Load() {
+		return pc.ps
 	}
-	ps, _ := ctx.Value(r.key).(*PatchSet)
-	return ps
+	return nil
 }
+
+// StaleUses counts trampoline entries and Pins that found a released pin in
+// their context and fell back to the current patch set.
+func (r *Registry) StaleUses() int64 { return r.stale.Load() }
 
 // Hold is the token returned by Slot.Acquire.
 type Hold struct {
@@ -364,17 +432,17 @@ func (s *Slot) Acquire() Hold {
 // hot path does not allocate when the request is already pinned.
 type Call struct {
 	v   *Version
-	ps  *PatchSet // non-nil if this call took the pin (and must release it)
+	pc  *pinCtx // non-nil if this call took the pin (and must release it)
 	ctx context.Context
 	st  uint32 // counter stripe of the version increment
-	pst uint32 // counter stripe of the pin
 }
 
 // Enter is the trampoline entry for functions WITH a context parameter. If
-// ctx carries a pinned patch set, the implementation is taken from it;
-// otherwise the current set is pinned for the duration of this call and the
-// returned context (Call.Ctx) carries it to the callee, so everything the
-// callee calls through context-aware trampolines sees the same epoch.
+// ctx carries a live pinned patch set, the implementation is taken from it;
+// otherwise (no pin, or a released one) the current set is pinned for the
+// duration of this call and the returned context (Call.Ctx) carries it to
+// the callee, so everything the callee calls through context-aware
+// trampolines sees the same epoch.
 func (s *Slot) Enter(ctx context.Context) Call {
 	r := s.reg
 	if ctx == nil {
@@ -385,22 +453,31 @@ func (s *Slot) Enter(ctx context.Context) Call {
 		return Call{v: h.v, st: h.st, ctx: ctx}
 	}
 	st := stripeOf()
-	if ps, ok := ctx.Value(r.key).(*PatchSet); ok {
-		v := ps.get(s)
-		v.active.add(st, 1) // set is pinned, no recheck needed
-		return Call{v: v, ctx: ctx, st: st}
+	if pc := r.lookupPin(ctx); pc != nil {
+		v := pc.ps.get(s)
+		v.active.add(st, 1)
+		// Recheck after the increment: if the pin was still live, the set
+		// was pinned when we incremented, so no drainer can have declared
+		// v quiescent without seeing us (release is ordered before the
+		// pin decrement that the drainer must observe first).
+		if !pc.released.Load() {
+			return Call{v: v, ctx: ctx, st: st}
+		}
+		v.active.add(st, -1)
+		r.stale.Add(1)
 	}
 	ps, pst := r.pin()
 	v := ps.get(s)
 	v.active.add(st, 1)
-	return Call{v: v, ps: ps, ctx: context.WithValue(ctx, r.key, ps), st: st, pst: pst}
+	pc := r.newPin(ctx, ps, pst)
+	return Call{v: v, pc: pc, ctx: pc, st: st}
 }
 
 // Exit ends the call.
 func (c Call) Exit() {
 	c.v.active.add(c.st, -1)
-	if c.ps != nil {
-		c.ps.pins.add(c.pst, -1)
+	if c.pc != nil {
+		c.pc.release()
 	}
 }
 
@@ -408,6 +485,7 @@ func (c Call) Exit() {
 func (c Call) Impl() any { return c.v.fn }
 
 // Ctx is the (possibly newly pinned) context to pass to the implementation.
+// If this call took the pin, the context is stale after Exit.
 func (c Call) Ctx() context.Context { return c.ctx }
 
 // Version returns the version being executed.

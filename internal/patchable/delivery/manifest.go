@@ -4,12 +4,16 @@
 // A patch is two files:
 //
 //	<name>.so             go build -buildmode=plugin; exports `var Patches map[string]any`
-//	<name>.manifest.json  {format, label, plugin, sha256, symbols{sym:{fingerprint,signature}}, key_id, sig}
+//	<name>.manifest.json  {format, label, serial, expires_unix, plugin, sha256,
+//	                       symbols{sym:{fingerprint,signature}}, key_id, sig}
 //
 // Load order (each step fails closed, nothing is applied on failure):
 //
 //  1. parse manifest, check the key is trusted and the ed25519 signature
 //     over the canonical manifest bytes is valid;
+//     1b. freshness: reject an expired manifest, and a replayed or downgraded
+//     one: serial below the loader's high-water mark, or equal to it with a
+//     different plugin hash (see Loader for the exact policy);
 //  2. check every manifest symbol exists in the registry with the same
 //     signature fingerprint -- BEFORE dlopen, because plugin.Open runs the
 //     plugin's init code and can never be undone;
@@ -18,7 +22,8 @@
 //     check-then-open race on the original path);
 //  4. plugin.Open, look up Patches, check the exported set equals the
 //     manifest's set and each value's run-time fingerprint matches;
-//  5. hand the map to Registry.Apply (one transaction).
+//  5. hand the map to Registry.Apply (one transaction), then Loader.Commit
+//     raises the high-water mark (persisted if Loader.StateFile is set).
 package delivery
 
 import (
@@ -34,7 +39,10 @@ import (
 )
 
 // Format identifies the manifest schema.
-const Format = "dimp-hotpatch/v1"
+const Format = "dimp-hotpatch/v2"
+
+// v2 added the signed serial and expires_unix fields (replay / downgrade /
+// expiry protection). v1 manifests are rejected with ErrFormat.
 
 // Symbol is the expected signature of one replacement.
 type Symbol struct {
@@ -44,13 +52,20 @@ type Symbol struct {
 
 // Manifest describes a signed patch.
 type Manifest struct {
-	Format  string            `json:"format"`
-	Label   string            `json:"label"`
-	Plugin  string            `json:"plugin"` // file name, relative to the manifest
-	SHA256  string            `json:"sha256"`
-	Symbols map[string]Symbol `json:"symbols"`
-	KeyID   string            `json:"key_id"`
-	Sig     string            `json:"sig,omitempty"` // base64 ed25519 over SigningBytes()
+	Format string `json:"format"`
+	Label  string `json:"label"`
+	// Serial is a signed, monotonically increasing patch number. The loader
+	// never accepts a serial below the highest one it has applied.
+	Serial uint64 `json:"serial"`
+	// ExpiresUnix (seconds) bounds how long a signed manifest can be used:
+	// a captured old manifest cannot be replayed into a fresh process after
+	// it expired, even without persisted loader state.
+	ExpiresUnix int64             `json:"expires_unix"`
+	Plugin      string            `json:"plugin"` // file name, relative to the manifest
+	SHA256      string            `json:"sha256"`
+	Symbols     map[string]Symbol `json:"symbols"`
+	KeyID       string            `json:"key_id"`
+	Sig         string            `json:"sig,omitempty"` // base64 ed25519 over SigningBytes()
 }
 
 // SigningBytes is the canonical byte string that is signed: the JSON
@@ -80,11 +95,13 @@ var (
 	ErrBadSignature = errors.New("delivery: bad manifest signature")
 	ErrHash         = errors.New("delivery: plugin hash does not match manifest")
 	ErrFormat       = errors.New("delivery: bad manifest")
+	ErrExpired      = errors.New("delivery: manifest expired")
+	ErrReplay       = errors.New("delivery: manifest replayed or downgraded (serial below high-water mark, or reused with different content)")
 )
 
 // Verify checks format and signature against the trusted keys.
 func (m Manifest) Verify(trusted []ed25519.PublicKey) error {
-	if m.Format != Format || m.Plugin == "" || len(m.SHA256) != 64 || len(m.Symbols) == 0 {
+	if m.Format != Format || m.Plugin == "" || len(m.SHA256) != 64 || len(m.Symbols) == 0 || m.Serial == 0 || m.ExpiresUnix <= 0 {
 		return ErrFormat
 	}
 	sig, err := base64.StdEncoding.DecodeString(m.Sig)

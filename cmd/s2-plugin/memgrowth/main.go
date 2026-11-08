@@ -1,10 +1,10 @@
 // Command memgrowth measures process memory over repeated plugin upgrades.
-// Each upgrade loads a distinct plugin generation (v2_genN.so), swaps it in
+// Each upgrade loads a distinct plugin generation (v2.N.so), swaps it in
 // through internal/hotswap under light concurrent load and waits for the old
 // version to drain. Because Go plugins can never be unloaded, every
 // generation's code, data and type metadata stay mapped forever.
 //
-//	GENS=30 cmd/s2-plugin/build.sh && cmd/s2-plugin/bin/memgrowth -n 30
+//	GENS=30 cmd/s2-plugin/build.sh /tmp/s2 && /tmp/s2/memgrowth -n 30
 package main
 
 import (
@@ -27,7 +27,7 @@ import (
 func main() {
 	exe, _ := os.Executable()
 	dir := flag.String("plugin-dir", filepath.Join(filepath.Dir(exe), "plugins"), "plugin directory")
-	n := flag.Int("n", 20, "number of upgrades (needs v2_gen1..N.so)")
+	n := flag.Int("n", 20, "number of upgrades (needs v2.1..N.so)")
 	flag.Parse()
 
 	counter := new(atomic.Uint64)
@@ -59,12 +59,12 @@ func main() {
 	fmt.Printf("0,%d,0,%d,0,0,v1,%d\n", base.RSSBytes, base.HeapInuse, counter.Load())
 	for i := 1; i <= *n; i++ {
 		t0 := time.Now()
-		impl, err := pluginimpl.Open(filepath.Join(*dir, fmt.Sprintf("v2_gen%d.so", i)))
+		impl, err := pluginimpl.Open(filepath.Join(*dir, fmt.Sprintf("v2.%d.so", i)))
 		if err != nil {
 			log.Fatalf("gen %d: %v", i, err)
 		}
 		loadDur := time.Since(t0)
-		u, err := reg.Swap(fmt.Sprintf("v2_gen%d", i), impl, hotswap.SwapOptions[svc.Impl]{})
+		u, err := reg.Swap(fmt.Sprintf("v2.%d", i), impl, hotswap.SwapOptions[svc.Impl]{})
 		if err != nil {
 			log.Fatal(err)
 		}

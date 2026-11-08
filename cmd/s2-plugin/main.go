@@ -2,8 +2,8 @@
 // package: business logic lives in separately built .so files that are
 // loaded at upgrade time and published through internal/hotswap.
 //
-//	./cmd/s2-plugin/build.sh          # builds bin/s2-plugin + bin/plugins/{v1,v2}.so
-//	./cmd/s2-plugin/bin/s2-plugin -addr :8080
+//	cmd/s2-plugin/build.sh /tmp/s2    # builds /tmp/s2/server + /tmp/s2/plugins/{v1,v2}.so
+//	/tmp/s2/server -addr :8080
 //	curl -XPOST 'localhost:8080/admin/upgrade?to=v2'   # loads plugins/v2.so
 package main
 

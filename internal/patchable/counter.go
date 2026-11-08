@@ -29,17 +29,29 @@ type counter struct {
 	s [stripes]paddedInt64
 }
 
-const stripes = 32
+const (
+	stripeBits = 5
+	stripes    = 1 << stripeBits
+)
 
 type paddedInt64 struct {
 	n atomic.Int64
 	_ [56]byte // keep each stripe on its own 64-byte cache line
 }
 
+// stripeOf hashes the stack address with a multiplicative (Fibonacci) hash
+// and takes the top bits. Goroutine stacks start at 2 KiB (a multiple of it
+// when the runtime picks a larger initial size) and are carved out of spans
+// contiguously, so a>>11 of concurrently running goroutines are often
+// consecutive integers. The previous ((a>>13)^(a>>17)) % 32 ignored bits 11
+// and 12 (up to four 2 KiB stacks per value) and mapped neighbours onto few
+// stripes: 12 fresh goroutines landed on 4 to 9 of the 32 stripes, up to 4
+// per stripe. With a>>11 and the multiplicative hash they land on 11 to 12
+// stripes (uniform random would give ~10; TestStripeSpread).
 func stripeOf() uint32 {
 	var x byte
-	a := uintptr(unsafe.Pointer(&x))
-	return uint32((a>>13)^(a>>17)) % stripes
+	a := uint64(uintptr(unsafe.Pointer(&x)) >> 11)
+	return uint32((a * 0x9E3779B97F4A7C15) >> (64 - stripeBits))
 }
 
 func (c *counter) add(st uint32, d int64) { c.s[st].n.Add(d) }

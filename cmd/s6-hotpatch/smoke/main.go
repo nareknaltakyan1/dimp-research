@@ -44,7 +44,7 @@ func main() {
 	base := flag.String("url", "http://127.0.0.1:8080", "server")
 	conc := flag.Int("c", 16, "concurrent clients")
 	dur := flag.Duration("d", 8*time.Second, "duration")
-	script := flag.String("script", "1s:upgrade:v2,2s:rollback,2.5s:upgrade:badsig,3s:upgrade:tampered,3.5s:upgrade:badfp,4s:upgrade:badfp-liar,4.5s:upgrade:v2,5.5s:rollback,6.5s:upgrade:v2",
+	script := flag.String("script", "1s:upgrade:v2,2s:rollback,2.5s:upgrade:badsig,3s:upgrade:tampered,3.5s:upgrade:badfp,4s:upgrade:badfp-liar,4.5s:upgrade:v2,5s:upgrade:old,5.2s:upgrade:expired,5.5s:rollback,6.5s:upgrade:v2",
 		"comma-separated at:action[:arg]")
 	long := flag.Int("long", 300, "work_ms of the long requests (every 10th)")
 	flag.Parse()

@@ -46,7 +46,16 @@ Each server writes JSON lines to **stderr** with these events:
 {"ev":"old_version_drained","ts_ns":...,"version":"v1","pid":...}
 {"ev":"upgrade_done","ts_ns":...,"pid":...}
 {"ev":"upgrade_failed","ts_ns":...,"err":"...","pid":...}   // rollback path
+{"ev":"drain_timeout","ts_ns":...,"version":"v1","pid":...}  // new version serving, old not drained in time
 ```
+
+`upgrade_failed` means the upgrade did not take effect: the old version
+kept serving or was put back. `drain_timeout` means the new version *is*
+serving (nothing was rolled back), but the old version still had work in
+flight when the drain deadline passed. It keeps draining and
+`old_version_drained` follows when it finishes. A `drain_timeout` is
+followed by `upgrade_done` (the upgrade completed, the drain did not), and
+it is never reported as `upgrade_failed`.
 
 `ts_ns` = `time.Now().UnixNano()`.
 

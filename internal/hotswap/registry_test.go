@@ -291,3 +291,107 @@ func TestPerVersionInFlightAccounting(t *testing.T) {
 		time.Sleep(time.Millisecond)
 	}
 }
+
+// Regression (review M9): after a failed Verify the registry must be back
+// where it was before the Swap, including the rollback target. Previously
+// r.prev pointed at the failed version, so a later Rollback republished it.
+func TestVerifyFailureRestoresPrev(t *testing.T) {
+	r := New[*impl]("v1", &impl{name: "v1", counter: new(atomic.Uint64)})
+	bad := &impl{name: "bad"}
+	u, err := r.Swap("bad", bad, SwapOptions[*impl]{Verify: func(*impl) error { return errors.New("canary failed") }})
+	if !errors.Is(err, ErrVerify) {
+		t.Fatalf("want ErrVerify, got %v", err)
+	}
+	if u == nil || u.New.Impl != bad || !u.New.Retired() {
+		t.Fatalf("Upgrade after ErrVerify must report the retired failed version: %+v", u)
+	}
+	if _, err := r.Rollback(SwapOptions[*impl]{}); !errors.Is(err, ErrNoPrevious) {
+		t.Fatalf("first swap failed verification: want ErrNoPrevious, got %v", err)
+	}
+	// With history: v1 -> v2 ok, v2 -> bad fails verify; Rollback must go to v1, not bad.
+	v2 := &impl{name: "v2"}
+	if _, err := r.Swap("v2", v2, SwapOptions[*impl]{}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := r.Swap("bad", bad, SwapOptions[*impl]{Verify: func(*impl) error { return errors.New("no") }}); !errors.Is(err, ErrVerify) {
+		t.Fatal(err)
+	}
+	if r.Current().Impl != v2 {
+		t.Fatalf("current after failed verify = %s", r.Current().Name)
+	}
+	ru, err := r.Rollback(SwapOptions[*impl]{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ru.New.Name != "v1" || ru.New.Impl == bad {
+		t.Fatalf("rollback after failed verify published %s", ru.New.Name)
+	}
+}
+
+// Regression (review M9): an implementation released through Unload (an S3
+// module closed after draining) must never be republished by Rollback.
+func TestRollbackRefusesUnloadedImpl(t *testing.T) {
+	v1 := &impl{name: "v1", counter: new(atomic.Uint64)}
+	r := New[*impl]("v1", v1)
+	u, err := r.Swap("v2", &impl{name: "v2"}, SwapOptions[*impl]{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := u.Wait(context.Background(), time.Second); err != nil {
+		t.Fatal(err)
+	}
+	closed := 0
+	if err := r.Unload(u.Old, func(i *impl) { closed++ }); err != nil || closed != 1 {
+		t.Fatalf("unload: %v closed=%d", err, closed)
+	}
+	if !u.Old.Unloaded() {
+		t.Fatal("version not marked unloaded")
+	}
+	if err := r.Unload(u.Old, func(i *impl) { closed++ }); err != nil || closed != 1 {
+		t.Fatalf("second unload must be a no-op: %v closed=%d", err, closed)
+	}
+	if _, err := r.Rollback(SwapOptions[*impl]{}); !errors.Is(err, ErrUnloaded) {
+		t.Fatalf("want ErrUnloaded, got %v", err)
+	}
+	if r.Current().Name != "v2" {
+		t.Fatalf("refused rollback changed current to %s", r.Current().Name)
+	}
+}
+
+// Unload must refuse a version that is still in flight, and an
+// implementation that a rollback made current again.
+func TestUnloadRefusesLiveImpl(t *testing.T) {
+	r := New[*impl]("v1", &impl{name: "v1", counter: new(atomic.Uint64)})
+	hold := r.Acquire()
+	u, _ := r.Swap("v2", &impl{name: "v2"}, SwapOptions[*impl]{})
+	if err := r.Unload(u.Old, func(*impl) { t.Fatal("unloaded an in-flight version") }); !errors.Is(err, ErrNotDrained) {
+		t.Fatalf("want ErrNotDrained, got %v", err)
+	}
+	hold.Release()
+	<-u.Drained()
+	// Roll back before the drained v1 is unloaded: v1's impl is current again.
+	if _, err := r.Rollback(SwapOptions[*impl]{}); err != nil {
+		t.Fatal(err)
+	}
+	if err := r.Unload(u.Old, func(*impl) { t.Fatal("unloaded the current implementation") }); !errors.Is(err, ErrInUse) {
+		t.Fatalf("want ErrInUse, got %v", err)
+	}
+	// Verify-failure rollback republishes old's impl too: unloading the retired
+	// old Version must be refused as well.
+	cur := r.Current()
+	fu, err := r.Swap("bad", &impl{name: "bad"}, SwapOptions[*impl]{Verify: func(*impl) error { return errors.New("x") }})
+	if !errors.Is(err, ErrVerify) {
+		t.Fatal(err)
+	}
+	<-fu.Old.Drained()
+	if fu.Old != cur {
+		t.Fatal("unexpected old version")
+	}
+	if err := r.Unload(fu.Old, func(*impl) { t.Fatal("unloaded the restored implementation") }); !errors.Is(err, ErrInUse) {
+		t.Fatalf("want ErrInUse, got %v", err)
+	}
+	<-fu.New.Drained()
+	if err := r.Unload(fu.New, nil); err != nil {
+		t.Fatalf("failed version should be unloadable once drained: %v", err)
+	}
+}

@@ -15,6 +15,8 @@
 #   plugins/badfp-liar.manifest.json           same .so, manifest lies -> rejected after dlopen
 #   plugins/badsig.*                           v2 signed by an untrusted key
 #   plugins/tampered.*                         v2 manifest, .so modified after signing
+#   plugins/old.*                              signed, serial below v2's -> rejected as a downgrade once v2 applied
+#   plugins/expired.*                          signed, 1 s validity -> rejected as expired
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 OUT=${OUT:-cmd/s6-hotpatch/bin}
@@ -44,17 +46,31 @@ done
 [ -f "$OUT/keys/signing.key" ] || "$OUT/signtool" keygen -priv "$OUT/keys/signing.key" -pub "$OUT/keys/trusted.pub"
 "$OUT/signtool" keygen -priv "$OUT/work/attacker.key" -pub "$OUT/work/attacker.pub" >/dev/null
 
-# 4. manifests
+# 4. manifests. Every manifest carries a signed serial (replay/downgrade
+# protection: the host never applies a serial below the highest it applied)
+# and an expiry. The serial is the build time, so a rebuilt patch always
+# supersedes an older build; SERIAL=... overrides it.
 S="$OUT/signtool"; P="$OUT/plugins"; W="$OUT/work"; K="$OUT/keys/signing.key"
-$S sign -key "$K" -so "$P/v2.so" -label v2 -fingerprints "$W/v2.fp.json" -out "$P/v2.manifest.json"
-$S sign -key "$K" -so "$P/badfp.so" -label badfp -fingerprints "$W/badfp.fp.json" -out "$P/badfp.manifest.json"
+SERIAL=${SERIAL:-$(date +%s)}
+SIGN=(-serial "$SERIAL" -ttl "${TTL:-720h}")
+$S sign -key "$K" "${SIGN[@]}" -so "$P/v2.so" -label v2 -fingerprints "$W/v2.fp.json" -out "$P/v2.manifest.json"
+# The bad-fingerprint patches get their own (higher) serials, so that they are
+# rejected by the stage they demonstrate, not by the replay check.
+$S sign -key "$K" -serial "$((SERIAL + 2))" -so "$P/badfp.so" -label badfp -fingerprints "$W/badfp.fp.json" -out "$P/badfp.manifest.json"
 # liar: real badfp.so, but the manifest claims ApplyDiscount has the expected fingerprint
-$S sign -key "$K" -so "$P/badfp.so" -label badfp-liar -fingerprints "$W/v2.fp.json" -only biz.ApplyDiscount \
+$S sign -key "$K" -serial "$((SERIAL + 3))" -so "$P/badfp.so" -label badfp-liar -fingerprints "$W/v2.fp.json" -only biz.ApplyDiscount \
    -plugin-name badfp.so -out "$P/badfp-liar.manifest.json"
 cp "$P/v2.so" "$P/badsig.so"
-$S sign -key "$W/attacker.key" -so "$P/badsig.so" -label v2 -fingerprints "$W/v2.fp.json" -out "$P/badsig.manifest.json"
+$S sign -key "$W/attacker.key" "${SIGN[@]}" -so "$P/badsig.so" -label v2 -fingerprints "$W/v2.fp.json" -out "$P/badsig.manifest.json"
 cp "$P/v2.so" "$P/tampered.so"
-$S sign -key "$K" -so "$P/tampered.so" -label v2 -fingerprints "$W/v2.fp.json" -out "$P/tampered.manifest.json"
+$S sign -key "$K" "${SIGN[@]}" -so "$P/tampered.so" -label v2 -fingerprints "$W/v2.fp.json" -out "$P/tampered.manifest.json"
 printf 'X' >> "$P/tampered.so"   # modified after signing
+# replay: a correctly signed but OLDER build of v2 (serial below v2's). It is
+# accepted only while nothing newer was applied; after v2 it is a downgrade.
+cp "$P/v2.so" "$P/old.so"
+$S sign -key "$K" -serial "$((SERIAL - 1))" -ttl "${TTL:-720h}" -so "$P/old.so" -label v2-old -fingerprints "$W/v2.fp.json" -out "$P/old.manifest.json"
+# expired: v2, validity already over
+cp "$P/v2.so" "$P/expired.so"
+$S sign -key "$K" -serial "$((SERIAL + 1))" -ttl 1s -so "$P/expired.so" -label v2 -fingerprints "$W/v2.fp.json" -out "$P/expired.manifest.json"
 
 ls -la "$OUT" "$P"

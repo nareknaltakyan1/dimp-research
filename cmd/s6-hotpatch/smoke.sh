@@ -14,6 +14,7 @@ PORT=${PORT:-18086}
 run() {
   local mode=$1
   local log="$OUT/server-$mode.log"
+  rm -rf "$OUT/state"   # fresh replay high-water mark per run
   "$OUT/s6-hotpatch" -addr "127.0.0.1:$PORT" -consistency "$mode" 2>"$log" &
   local pid=$!
   for _ in $(seq 50); do curl -sf "http://127.0.0.1:$PORT/healthz" >/dev/null 2>&1 && break; sleep 0.1; done

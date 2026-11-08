@@ -127,18 +127,33 @@ func (r *Registry) Top() *Txn {
 	return r.txns[len(r.txns)-1]
 }
 
-// Revert undoes txn, which must be the most recent applied transaction: it
-// publishes a new patch set (new epoch, txn.From's label) in which every slot
-// txn touched gets back its txn.From version. The returned transaction can
-// be waited on to drain the reverted code.
+// Revert undoes txn, which must be the most recent applied (not reverted)
+// transaction: it publishes a new patch set (new epoch, txn.From's label) in
+// which every slot txn touched gets back its txn.From version; every other
+// slot keeps its current version. The returned transaction can be waited on
+// to drain the reverted code.
+//
+// Reverts nest: after Apply(t1), Apply(t2), Revert(t2), t1 is the top again
+// and Revert(t1) is valid. (Earlier versions compared the current set's
+// POINTER with txn.To, so Revert(t1) failed with ErrNotTop once t2 had been
+// reverted, and so did any Revert after a Register/SetBaseLabel, which
+// republish the current set under a new pointer.)
 func (r *Registry) Revert(txn *Txn) (*Txn, error) {
 	t0 := time.Now()
 	r.mu.Lock()
 	defer r.mu.Unlock()
-	if len(r.txns) == 0 || r.txns[len(r.txns)-1] != txn || r.cur.Load() != txn.To {
+	if len(r.txns) == 0 || r.txns[len(r.txns)-1] != txn {
 		return nil, ErrNotTop
 	}
-	from := txn.To
+	from := r.cur.Load()
+	// Defensive: while txn is the top of the stack every later change was
+	// itself reverted, so the slots txn introduced must still hold its
+	// versions. If not, refuse rather than silently undo someone else's patch.
+	for _, nv := range txn.Introduced {
+		if from.get(nv.slot) != nv {
+			return nil, fmt.Errorf("%w: %s no longer runs the version this transaction installed", ErrNotTop, nv.slot.Symbol)
+		}
+	}
 	r.epoch++
 	to := &PatchSet{reg: r, Epoch: r.epoch, Label: txn.From.Label, versions: append([]*Version(nil), from.versions...)}
 	for len(to.versions) < len(r.slots) {
