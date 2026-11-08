@@ -1,0 +1,55 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@909fb80d48f0",
+  "new": "gotify@11165faa068b",
+  "module": "github.com/gotify/server",
+  "classes": [
+    "C1"
+  ],
+  "dominant_class": "C1",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 1 function(s) (body-only change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ],
+    "risks": [
+      "type information is partial (182/182 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/plugin.Manager.SetPluginEnabled",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 1,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/plugin.Manager.SetPluginEnabled",
+      "detail": "body changed (114 -\u003e 125 tokens)"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 283,
+    "new_funcs": 283,
+    "old_type_errors": 182,
+    "new_type_errors": 182,
+    "changed_funcs": 1,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

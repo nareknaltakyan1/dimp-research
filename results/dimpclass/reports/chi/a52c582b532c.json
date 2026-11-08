@@ -1,0 +1,167 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@9b9fb55def40",
+  "new": "chi@a52c582b532c",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (1): : language/toolchain version changed"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/go-chi/chi/v5.node.InsertRoute, github.com/go-chi/chi/v5.node.findPattern, github.com/go-chi/chi/v5/middleware.ContentCharset",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 5 functions",
+      "toolchain changed: S2/S6 plugin delivery is impossible (plugins must match the host toolchain exactly); only a new process works"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5.Mux.routeHTTP",
+      "reason": "body changed; calls removed setPathValue",
+      "file": "mux.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5.longestPrefix",
+      "reason": "body changed",
+      "file": "tree.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5.node.findRoute",
+      "reason": "body changed",
+      "file": "tree.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5.node.getEdge",
+      "reason": "body changed",
+      "file": "tree.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.contentEncoding",
+      "reason": "body changed",
+      "file": "middleware/content_charset.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 5,
+  "inline_sensitive_callers": [
+    "github.com/go-chi/chi/v5.node.InsertRoute",
+    "github.com/go-chi/chi/v5.node.findPattern",
+    "github.com/go-chi/chi/v5/middleware.ContentCharset"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/compress_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/throttle_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "mux_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-go-unbuilt",
+      "symbol": "path_value_fallback.go",
+      "detail": "removed (not in the linux/amd64 or wasip1 build of an analysed package)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "path_value_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5.Mux.routeHTTP",
+      "detail": "body changed (212 -\u003e 234 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5.longestPrefix",
+      "detail": "body changed (59 -\u003e 41 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5.node.findRoute",
+      "detail": "body changed (659 -\u003e 645 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5.node.getEdge",
+      "detail": "body changed (72 -\u003e 63 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-removed",
+      "symbol": "github.com/go-chi/chi/v5.supportsPathValue"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5/middleware.contentEncoding",
+      "detail": "body changed (60 -\u003e 49 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "import-added",
+      "symbol": "slices",
+      "detail": "first direct import in github.com/go-chi/chi/v5/middleware (already linked into the old binary transitively)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/go-chi/chi/v5.setPathValue",
+      "detail": "func(*Context, *net/http.Request)"
+    },
+    {
+      "class": "C4",
+      "kind": "gomod-go",
+      "detail": "go directive 1.20 -\u003e 1.22",
+      "s6_blocker": "language/toolchain version changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 171,
+    "new_funcs": 170,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 6,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

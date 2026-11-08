@@ -1,0 +1,129 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@d22326bba8ed",
+  "new": "gotify@3f04d50088c8",
+  "module": "github.com/gotify/server",
+  "classes": [
+    "C0",
+    "C2",
+    "C4",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (3): github.com/gin-contrib/cors: dependency graph changed; github.com/gotify/server/config.Configuration: layout of compiled-in type Configuration changed (1 functions use it); S6 replaces functions, not types; github.com/gotify/server/router.Create: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 3 functions",
+      "type information is partial (213/216 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/auth.CorsConfig",
+      "reason": "added",
+      "file": "auth/cors.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/auth.compileAllowedCORSOrigins",
+      "reason": "added",
+      "file": "auth/cors.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/router.Create",
+      "reason": "body changed",
+      "file": "router/router.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 3,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/cors_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "config/config_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "router/router_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "github.com/gin-contrib/cors",
+      "detail": "first import in github.com/gotify/server/auth (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/auth.CorsConfig",
+      "detail": "func(*github.com/gotify/server/config.Configuration) github.com/gin-contrib/cors.Config"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/auth.compileAllowedCORSOrigins",
+      "detail": "func([]string) []*regexp.Regexp"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-retyped",
+      "symbol": "github.com/gotify/server/config.Configuration",
+      "detail": "Server: struct{ListenAddr string \"default:\\\"\\\"\"; Port int \"default:\\\"80\\\"\"; SSL struct{Enabled *bool \"default:\\\"false\\\"\"; RedirectToHTTPS *bool \"default:\\\"true\\\"\"; ListenAddr string \"default:\\\"\\\"\"; Port int \"default:\\\"443\\\"\"; CertFile string \"default:\\\"\\\"\"; CertKey string \"default:\\\"\\\"\"; LetsEncrypt struct{Enabled *bool \"default:\\\"false\\\"\"; AcceptTOS *bool \"default:\\\"false\\\"\"; Cache string \"default:\\\"data/certs\\\"\"; Hosts []string}}; ResponseHeaders map[string]string; Stream struct{AllowedOrigins []string}} -\u003e struct{ListenAddr string \"default:\\\"\\\"\"; Port int \"default:\\\"80\\\"\"; SSL struct{Enabled *bool \"default:\\\"false\\\"\"; RedirectToHTTPS *bool \"default:\\\"true\\\"\"; ListenAddr string \"default:\\\"\\\"\"; Port int \"default:\\\"443\\\"\"; CertFile string \"default:\\\"\\\"\"; CertKey string \"default:\\\"\\\"\"; LetsEncrypt struct{Enabled *bool \"default:\\\"false\\\"\"; AcceptTOS *bool \"default:\\\"false\\\"\"; Cache string \"default:\\\"data/certs\\\"\"; Hosts []string}}; ResponseHeaders map[string]string; Stream struct{AllowedOrigins []string}; Cors struct{AllowOrigins []string; AllowMethods []string; AllowHeaders []string}} [not state]",
+      "s6_blocker": "layout of compiled-in type Configuration changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/gin-contrib/cors",
+      "detail": "v1.3.1",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/router.Create",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (885 -\u003e 867 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 291,
+    "new_funcs": 293,
+    "old_type_errors": 213,
+    "new_type_errors": 216,
+    "changed_funcs": 3,
+    "changed_types": 1,
+    "changed_globals": 0
+  }
+}

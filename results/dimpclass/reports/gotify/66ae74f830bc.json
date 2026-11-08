@@ -1,0 +1,82 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@0863aba9cb33",
+  "new": "gotify@66ae74f830bc",
+  "module": "github.com/gotify/server",
+  "classes": [
+    "C0",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (1): github.com/gotify/server/config.Get: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/gotify/server.main",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 2 functions",
+      "type information is partial (213/213 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/config.Get",
+      "reason": "body changed",
+      "file": "config/config.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/config.configFiles",
+      "reason": "added",
+      "file": "config/config.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 2,
+  "inline_sensitive_callers": [
+    "github.com/gotify/server.main"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "config/config_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/config.configFiles",
+      "detail": "func() []string"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/config.Get",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (53 -\u003e 54 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 290,
+    "new_funcs": 291,
+    "old_type_errors": 213,
+    "new_type_errors": 213,
+    "changed_funcs": 2,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

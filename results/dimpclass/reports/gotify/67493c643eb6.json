@@ -1,0 +1,1206 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@11165faa068b",
+  "new": "gotify@67493c643eb6",
+  "module": "github.com/gotify/server",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (13): github.com/gotify/server/api.ApplicationDatabase: interface method set changed (itabs and type assertions are compiled in); github.com/gotify/server/api.ClientDatabase: interface method set changed (itabs and type assertions are compiled in); github.com/gotify/server/api.MessageDatabase: interface method set changed (itabs and type assertions are compiled in); github.com/gotify/server/api.PluginDatabase: interface method set changed (itabs and type assertions are compiled in); github.com/gotify/server/api.UserDatabase: interface method set changed (itabs and type assertions are compiled in); ... and 8 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "github.com/gotify/server/database.GormDatabase.CountUser is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetApplicationByID is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetApplicationByToken is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetApplicationsByUser is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetClientByID is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetClientByToken is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetClientsByUser is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetMessageByID is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetMessagesByApplication is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetMessagesByApplicationSince is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetMessagesByUser is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetMessagesByUserSince is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetPluginConfByApplicationID is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetPluginConfByID is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetPluginConfByToken is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetPluginConfByUser is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetPluginConfByUserAndPath is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetUserByID is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetUserByName is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.GetUsers is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/database.GormDatabase.UpdateUser is exported: callers outside the analysed module are not in the closure",
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/gotify/server/plugin.Manager.createPluginConf, github.com/gotify/server/router.Create",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 79 functions",
+      "type information is partial (182/209 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.CreateApplication",
+      "reason": "body changed",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.DeleteApplication",
+      "reason": "body changed",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.GetApplications",
+      "reason": "body changed",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.UpdateApplication",
+      "reason": "body changed",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.UploadApplicationImage",
+      "reason": "body changed",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.applicationExists",
+      "reason": "body changed",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/api.ClientAPI.CreateClient",
+      "reason": "body changed",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.ClientAPI.DeleteClient",
+      "reason": "body changed",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.ClientAPI.GetClients",
+      "reason": "body changed",
+      "file": "api/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/api.ClientAPI.UpdateClient",
+      "reason": "body changed",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.ClientAPI.clientExists",
+      "reason": "body changed",
+      "file": "api/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/api.MessageAPI.CreateMessage",
+      "reason": "body changed",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.MessageAPI.DeleteMessage",
+      "reason": "body changed",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.MessageAPI.DeleteMessageWithApplication",
+      "reason": "body changed",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.MessageAPI.DeleteMessages",
+      "reason": "body changed",
+      "file": "api/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/api.MessageAPI.GetMessages",
+      "reason": "body changed",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.MessageAPI.GetMessagesWithApplication",
+      "reason": "body changed",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.PluginAPI.DisablePlugin",
+      "reason": "body changed",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.PluginAPI.EnablePlugin",
+      "reason": "body changed",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.PluginAPI.GetConfig",
+      "reason": "body changed",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.PluginAPI.GetDisplay",
+      "reason": "body changed",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.PluginAPI.GetPlugins",
+      "reason": "body changed",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.PluginAPI.UpdateConfig",
+      "reason": "body changed",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.UserAPI.ChangePassword",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.UserAPI.CreateUser",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.UserAPI.DeleteUserByID",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.UserAPI.GetCurrentUser",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/api.UserAPI.GetUserByID",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.UserAPI.GetUsers",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/api.UserAPI.UpdateUserByID",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api.generateNonExistingImageName",
+      "reason": "added",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/api.successOrAbort",
+      "reason": "added",
+      "file": "api/errorHandling.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/auth.Auth.RequireAdmin",
+      "reason": "body changed",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/auth.Auth.RequireApplicationToken",
+      "reason": "body changed",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/auth.Auth.RequireClient",
+      "reason": "body changed",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/auth.Auth.requireToken",
+      "reason": "body changed; calls Auth.userFromBasicAuth whose signature changed",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/auth.Auth.userFromBasicAuth",
+      "reason": "signature changed",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.CountUser",
+      "reason": "signature changed",
+      "file": "database/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.DeleteMessagesByUser",
+      "reason": "body changed; calls GormDatabase.GetApplicationsByUser whose signature changed",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.DeleteUserByID",
+      "reason": "body changed; calls GormDatabase.GetApplicationsByUser whose signature changed; calls GormDatabase.GetClientsByUser whose signature changed; calls GormDatabase.GetPluginConfByUser whose signature changed",
+      "file": "database/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetApplicationByID",
+      "reason": "signature changed",
+      "file": "database/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetApplicationByToken",
+      "reason": "signature changed",
+      "file": "database/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetApplicationsByUser",
+      "reason": "signature changed",
+      "file": "database/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetClientByID",
+      "reason": "signature changed",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetClientByToken",
+      "reason": "signature changed",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetClientsByUser",
+      "reason": "signature changed",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetMessageByID",
+      "reason": "signature changed",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetMessagesByApplication",
+      "reason": "signature changed",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetMessagesByApplicationSince",
+      "reason": "signature changed",
+      "file": "database/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetMessagesByUser",
+      "reason": "signature changed",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetMessagesByUserSince",
+      "reason": "signature changed",
+      "file": "database/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetPluginConfByApplicationID",
+      "reason": "signature changed",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetPluginConfByID",
+      "reason": "signature changed",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetPluginConfByToken",
+      "reason": "signature changed",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetPluginConfByUser",
+      "reason": "signature changed",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetPluginConfByUserAndPath",
+      "reason": "signature changed",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetUserByID",
+      "reason": "signature changed",
+      "file": "database/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetUserByName",
+      "reason": "signature changed",
+      "file": "database/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetUsers",
+      "reason": "signature changed",
+      "file": "database/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/database.GormDatabase.UpdateUser",
+      "reason": "signature changed",
+      "file": "database/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/plugin.Manager.InitializeForUserID",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/plugin.Manager.RemoveUser",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/plugin.Manager.SetPluginEnabled",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/plugin.Manager.applicationExists",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/plugin.Manager.initializeForUser",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/plugin.Manager.initializeSingleUserPlugin",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/plugin.Manager.pluginConfExists",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/plugin.NewManager",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/plugin.dbStorageHandler.Load",
+      "reason": "body changed",
+      "file": "plugin/storagehandler.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/plugin.dbStorageHandler.Save",
+      "reason": "body changed",
+      "file": "plugin/storagehandler.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/plugin.requirePluginEnabled",
+      "reason": "body changed",
+      "file": "plugin/pluginenabled.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertAppExist",
+      "reason": "calls GormDatabase.GetApplicationByID whose signature changed; body changed",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertAppNotExist",
+      "reason": "calls GormDatabase.GetApplicationByID whose signature changed; body changed",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertClientExist",
+      "reason": "calls GormDatabase.GetClientByID whose signature changed; body changed",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertClientNotExist",
+      "reason": "calls GormDatabase.GetClientByID whose signature changed; body changed",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertMessageExist",
+      "reason": "calls GormDatabase.GetMessageByID whose signature changed; body changed",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertMessageNotExist",
+      "reason": "calls GormDatabase.GetMessageByID whose signature changed; body changed",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertUserExist",
+      "reason": "calls GormDatabase.GetUserByID whose signature changed; body changed",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertUserNotExist",
+      "reason": "calls GormDatabase.GetUserByID whose signature changed; body changed",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 79,
+  "inline_sensitive_callers": [
+    "github.com/gotify/server/plugin.Manager.createPluginConf",
+    "github.com/gotify/server/router.Create"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/client_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/errorHandling_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/message_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/plugin_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/user_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/client_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/message_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/migration_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/plugin_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/user_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "plugin/manager_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "test/testdb/database_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.CreateApplication",
+      "detail": "body changed (80 -\u003e 96 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.DeleteApplication",
+      "detail": "body changed (121 -\u003e 157 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.GetApplications",
+      "detail": "body changed (44 -\u003e 64 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.UpdateApplication",
+      "detail": "body changed (127 -\u003e 163 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.UploadApplicationImage",
+      "detail": "body changed (302 -\u003e 331 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.ApplicationAPI.applicationExists",
+      "detail": "body changed (13 -\u003e 19 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.ClientAPI.CreateClient",
+      "detail": "body changed (70 -\u003e 86 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.ClientAPI.DeleteClient",
+      "detail": "body changed (88 -\u003e 115 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.ClientAPI.GetClients",
+      "detail": "body changed (30 -\u003e 50 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.ClientAPI.UpdateClient",
+      "detail": "body changed (116 -\u003e 152 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.ClientAPI.clientExists",
+      "detail": "body changed (13 -\u003e 19 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.MessageAPI.CreateMessage",
+      "detail": "body changed (126 -\u003e 162 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.MessageAPI.DeleteMessage",
+      "detail": "body changed (80 -\u003e 156 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.MessageAPI.DeleteMessageWithApplication",
+      "detail": "body changed (71 -\u003e 98 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.MessageAPI.DeleteMessages",
+      "detail": "body changed (19 -\u003e 26 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.MessageAPI.GetMessages",
+      "detail": "body changed (60 -\u003e 80 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.MessageAPI.GetMessagesWithApplication",
+      "detail": "body changed (112 -\u003e 152 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.PluginAPI.DisablePlugin",
+      "detail": "body changed (140 -\u003e 160 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.PluginAPI.EnablePlugin",
+      "detail": "body changed (140 -\u003e 160 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.PluginAPI.GetConfig",
+      "detail": "body changed (134 -\u003e 154 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.PluginAPI.GetDisplay",
+      "detail": "body changed (114 -\u003e 134 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.PluginAPI.GetPlugins",
+      "detail": "body changed (161 -\u003e 181 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.PluginAPI.UpdateConfig",
+      "detail": "body changed (223 -\u003e 250 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.UserAPI.ChangePassword",
+      "detail": "body changed (67 -\u003e 94 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.UserAPI.CreateUser",
+      "detail": "body changed (125 -\u003e 165 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.UserAPI.DeleteUserByID",
+      "detail": "body changed (132 -\u003e 183 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.UserAPI.GetCurrentUser",
+      "detail": "body changed (29 -\u003e 49 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.UserAPI.GetUserByID",
+      "detail": "body changed (66 -\u003e 86 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.UserAPI.GetUsers",
+      "detail": "body changed (50 -\u003e 70 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api.UserAPI.UpdateUserByID",
+      "detail": "body changed (163 -\u003e 223 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/database.GormDatabase.DeleteMessagesByUser",
+      "detail": "body changed (27 -\u003e 33 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/database.GormDatabase.DeleteUserByID",
+      "detail": "body changed (96 -\u003e 114 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/plugin.Manager.InitializeForUserID",
+      "detail": "body changed (59 -\u003e 70 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/plugin.Manager.RemoveUser",
+      "detail": "body changed (105 -\u003e 124 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/plugin.Manager.SetPluginEnabled",
+      "detail": "body changed (125 -\u003e 148 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/plugin.Manager.applicationExists",
+      "detail": "body changed (13 -\u003e 19 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/plugin.Manager.initializeForUser",
+      "detail": "body changed (134 -\u003e 160 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/plugin.Manager.initializeSingleUserPlugin",
+      "detail": "body changed (312 -\u003e 323 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/plugin.Manager.pluginConfExists",
+      "detail": "body changed (13 -\u003e 19 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/plugin.dbStorageHandler.Load",
+      "detail": "body changed (17 -\u003e 34 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/plugin.dbStorageHandler.Save",
+      "detail": "body changed (30 -\u003e 41 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/plugin.requirePluginEnabled",
+      "detail": "body changed (48 -\u003e 67 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertAppExist",
+      "detail": "body changed (26 -\u003e 45 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertAppNotExist",
+      "detail": "body changed (27 -\u003e 46 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertClientExist",
+      "detail": "body changed (26 -\u003e 45 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertClientNotExist",
+      "detail": "body changed (27 -\u003e 46 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertMessageExist",
+      "detail": "body changed (26 -\u003e 45 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertMessageNotExist",
+      "detail": "body changed (36 -\u003e 55 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertUserExist",
+      "detail": "body changed (26 -\u003e 45 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/test/testdb.Database.AssertUserNotExist",
+      "detail": "body changed (27 -\u003e 46 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/api.ApplicationDatabase",
+      "detail": "~GetApplicationByID: (uint) *github.com/gotify/server/model.Application -\u003e (uint) (*github.com/gotify/server/model.Application, error); ~GetApplicationByToken: (string) *github.com/gotify/server/model.Application -\u003e (string) (*github.com/gotify/server/model.Application, error); ~GetApplicationsByUser: (uint) []*github.com/gotify/server/model.Application -\u003e (uint) ([]*github.com/gotify/server/model.Application, error)",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/api.ClientDatabase",
+      "detail": "~GetClientByID: (uint) *github.com/gotify/server/model.Client -\u003e (uint) (*github.com/gotify/server/model.Client, error); ~GetClientByToken: (string) *github.com/gotify/server/model.Client -\u003e (string) (*github.com/gotify/server/model.Client, error); ~GetClientsByUser: (uint) []*github.com/gotify/server/model.Client -\u003e (uint) ([]*github.com/gotify/server/model.Client, error)",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/api.MessageDatabase",
+      "detail": "~GetApplicationByID: (uint) *github.com/gotify/server/model.Application -\u003e (uint) (*github.com/gotify/server/model.Application, error); ~GetApplicationByToken: (string) *github.com/gotify/server/model.Application -\u003e (string) (*github.com/gotify/server/model.Application, error); ~GetMessageByID: (uint) *github.com/gotify/server/model.Message -\u003e (uint) (*github.com/gotify/server/model.Message, error); ~GetMessagesByApplicationSince: (uint, int, uint) []*github.com/gotify/server/model.Message -\u003e (uint, int, uint) ([]*github.com/gotify/server/model.Message, error); ~GetMessagesByUserSince: (uint, int, uint) []*github.com/gotify/server/model.Message -\u003e (uint, int, uint) ([]*github.com/gotify/server/model.Message, error)",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/api.PluginDatabase",
+      "detail": "~GetPluginConfByID: (uint) *github.com/gotify/server/model.PluginConf -\u003e (uint) (*github.com/gotify/server/model.PluginConf, error); ~GetPluginConfByUser: (uint) []*github.com/gotify/server/model.PluginConf -\u003e (uint) ([]*github.com/gotify/server/model.PluginConf, error)",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/api.UserDatabase",
+      "detail": "~CountUser: (...any) int -\u003e (...any) (int, error); ~GetUserByID: (uint) *github.com/gotify/server/model.User -\u003e (uint) (*github.com/gotify/server/model.User, error); ~GetUserByName: (string) *github.com/gotify/server/model.User -\u003e (string) (*github.com/gotify/server/model.User, error); ~GetUsers: () []*github.com/gotify/server/model.User -\u003e () ([]*github.com/gotify/server/model.User, error); ~UpdateUser: (*github.com/gotify/server/model.User) -\u003e (*github.com/gotify/server/model.User) error",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/api.generateNonExistingImageName",
+      "detail": "func(string, func() string) string"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/api.successOrAbort",
+      "detail": "func(*github.com/gin-gonic/gin.Context, int, error) bool"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/auth.Auth.userFromBasicAuth",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) *github.com/gotify/server/model.User -\u003e (*Auth)func(*github.com/gin-gonic/gin.Context) (*github.com/gotify/server/model.User, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/auth.Database",
+      "detail": "~GetApplicationByToken: (string) *github.com/gotify/server/model.Application -\u003e (string) (*github.com/gotify/server/model.Application, error); ~GetClientByToken: (string) *github.com/gotify/server/model.Client -\u003e (string) (*github.com/gotify/server/model.Client, error); ~GetPluginConfByToken: (string) *github.com/gotify/server/model.PluginConf -\u003e (string) (*github.com/gotify/server/model.PluginConf, error); ~GetUserByID: (uint) *github.com/gotify/server/model.User -\u003e (uint) (*github.com/gotify/server/model.User, error); ~GetUserByName: (string) *github.com/gotify/server/model.User -\u003e (string) (*github.com/gotify/server/model.User, error)",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "type-changed",
+      "symbol": "github.com/gotify/server/auth.authenticate",
+      "detail": "func(string, *github.com/gotify/server/model.User) (bool, bool, uint) -\u003e func(string, *github.com/gotify/server/model.User) (bool, bool, uint, error)",
+      "s6_blocker": "layout/identity of compiled-in type authenticate changed (0 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.CountUser",
+      "detail": "(*GormDatabase)func(...any) int -\u003e (*GormDatabase)func(...any) (int, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetApplicationByID",
+      "detail": "(*GormDatabase)func(uint) *github.com/gotify/server/model.Application -\u003e (*GormDatabase)func(uint) (*github.com/gotify/server/model.Application, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetApplicationByToken",
+      "detail": "(*GormDatabase)func(string) *github.com/gotify/server/model.Application -\u003e (*GormDatabase)func(string) (*github.com/gotify/server/model.Application, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetApplicationsByUser",
+      "detail": "(*GormDatabase)func(uint) []*github.com/gotify/server/model.Application -\u003e (*GormDatabase)func(uint) ([]*github.com/gotify/server/model.Application, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetClientByID",
+      "detail": "(*GormDatabase)func(uint) *github.com/gotify/server/model.Client -\u003e (*GormDatabase)func(uint) (*github.com/gotify/server/model.Client, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetClientByToken",
+      "detail": "(*GormDatabase)func(string) *github.com/gotify/server/model.Client -\u003e (*GormDatabase)func(string) (*github.com/gotify/server/model.Client, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetClientsByUser",
+      "detail": "(*GormDatabase)func(uint) []*github.com/gotify/server/model.Client -\u003e (*GormDatabase)func(uint) ([]*github.com/gotify/server/model.Client, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetMessageByID",
+      "detail": "(*GormDatabase)func(uint) *github.com/gotify/server/model.Message -\u003e (*GormDatabase)func(uint) (*github.com/gotify/server/model.Message, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetMessagesByApplication",
+      "detail": "(*GormDatabase)func(uint) []*github.com/gotify/server/model.Message -\u003e (*GormDatabase)func(uint) ([]*github.com/gotify/server/model.Message, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetMessagesByApplicationSince",
+      "detail": "(*GormDatabase)func(uint, int, uint) []*github.com/gotify/server/model.Message -\u003e (*GormDatabase)func(uint, int, uint) ([]*github.com/gotify/server/model.Message, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetMessagesByUser",
+      "detail": "(*GormDatabase)func(uint) []*github.com/gotify/server/model.Message -\u003e (*GormDatabase)func(uint) ([]*github.com/gotify/server/model.Message, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetMessagesByUserSince",
+      "detail": "(*GormDatabase)func(uint, int, uint) []*github.com/gotify/server/model.Message -\u003e (*GormDatabase)func(uint, int, uint) ([]*github.com/gotify/server/model.Message, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetPluginConfByApplicationID",
+      "detail": "(*GormDatabase)func(uint) *github.com/gotify/server/model.PluginConf -\u003e (*GormDatabase)func(uint) (*github.com/gotify/server/model.PluginConf, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetPluginConfByID",
+      "detail": "(*GormDatabase)func(uint) *github.com/gotify/server/model.PluginConf -\u003e (*GormDatabase)func(uint) (*github.com/gotify/server/model.PluginConf, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetPluginConfByToken",
+      "detail": "(*GormDatabase)func(string) *github.com/gotify/server/model.PluginConf -\u003e (*GormDatabase)func(string) (*github.com/gotify/server/model.PluginConf, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetPluginConfByUser",
+      "detail": "(*GormDatabase)func(uint) []*github.com/gotify/server/model.PluginConf -\u003e (*GormDatabase)func(uint) ([]*github.com/gotify/server/model.PluginConf, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetPluginConfByUserAndPath",
+      "detail": "(*GormDatabase)func(uint, string) *github.com/gotify/server/model.PluginConf -\u003e (*GormDatabase)func(uint, string) (*github.com/gotify/server/model.PluginConf, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetUserByID",
+      "detail": "(*GormDatabase)func(uint) *github.com/gotify/server/model.User -\u003e (*GormDatabase)func(uint) (*github.com/gotify/server/model.User, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetUserByName",
+      "detail": "(*GormDatabase)func(string) *github.com/gotify/server/model.User -\u003e (*GormDatabase)func(string) (*github.com/gotify/server/model.User, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.GetUsers",
+      "detail": "(*GormDatabase)func() []*github.com/gotify/server/model.User -\u003e (*GormDatabase)func() ([]*github.com/gotify/server/model.User, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/database.GormDatabase.UpdateUser",
+      "detail": "(*GormDatabase)func(*github.com/gotify/server/model.User) -\u003e (*GormDatabase)func(*github.com/gotify/server/model.User) error"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/plugin.Database",
+      "detail": "~GetApplicationByToken: (string) *github.com/gotify/server/model.Application -\u003e (string) (*github.com/gotify/server/model.Application, error); ~GetApplicationsByUser: (uint) []*github.com/gotify/server/model.Application -\u003e (uint) ([]*github.com/gotify/server/model.Application, error); ~GetPluginConfByApplicationID: (uint) *github.com/gotify/server/model.PluginConf -\u003e (uint) (*github.com/gotify/server/model.PluginConf, error); ~GetPluginConfByID: (uint) *github.com/gotify/server/model.PluginConf -\u003e (uint) (*github.com/gotify/server/model.PluginConf, error); ~GetPluginConfByToken: (string) *github.com/gotify/server/model.PluginConf -\u003e (string) (*github.com/gotify/server/model.PluginConf, error); ~GetPluginConfByUserAndPath: (uint, string) *github.com/gotify/server/model.PluginConf -\u003e (uint, string) (*github.com/gotify/server/model.PluginConf, error); ~GetUserByID: (uint) *github.com/gotify/server/model.User -\u003e (uint) (*github.com/gotify/server/model.User, error); ~GetUsers: () []*github.com/gotify/server/model.User -\u003e () ([]*github.com/gotify/server/model.User, error)",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/auth.Auth.RequireAdmin",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (88 -\u003e 136 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/auth.Auth.RequireApplicationToken",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (73 -\u003e 98 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/auth.Auth.RequireClient",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (75 -\u003e 100 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/auth.Auth.requireToken",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (131 -\u003e 189 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/plugin.NewManager",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (243 -\u003e 260 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 283,
+    "new_funcs": 285,
+    "old_type_errors": 182,
+    "new_type_errors": 209,
+    "changed_funcs": 79,
+    "changed_types": 8,
+    "changed_globals": 0
+  }
+}

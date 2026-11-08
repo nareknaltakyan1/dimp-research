@@ -1,0 +1,111 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@50b917af4d50",
+  "new": "gotify@497f9459d2bc",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (4): github.com/gotify/server/v2/auth.Auth: layout of compiled-in type Auth changed (1 functions use it); S6 replaces functions, not types; github.com/gotify/server/v2/model.CreateMessage: struct tags are part of compiled-in type identity; github.com/gotify/server/v2/model.MessageExternal: struct tags are part of compiled-in type identity; github.com/gotify/server/v2/router.Create: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 3 functions",
+      "type information is partial (355/358 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.evaluate",
+      "reason": "body changed",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.rejectForeignOrigin",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "reason": "body changed",
+      "file": "router/router.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 3,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/authentication_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.evaluate",
+      "detail": "body changed (125 -\u003e 137 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth",
+      "detail": "CrossOrigin *net/http.CrossOriginProtection [not state]",
+      "s6_blocker": "layout of compiled-in type Auth changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.rejectForeignOrigin",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) bool"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-tag-changed",
+      "symbol": "github.com/gotify/server/v2/model.CreateMessage",
+      "detail": "ApplicationID: `json:\"appid\"` -\u003e `form:\"appid\" query:\"appid\" json:\"appid\"`",
+      "s6_blocker": "struct tags are part of compiled-in type identity"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-tag-changed",
+      "symbol": "github.com/gotify/server/v2/model.MessageExternal",
+      "detail": "ApplicationID: `json:\"appid\"` -\u003e `form:\"appid\" query:\"appid\" json:\"appid\"`",
+      "s6_blocker": "struct tags are part of compiled-in type identity"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (1571 -\u003e 1580 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 30,
+    "new_packages": 30,
+    "old_funcs": 388,
+    "new_funcs": 389,
+    "old_type_errors": 355,
+    "new_type_errors": 358,
+    "changed_funcs": 3,
+    "changed_types": 3,
+    "changed_globals": 0
+  }
+}

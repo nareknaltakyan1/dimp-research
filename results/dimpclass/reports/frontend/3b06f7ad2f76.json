@@ -1,0 +1,89 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@10e8f3ed5175",
+  "new": "frontend@3b06f7ad2f76",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C0",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (6): : language/toolchain version changed; github.com/cespare/xxhash/v2: dependency graph changed; github.com/cncf/udpa/go: dependency graph changed; github.com/cncf/xds/go: dependency graph changed; github.com/envoyproxy/go-control-plane: dependency graph changed; ... and 1 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (415/415 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "toolchain changed: S2/S6 plugin delivery is impossible (plugins must match the host toolchain exactly); only a new process works"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C4",
+      "kind": "gomod-go",
+      "detail": "go directive 1.18 -\u003e 1.19",
+      "s6_blocker": "language/toolchain version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/cespare/xxhash/v2",
+      "detail": "v2.1.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/cncf/udpa/go",
+      "detail": "v0.0.0-20210930031921-04548b0d99d4 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/cncf/xds/go",
+      "detail": "v0.0.0-20211011173535-cb28da3451f1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/envoyproxy/go-control-plane",
+      "detail": "v0.10.2-0.20220325020618-49ff273808a1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/envoyproxy/protoc-gen-validate",
+      "detail": "v0.1.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 3,
+    "new_packages": 3,
+    "old_funcs": 457,
+    "new_funcs": 457,
+    "old_type_errors": 415,
+    "new_type_errors": 415,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

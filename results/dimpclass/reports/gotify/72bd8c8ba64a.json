@@ -1,0 +1,187 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@aedc3e2ba657",
+  "new": "gotify@72bd8c8ba64a",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C3",
+    "C5"
+  ],
+  "dominant_class": "C3",
+  "recommendation": {
+    "mechanism": "S5+xform",
+    "in_process": false,
+    "summary": "S5 FD-passing handoff with a state transformer (in-memory state schema changed).",
+    "justification": [
+      "the layout of in-memory state changed, so no in-process mechanism can keep the old objects; the new process needs the old state mapped to the new schema (Kitsune/MCR-style state transfer)",
+      "a transformer skeleton was generated (old -\u003e new, field by field, TODOs for added/retyped fields)",
+      "S6 blockers (4): github.com/gotify/server/v2/api.ApplicationParams: layout of compiled-in type ApplicationParams changed (2 functions use it); S6 replaces functions, not types; github.com/gotify/server/v2/model.Application: layout of compiled-in type Application changed (10 functions use it); S6 replaces functions, not types; github.com/gotify/server/v2/model.MessageExternal: layout of in-memory state type changed; github.com/gotify/server/v2/plugin.NewManager: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    ],
+    "alternatives": [
+      "rolling update if losing the in-memory state is acceptable (cold caches)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 8 functions",
+      "type information is partial (221/221 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "state transformer must be completed and reviewed; encoding/json does not carry unexported fields, so the S5 state envelope needs an explicit DTO for them"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/api.ApplicationAPI.CreateApplication",
+      "reason": "body changed",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.ApplicationAPI.UpdateApplication",
+      "reason": "body changed",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.MessageAPI.CreateMessage",
+      "reason": "body changed",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.toExternalMessage",
+      "reason": "body changed",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.toInternalMessage",
+      "reason": "body changed",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.NewManager",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.redirectToChannel.SendMessage",
+      "reason": "body changed",
+      "file": "plugin/messagehandler.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/test/testdb.AppClientBuilder.AppWithTokenAndDefaultPriority",
+      "reason": "added",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 8,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/message_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "test/testdb/database_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.ApplicationAPI.CreateApplication",
+      "detail": "body changed (108 -\u003e 114 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.ApplicationAPI.UpdateApplication",
+      "detail": "body changed (161 -\u003e 169 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.MessageAPI.CreateMessage",
+      "detail": "body changed (168 -\u003e 185 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.toExternalMessage",
+      "detail": "body changed (89 -\u003e 90 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.toInternalMessage",
+      "detail": "body changed (72 -\u003e 83 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/plugin.redirectToChannel.SendMessage",
+      "detail": "body changed (64 -\u003e 65 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/api.ApplicationParams",
+      "detail": "DefaultPriority int [not state]",
+      "s6_blocker": "layout of compiled-in type ApplicationParams changed (2 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/model.Application",
+      "detail": "DefaultPriority int [not state]",
+      "s6_blocker": "layout of compiled-in type Application changed (10 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/test/testdb.AppClientBuilder.AppWithTokenAndDefaultPriority",
+      "detail": "(*AppClientBuilder)func(uint, string, int) *MessageBuilder"
+    },
+    {
+      "class": "C3",
+      "kind": "struct-field-retyped",
+      "symbol": "github.com/gotify/server/v2/model.MessageExternal",
+      "detail": "Priority: int -\u003e *int [state: reachable from long-lived type API (field clients)]",
+      "s6_blocker": "layout of in-memory state type changed"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/plugin.NewManager",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (260 -\u003e 261 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "state_transformer": "// Code generated by dimpclass (S8). State-transformer SKELETON for an S5 handoff.\n// Review and complete every TODO before use. The old (V1) and new (V2) layouts\n// are mirrored here because both versions of the package share one import path;\n// the old process exports V1 values in its state envelope, the new process\n// decodes them, calls Transform*, and installs the V2 values.\n\npackage statexform\n\nimport (\n\t\"time\"\n)\n\n// ---- github.com/gotify/server/v2/model.MessageExternal (state: reachable from long-lived type API (field clients))\n\n// MessageExternalV1 mirrors the old (v1) layout of MessageExternal.\ntype MessageExternalV1 struct {\n\tID            uint                   `json:\"id\"`\n\tApplicationID uint                   `json:\"appid\"`\n\tMessage       string                 `form:\"message\" query:\"message\" json:\"message\" binding:\"required\"`\n\tTitle         string                 `form:\"title\" query:\"title\" json:\"title\"`\n\tPriority      int                    `form:\"priority\" query:\"priority\" json:\"priority\"`\n\tExtras        map[string]interface{} `form:\"-\" query:\"-\" json:\"extras,omitempty\"`\n\tDate          time.Time              `json:\"date\"`\n}\n\n// MessageExternalV2 mirrors the new (v2) layout of MessageExternal.\ntype MessageExternalV2 struct {\n\tID            uint                   `json:\"id\"`\n\tApplicationID uint                   `json:\"appid\"`\n\tMessage       string                 `form:\"message\" query:\"message\" json:\"message\" binding:\"required\"`\n\tTitle         string                 `form:\"title\" query:\"title\" json:\"title\"`\n\tPriority      *int                   `form:\"priority\" query:\"priority\" json:\"priority\"`\n\tExtras        map[string]interface{} `form:\"-\" query:\"-\" json:\"extras,omitempty\"`\n\tDate          time.Time              `json:\"date\"`\n}\n\n// TransformMessageExternal maps one old MessageExternal to the new layout.\nfunc TransformMessageExternal(in MessageExternalV1) (MessageExternalV2, error) {\n\tvar out MessageExternalV2\n\tout.ID = in.ID\n\tout.ApplicationID = in.ApplicationID\n\tout.Message = in.Message\n\tout.Title = in.Title\n\t// TODO(retyped): out.Priority (*int) \u003c- in.Priority (int): write the conversion\n\tout.Extras = in.Extras\n\tout.Date = in.Date\n\treturn out, nil\n}\n",
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 303,
+    "new_funcs": 304,
+    "old_type_errors": 221,
+    "new_type_errors": 221,
+    "changed_funcs": 8,
+    "changed_types": 3,
+    "changed_globals": 0
+  }
+}

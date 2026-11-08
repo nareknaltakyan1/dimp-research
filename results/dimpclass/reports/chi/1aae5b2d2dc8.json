@@ -1,0 +1,80 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@c6225e35a488",
+  "new": "chi@1aae5b2d2dc8",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C1"
+  ],
+  "dominant_class": "C1",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 2 function(s) (body-only change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 2 functions"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.Compressor.SetEncoder",
+      "reason": "body changed",
+      "file": "middleware/compress.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.basicWriter.Write",
+      "reason": "body changed",
+      "file": "middleware/wrap_writer.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/middleware_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "mux_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5/middleware.Compressor.SetEncoder",
+      "detail": "body changed (221 -\u003e 215 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5/middleware.basicWriter.Write",
+      "detail": "body changed (109 -\u003e 109 tokens)"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 171,
+    "new_funcs": 171,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 2,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

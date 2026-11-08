@@ -1,0 +1,79 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@3328d4d3ab8a",
+  "new": "chi@a54874f0e2f1",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (1): : language/toolchain version changed"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "toolchain changed: S2/S6 plugin delivery is impossible (plugins must match the host toolchain exactly); only a new process works"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5.Mux.routeHTTP",
+      "reason": "body changed; calls removed setPattern",
+      "file": "mux.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 1,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-go-unbuilt",
+      "symbol": "pattern_fallback.go",
+      "detail": "removed (not in the linux/amd64 or wasip1 build of an analysed package)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5.Mux.routeHTTP",
+      "detail": "body changed (234 -\u003e 231 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-removed",
+      "symbol": "github.com/go-chi/chi/v5.supportsPattern"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/go-chi/chi/v5.setPattern",
+      "detail": "func(*Context, *net/http.Request)"
+    },
+    {
+      "class": "C4",
+      "kind": "gomod-go",
+      "detail": "go directive 1.22 -\u003e 1.23",
+      "s6_blocker": "language/toolchain version changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 170,
+    "new_funcs": 169,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 2,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

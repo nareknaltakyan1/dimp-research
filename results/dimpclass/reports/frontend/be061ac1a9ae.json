@@ -1,0 +1,166 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@b4a535cd9eb9",
+  "new": "frontend@be061ac1a9ae",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C0",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (17): cloud.google.com/go: dependency version changed; go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc: dependency version changed; go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp: dependency version changed; go.opentelemetry.io/otel: dependency version changed; go.opentelemetry.io/otel/exporters/otlp/otlptrace: dependency version changed; ... and 12 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (408/408 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "cloud.google.com/go",
+      "detail": "v0.111.0 -\u003e v0.112.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc",
+      "detail": "v0.48.0 -\u003e v0.49.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp",
+      "detail": "v0.48.0 -\u003e v0.49.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel",
+      "detail": "v1.23.1 -\u003e v1.24.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/exporters/otlp/otlptrace",
+      "detail": "v1.23.1 -\u003e v1.24.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc",
+      "detail": "v1.23.1 -\u003e v1.24.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/metric",
+      "detail": "v1.23.1 -\u003e v1.24.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/sdk",
+      "detail": "v1.23.1 -\u003e v1.24.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/trace",
+      "detail": "v1.23.1 -\u003e v1.24.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/oauth2",
+      "detail": "v0.15.0 -\u003e v0.16.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/sync",
+      "detail": "v0.5.0 -\u003e v0.6.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "golang.org/x/time",
+      "detail": "v0.5.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "google.golang.org/api",
+      "detail": "v0.149.0 -\u003e v0.155.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "google.golang.org/genproto",
+      "detail": "v0.0.0-20231212172506-995d672761c0 -\u003e v0.0.0-20240123012728-ef4313101c80 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "google.golang.org/genproto/googleapis/api",
+      "detail": "v0.0.0-20240102182953-50ed04b92917 -\u003e v0.0.0-20240123012728-ef4313101c80 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "google.golang.org/genproto/googleapis/rpc",
+      "detail": "v0.0.0-20240102182953-50ed04b92917 -\u003e v0.0.0-20240123012728-ef4313101c80 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "google.golang.org/grpc",
+      "detail": "v1.61.1 -\u003e v1.62.0",
+      "s6_blocker": "dependency version changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 3,
+    "new_packages": 3,
+    "old_funcs": 457,
+    "new_funcs": 457,
+    "old_type_errors": 408,
+    "new_type_errors": 408,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

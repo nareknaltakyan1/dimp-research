@@ -1,0 +1,206 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@0bfa5ca4d964",
+  "new": "gotify@d32d131d08a7",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (6): github.com/gotify/server/v2.main: main() runs once at start-up (never re-executed / never returns); github.com/gotify/server/v2/router.Create: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/gotify/server/v2.main: caller in the call-graph closure never returns; github.com/gotify/server/v2/runner.Run: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/gotify/server/v2/runner.Run: caller in the call-graph closure never returns; ... and 1 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "github.com/gotify/server/v2/runner.Run is exported: callers outside the analysed module are not in the closure",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 8 functions",
+      "1 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (221/222 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2.main",
+      "reason": "calls Run whose signature changed",
+      "file": "app.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "reason": "body changed",
+      "file": "router/router.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/runner.Run",
+      "reason": "signature changed; calls removed redirectToHTTPS; calls startListening whose signature changed",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/runner.applyLetsEncrypt",
+      "reason": "added",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/runner.doShutdown",
+      "reason": "added",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/runner.doShutdownOnSignal",
+      "reason": "added",
+      "file": "runner/runner.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/runner.getNetworkAndAddr",
+      "reason": "added",
+      "file": "runner/runner.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/runner.startListening",
+      "reason": "signature changed",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 8,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "runner/runner_test.go",
+      "detail": "removed"
+    },
+    {
+      "class": "C1",
+      "kind": "import-added",
+      "symbol": "syscall",
+      "detail": "first direct import in github.com/gotify/server/v2/runner (already linked into the old binary transitively)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/runner.Run",
+      "detail": "func(net/http.Handler, *github.com/gotify/server/v2/config.Configuration) -\u003e func(net/http.Handler, *github.com/gotify/server/v2/config.Configuration) error"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/runner.applyLetsEncrypt",
+      "detail": "func(*net/http.Server, *github.com/gotify/server/v2/config.Configuration)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/runner.changePort",
+      "detail": "func(string, string) string"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/runner.doShutdown",
+      "detail": "func(chan\u003c- error, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/runner.doShutdownOnSignal",
+      "detail": "func(chan\u003c- error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/runner.getNetworkAndAddr",
+      "detail": "func(string, int) (string, string)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/runner.redirectToHTTPS",
+      "detail": "func(string) net/http.HandlerFunc"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/runner.startListening",
+      "detail": "func(string, int) net.Listener -\u003e func(string, string, int, int) (net.Listener, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "os/signal",
+      "detail": "first import in github.com/gotify/server/v2/runner (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2.main",
+      "detail": "calls Run whose signature changed; caller is main()",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "main-changed",
+      "symbol": "github.com/gotify/server/v2.main",
+      "detail": "body changed (210 -\u003e 236 tokens)",
+      "s6_blocker": "main() runs once at start-up (never re-executed / never returns)"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (984 -\u003e 1202 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2/runner.Run",
+      "detail": "calls removed redirectToHTTPS; caller is calls blocking server loop ServeTLS()",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2/runner.Run",
+      "detail": "calls startListening whose signature changed; caller is calls blocking server loop ServeTLS()",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/runner.Run",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (328 -\u003e 263 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 307,
+    "new_funcs": 309,
+    "old_type_errors": 221,
+    "new_type_errors": 222,
+    "changed_funcs": 10,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@5ac7a8277d4d",
+  "new": "chi@756fcb8d630f",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (1): : language/toolchain version changed"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "toolchain changed: S2/S6 plugin delivery is impossible (plugins must match the host toolchain exactly); only a new process works"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/client_ip_bench_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/throttle_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "mux_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "tree_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C4",
+      "kind": "gomod-go",
+      "detail": "go directive 1.23 -\u003e 1.24",
+      "s6_blocker": "language/toolchain version changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 182,
+    "new_funcs": 182,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

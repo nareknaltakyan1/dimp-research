@@ -1,0 +1,82 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@34dc6fa379be",
+  "new": "frontend@ea480e6f2cc7",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C0",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (5): cloud.google.com/go: dependency version changed; cloud.google.com/go/profiler: dependency version changed; github.com/google/pprof: dependency version changed; github.com/googleapis/gax-go/v2: dependency version changed; google.golang.org/api: dependency version changed"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (410/410 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "cloud.google.com/go",
+      "detail": "v0.104.0 -\u003e v0.105.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "cloud.google.com/go/profiler",
+      "detail": "v0.3.0 -\u003e v0.3.1",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/google/pprof",
+      "detail": "v0.0.0-20220412212628-83db2b799d1f -\u003e v0.0.0-20221103000818-d260c55eee4c (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/googleapis/gax-go/v2",
+      "detail": "v2.6.0 -\u003e v2.7.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "google.golang.org/api",
+      "detail": "v0.100.0 -\u003e v0.102.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 3,
+    "new_packages": 3,
+    "old_funcs": 455,
+    "new_funcs": 455,
+    "old_type_errors": 410,
+    "new_type_errors": 410,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

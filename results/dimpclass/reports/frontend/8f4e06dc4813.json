@@ -1,0 +1,117 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@a09fd00b14ed",
+  "new": "frontend@8f4e06dc4813",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C0",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (10): github.com/go-logr/logr: dependency version changed; go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc: dependency version changed; go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp: dependency version changed; go.opentelemetry.io/otel: dependency version changed; go.opentelemetry.io/otel/exporters/otlp/otlptrace: dependency version changed; ... and 5 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (408/408 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/go-logr/logr",
+      "detail": "v1.3.0 -\u003e v1.4.1 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc",
+      "detail": "v0.46.1 -\u003e v0.47.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp",
+      "detail": "v0.46.1 -\u003e v0.47.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel",
+      "detail": "v1.21.0 -\u003e v1.22.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/exporters/otlp/otlptrace",
+      "detail": "v1.21.0 -\u003e v1.22.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc",
+      "detail": "v1.21.0 -\u003e v1.22.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/metric",
+      "detail": "v1.21.0 -\u003e v1.22.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/sdk",
+      "detail": "v1.21.0 -\u003e v1.22.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/trace",
+      "detail": "v1.21.0 -\u003e v1.22.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "google.golang.org/protobuf",
+      "detail": "v1.31.0 -\u003e v1.32.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 3,
+    "new_packages": 3,
+    "old_funcs": 457,
+    "new_funcs": 457,
+    "old_type_errors": 408,
+    "new_type_errors": 408,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

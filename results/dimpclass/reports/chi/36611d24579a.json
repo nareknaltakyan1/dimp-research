@@ -1,0 +1,75 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@aba86186a274",
+  "new": "chi@36611d24579a",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0"
+  ],
+  "dominant_class": "C0",
+  "recommendation": {
+    "mechanism": "none",
+    "in_process": true,
+    "summary": "No runtime code change: nothing to patch.",
+    "justification": [
+      "the canonical token streams of all built Go sources are identical; only tests, comments, formatting or non-compiled files changed"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/basic_auth_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/clean_path_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/heartbeat_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/middleware_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/path_rewrite_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/terminal_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/value_test.go",
+      "detail": "added"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 182,
+    "new_funcs": 182,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

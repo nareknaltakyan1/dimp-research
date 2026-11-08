@@ -1,0 +1,98 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@71307f9b7e4e",
+  "new": "chi@877e8762059c",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C1"
+  ],
+  "dominant_class": "C1",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 4 function(s) (body-only change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ],
+    "risks": [
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/go-chi/chi/v5/middleware.HeaderRouter.Route, github.com/go-chi/chi/v5/middleware.HeaderRouter.RouteAny",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 4 functions"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5.patNextSegment",
+      "reason": "body changed",
+      "file": "tree.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.NewPattern",
+      "reason": "body changed",
+      "file": "middleware/route_headers.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.compressResponseWriter.isCompressible",
+      "reason": "body changed",
+      "file": "middleware/compress.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.realIP",
+      "reason": "body changed",
+      "file": "middleware/realip.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 4,
+  "inline_sensitive_callers": [
+    "github.com/go-chi/chi/v5/middleware.HeaderRouter.Route",
+    "github.com/go-chi/chi/v5/middleware.HeaderRouter.RouteAny"
+  ],
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5.patNextSegment",
+      "detail": "body changed (347 -\u003e 327 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5/middleware.NewPattern",
+      "detail": "body changed (64 -\u003e 31 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5/middleware.compressResponseWriter.isCompressible",
+      "detail": "body changed (101 -\u003e 83 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5/middleware.realIP",
+      "detail": "body changed (118 -\u003e 100 tokens)"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 171,
+    "new_funcs": 171,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 4,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@d4f6ce817f7f",
+  "new": "frontend@7ac4a1e0af2e",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C1",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (2): github.com/GoogleCloudPlatform/microservices-demo/src/frontend.main: main() runs once at start-up (never re-executed / never returns); github.com/GoogleCloudPlatform/microservices-demo/src/frontend.whitelistedCurrencies: package-level initializer ran once at start-up; S6 patches functions, not data"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "new package-level variable github.com/GoogleCloudPlatform/microservices-demo/src/frontend.baseUrl: under S6 it lives in the patch plugin and is re-initialised by every later patch generation",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 5 functions",
+      "5 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (418/418 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.addToCartHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.emptyCartHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.logoutHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.setCurrencyHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.injectCommonTemplateData",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 5,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.addToCartHandler",
+      "detail": "body changed (269 -\u003e 271 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.emptyCartHandler",
+      "detail": "body changed (103 -\u003e 105 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.logoutHandler",
+      "detail": "body changed (103 -\u003e 105 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.setCurrencyHandler",
+      "detail": "body changed (184 -\u003e 186 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.injectCommonTemplateData",
+      "detail": "body changed (101 -\u003e 105 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "var-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.baseUrl",
+      "detail": "string"
+    },
+    {
+      "class": "C2",
+      "kind": "var-init",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.whitelistedCurrencies",
+      "detail": "initializer changed",
+      "s6_blocker": "package-level initializer ran once at start-up; S6 patches functions, not data"
+    },
+    {
+      "class": "C5",
+      "kind": "main-changed",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.main",
+      "detail": "body changed (778 -\u003e 817 tokens)",
+      "s6_blocker": "main() runs once at start-up (never re-executed / never returns)"
+    }
+  ],
+  "stats": {
+    "old_packages": 4,
+    "new_packages": 4,
+    "old_funcs": 466,
+    "new_funcs": 466,
+    "old_type_errors": 418,
+    "new_type_errors": 418,
+    "changed_funcs": 6,
+    "changed_types": 0,
+    "changed_globals": 2
+  }
+}

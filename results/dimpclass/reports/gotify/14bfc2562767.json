@@ -1,0 +1,209 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@54deea62a54c",
+  "new": "gotify@14bfc2562767",
+  "module": "github.com/gotify/server/v3",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (5): github.com/gotify/server/v3/api.NewOIDC: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/gotify/server/v3/api.OIDCAPI.CallbackHandler: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/gotify/server/v3/api.OIDCAPI: layout of compiled-in type OIDCAPI changed (1 functions use it); S6 replaces functions, not types; github.com/gotify/server/v3/config.Get: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/gotify/server/v3/config.OIDC: layout of compiled-in type OIDC changed (1 functions use it); S6 replaces functions, not types"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 10 functions",
+      "type information is partial (363/367 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v3/api.NewOIDC",
+      "reason": "body changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.CallbackHandler",
+      "reason": "body changed; calls OIDCAPI.resolveUser whose signature changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.ExternalTokenHandler",
+      "reason": "body changed; calls OIDCAPI.resolveUser whose signature changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.linkExistingUser",
+      "reason": "signature changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.registerUser",
+      "reason": "signature changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.resolvePermission",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.resolveUser",
+      "reason": "calls OIDCAPI.linkExistingUser whose signature changed; calls OIDCAPI.registerUser whose signature changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.containsAny",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.lookupClaim",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.Get",
+      "reason": "body changed",
+      "file": "config/config.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 10,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/oidc_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.ExternalTokenHandler",
+      "detail": "body changed (369 -\u003e 365 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v3/config.EnvOIDCGroupsAdmin",
+      "detail": "= \"GOTIFY_OIDC_GROUPS_ADMIN\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v3/config.EnvOIDCGroupsClaim",
+      "detail": "= \"GOTIFY_OIDC_GROUPS_CLAIM\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v3/config.EnvOIDCGroupsUser",
+      "detail": "= \"GOTIFY_OIDC_GROUPS_USER\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI",
+      "detail": "GroupsClaim string; GroupsUser []string; GroupsAdmin []string [not state]",
+      "s6_blocker": "layout of compiled-in type OIDCAPI changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.linkExistingUser",
+      "detail": "(*OIDCAPI)func(*github.com/gotify/server/v3/model.User, string) (*github.com/gotify/server/v3/model.User, int, error) -\u003e (*OIDCAPI)func(*github.com/gotify/server/v3/model.User, string, bool) (*github.com/gotify/server/v3/model.User, int, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.registerUser",
+      "detail": "(*OIDCAPI)func(string, string) (*github.com/gotify/server/v3/model.User, int, error) -\u003e (*OIDCAPI)func(string, string, bool) (*github.com/gotify/server/v3/model.User, int, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.resolvePermission",
+      "detail": "(*OIDCAPI)func(map[string]any, map[string]any) (bool, int, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.resolveUser",
+      "detail": "(*OIDCAPI)func(string, *github.com/zitadel/oidc/v3/pkg/oidc.UserInfo) (*github.com/gotify/server/v3/model.User, int, error) -\u003e (*OIDCAPI)func(*github.com/zitadel/oidc/v3/pkg/oidc.IDTokenClaims, *github.com/zitadel/oidc/v3/pkg/oidc.UserInfo) (*github.com/gotify/server/v3/model.User, int, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.containsAny",
+      "detail": "func([]string, []string) bool"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.lookupClaim",
+      "detail": "func(string, map[string]any, map[string]any) (any, bool)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v3/config.OIDC",
+      "detail": "GroupsClaim string; GroupsUser []string; GroupsAdmin []string [not state]",
+      "s6_blocker": "layout of compiled-in type OIDC changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v3/api.NewOIDC",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (305 -\u003e 329 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.CallbackHandler",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (257 -\u003e 253 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v3/config.Get",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (957 -\u003e 1002 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 30,
+    "new_packages": 30,
+    "old_funcs": 391,
+    "new_funcs": 394,
+    "old_type_errors": 363,
+    "new_type_errors": 367,
+    "changed_funcs": 10,
+    "changed_types": 2,
+    "changed_globals": 0
+  }
+}

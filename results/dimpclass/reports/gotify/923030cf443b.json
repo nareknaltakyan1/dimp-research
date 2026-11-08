@@ -1,0 +1,74 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@307e61474bfd",
+  "new": "gotify@923030cf443b",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C2",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (2): github.com/go-yaml/yaml: dependency graph changed; gopkg.in/yaml.v2: dependency graph changed"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (216/216 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/plugin_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "gopkg.in/yaml.v2",
+      "detail": "first import in github.com/gotify/server/v2/api (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/go-yaml/yaml",
+      "detail": "v2.1.0+incompatible",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "gopkg.in/yaml.v2",
+      "detail": "v2.2.8",
+      "s6_blocker": "dependency graph changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 294,
+    "new_funcs": 294,
+    "old_type_errors": 216,
+    "new_type_errors": 216,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

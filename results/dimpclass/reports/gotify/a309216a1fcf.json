@@ -1,0 +1,325 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@5f167eb2d955",
+  "new": "gotify@a309216a1fcf",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C4",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (10): github.com/mattn/go-colorable: dependency graph changed; github.com/rs/zerolog: dependency graph changed; github.com/gotify/server/v2.main: main() runs once at start-up (never re-executed / never returns); github.com/gotify/server/v2/api.NewOIDC: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/gotify/server/v2/plugin.Manager.loadPlugins: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; ... and 5 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/gotify/server/v2/api/stream.client.startReading, github.com/gotify/server/v2/api/stream.client.startWriteHandler",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 17 functions",
+      "1 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (298/328 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2.noColor",
+      "reason": "added",
+      "file": "app.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.NewOIDC",
+      "reason": "body changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.resolveUser",
+      "reason": "body changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api/stream.printWebSocketError",
+      "reason": "body changed",
+      "file": "api/stream/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.New",
+      "reason": "body changed",
+      "file": "database/database.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.fillMissingSortKeys",
+      "reason": "body changed",
+      "file": "database/database.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.gormLogWriter.Printf",
+      "reason": "added",
+      "file": "database/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.PluginInfo",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.initializeConfigurerForSingleUserPlugin",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.initializeSingleUserPlugin",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.loadPlugins",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "reason": "body changed; calls removed logFormatter",
+      "file": "router/router.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/router.accessLogger",
+      "reason": "added",
+      "file": "router/router.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/runner.LoggingRoundTripper.RoundTrip",
+      "reason": "body changed",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/runner.Run",
+      "reason": "body changed",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/runner.applyLetsEncrypt",
+      "reason": "body changed",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/runner.startListening",
+      "reason": "body changed",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 17,
+  "inline_sensitive_callers": [
+    "github.com/gotify/server/v2/api/stream.client.startReading",
+    "github.com/gotify/server/v2/api/stream.client.startWriteHandler"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.resolveUser",
+      "detail": "body changed (245 -\u003e 260 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api/stream.printWebSocketError",
+      "detail": "body changed (49 -\u003e 57 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.New",
+      "detail": "body changed (460 -\u003e 449 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.fillMissingSortKeys",
+      "detail": "body changed (201 -\u003e 209 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.PluginInfo",
+      "detail": "body changed (76 -\u003e 84 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.initializeConfigurerForSingleUserPlugin",
+      "detail": "body changed (266 -\u003e 276 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.initializeSingleUserPlugin",
+      "detail": "body changed (324 -\u003e 328 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/runner.LoggingRoundTripper.RoundTrip",
+      "detail": "body changed (151 -\u003e 201 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2.noColor",
+      "detail": "func() bool"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/database.gormLogWriter",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/database.gormLogWriter.Printf",
+      "detail": "(gormLogWriter)func(string, ...any)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/router.accessLogger",
+      "detail": "func() github.com/gin-gonic/gin.HandlerFunc"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/router.logFormatter",
+      "detail": "func(github.com/gin-gonic/gin.LogFormatterParams) string"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "github.com/rs/zerolog",
+      "detail": "first import in github.com/gotify/server/v2 (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "github.com/rs/zerolog/log",
+      "detail": "first import in github.com/gotify/server/v2 (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/mattn/go-colorable",
+      "detail": "v0.1.14 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/rs/zerolog",
+      "detail": "v1.35.1",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C5",
+      "kind": "main-changed",
+      "symbol": "github.com/gotify/server/v2.main",
+      "detail": "body changed (225 -\u003e 273 tokens)",
+      "s6_blocker": "main() runs once at start-up (never re-executed / never returns)"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/api.NewOIDC",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (277 -\u003e 289 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.loadPlugins",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (180 -\u003e 189 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "calls removed logFormatter; caller is spawns a long-running goroutine (range over channel ticker.C)",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (1549 -\u003e 1560 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/runner.Run",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (307 -\u003e 318 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/runner.applyLetsEncrypt",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (182 -\u003e 189 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/runner.startListening",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (108 -\u003e 123 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 29,
+    "new_packages": 29,
+    "old_funcs": 362,
+    "new_funcs": 364,
+    "old_type_errors": 298,
+    "new_type_errors": 328,
+    "changed_funcs": 19,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

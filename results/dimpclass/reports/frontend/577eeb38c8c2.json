@@ -1,0 +1,119 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@f452516b1c21",
+  "new": "frontend@577eeb38c8c2",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C0",
+    "C2",
+    "C4",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (6): go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc: dependency graph changed; go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp: dependency version changed; go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc: dependency version changed; github.com/GoogleCloudPlatform/microservices-demo/src/frontend.initTracing: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/GoogleCloudPlatform/microservices-demo/src/frontend.main: main() runs once at start-up (never re-executed / never returns); ... and 1 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "2 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (402/412 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.initTracing",
+      "reason": "body changed",
+      "file": "main.go",
+      "ctx_param": true
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.mustConnGRPC",
+      "reason": "body changed",
+      "file": "main.go",
+      "ctx_param": true
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc",
+      "detail": "first import in github.com/GoogleCloudPlatform/microservices-demo/src/frontend (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "go.opentelemetry.io/otel/propagation",
+      "detail": "first import in github.com/GoogleCloudPlatform/microservices-demo/src/frontend (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc",
+      "detail": "v0.36.3",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp",
+      "detail": "v0.36.4 -\u003e v0.36.3",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc",
+      "detail": "v1.11.1 -\u003e v1.11.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.initTracing",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (96 -\u003e 125 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "main-changed",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.main",
+      "detail": "body changed (736 -\u003e 703 tokens)",
+      "s6_blocker": "main() runs once at start-up (never re-executed / never returns)"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.mustConnGRPC",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (71 -\u003e 126 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 3,
+    "new_packages": 3,
+    "old_funcs": 455,
+    "new_funcs": 455,
+    "old_type_errors": 402,
+    "new_type_errors": 412,
+    "changed_funcs": 3,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

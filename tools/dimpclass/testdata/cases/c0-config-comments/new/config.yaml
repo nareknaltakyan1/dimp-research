@@ -1,0 +1,2 @@
+listen: ":8080"
+cache_ttl: 60s

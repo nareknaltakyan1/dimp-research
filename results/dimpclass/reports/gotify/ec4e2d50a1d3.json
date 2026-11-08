@@ -1,0 +1,108 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@e2b6a2e8280c",
+  "new": "gotify@ec4e2d50a1d3",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 4 function(s) (interface-level (signature/added/removed functions) with call-graph closure change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store",
+      "signature changes and removals were closed over their callers; new functions and types live in the patch plugin"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 4 functions",
+      "type information is partial (356/356 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.createInternalApplication",
+      "reason": "added",
+      "file": "plugin/manager.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.createPluginConf",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.initializeSingleUserPlugin",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.redirectToChannel.SendMessage",
+      "reason": "body changed",
+      "file": "plugin/messagehandler.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 4,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "plugin/manager_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "plugin/messagehandler_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.createPluginConf",
+      "detail": "body changed (184 -\u003e 130 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.initializeSingleUserPlugin",
+      "detail": "body changed (328 -\u003e 386 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/plugin.redirectToChannel.SendMessage",
+      "detail": "body changed (65 -\u003e 87 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.createInternalApplication",
+      "detail": "(*Manager)func(github.com/gotify/server/v2/plugin/compat.Info, uint) (*github.com/gotify/server/v2/model.Application, error)"
+    }
+  ],
+  "stats": {
+    "old_packages": 30,
+    "new_packages": 30,
+    "old_funcs": 387,
+    "new_funcs": 388,
+    "old_type_errors": 356,
+    "new_type_errors": 356,
+    "changed_funcs": 4,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@8c0353bc0aff",
+  "new": "frontend@986245932399",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (5): github.com/gabriel-vasile/mimetype: dependency graph changed; github.com/go-playground/locales: dependency graph changed; github.com/go-playground/universal-translator: dependency graph changed; github.com/go-playground/validator/v10: dependency graph changed; github.com/leodido/go-urn: dependency graph changed"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 8 functions",
+      "3 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (408/411 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.addToCartHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.placeOrderHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.setCurrencyHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend/validator.AddToCartPayload.Validate",
+      "reason": "in added package",
+      "file": "validator/validator.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend/validator.PlaceOrderPayload.Validate",
+      "reason": "in added package",
+      "file": "validator/validator.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend/validator.SetCurrencyPayload.Validate",
+      "reason": "in added package",
+      "file": "validator/validator.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend/validator.ValidationErrorResponse",
+      "reason": "in added package",
+      "file": "validator/validator.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend/validator.init",
+      "reason": "in added package",
+      "file": "validator/validator.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 8,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "validator/validator_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.addToCartHandler",
+      "detail": "body changed (243 -\u003e 269 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.placeOrderHandler",
+      "detail": "body changed (600 -\u003e 704 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.setCurrencyHandler",
+      "detail": "body changed (131 -\u003e 184 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend/validator",
+      "detail": "5 funcs, 4 types"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "github.com/go-playground/validator/v10",
+      "detail": "first import in github.com/GoogleCloudPlatform/microservices-demo/src/frontend/validator (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/gabriel-vasile/mimetype",
+      "detail": "v1.4.3 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-playground/locales",
+      "detail": "v0.14.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-playground/universal-translator",
+      "detail": "v0.18.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-playground/validator/v10",
+      "detail": "v10.19.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/leodido/go-urn",
+      "detail": "v1.4.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 3,
+    "new_packages": 4,
+    "old_funcs": 457,
+    "new_funcs": 462,
+    "old_type_errors": 408,
+    "new_type_errors": 411,
+    "changed_funcs": 3,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@8c0f7a949963",
+  "new": "gotify@97f180b65091",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C2",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (4): github.com/go-playground/validator/v10: dependency version changed; golang.org/x/crypto: dependency version changed; golang.org/x/sys: dependency version changed; golang.org/x/text: dependency version changed"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (221/221 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/authentication_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/password/password_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "plugin/manager_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.toInternalUser",
+      "detail": "(*UserAPI)func(*github.com/gotify/server/v2/model.UserExternal, string, []byte) *github.com/gotify/server/v2/model.User"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/go-playground/validator/v10",
+      "detail": "v10.14.1 -\u003e v10.15.4",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/crypto",
+      "detail": "v0.11.0 -\u003e v0.13.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/sys",
+      "detail": "v0.10.0 -\u003e v0.12.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/text",
+      "detail": "v0.11.0 -\u003e v0.13.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 308,
+    "new_funcs": 307,
+    "old_type_errors": 221,
+    "new_type_errors": 221,
+    "changed_funcs": 1,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

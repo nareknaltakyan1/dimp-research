@@ -1,0 +1,61 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@15767233591f",
+  "new": "chi@87c34a24a649",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (1): github.com/go-chi/chi/v5/middleware.ContentCharset: closures created before the patch (e.g. middleware chains built at start-up) keep the old code; only newly created closures see the fix"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.ContentCharset",
+      "reason": "body changed",
+      "file": "middleware/content_charset.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 1,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/content_charset_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C5",
+      "kind": "closure-factory-changed",
+      "symbol": "github.com/go-chi/chi/v5/middleware.ContentCharset",
+      "detail": "change is confined to the function literal(s) this factory returns",
+      "s6_blocker": "closures created before the patch (e.g. middleware chains built at start-up) keep the old code; only newly created closures see the fix"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 182,
+    "new_funcs": 182,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 1,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

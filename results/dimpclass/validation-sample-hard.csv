@@ -1,0 +1,11 @@
+target,commit,parent,date,author,bot,subject,go_files,classes,dominant,mechanism,in_process,patch_size,findings,s6_blockers,kinds,type_err_old,type_err_new,ms
+chi,142fada90f83,05f1ef7bb50b,2026-02-08,James Raspass,false,Use strings.ReplaceAll where applicable (#1046),2,C0 C1,C1,S6,true,1,2,0,file-go-unbuilt func-body,0,0,22
+chi,e4fe2589dd54,0316d5a1df85,2021-12-02,evgenyKharitonov,false,support ip chain without spaces in xForwarded header (#684),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,20
+gotify,a309216a1fcf,5f167eb2d955,2026-05-20,Jannis Mattheis,false,Merge pull request #962 from gotify/log,7,C0 C1 C2 C4 C5,C5,S5,false,17,26,10,dep-added file-gosum func-added func-body func-removed import-added long-running-caller main-changed startup-only-changed type-added,298,328,82
+gotify,6e588f3c971e,838f0e72f3ae,2026-04-19,Jannis Mattheis,false,Merge pull request #954 from gotify/logout-swagger,3,C0 C5,C5,S5,false,1,2,1,file-test startup-only-changed,286,286,47
+gotify,8f51a2c72dd2,62a1c9984199,2023-05-24,Helmut K. C. Tessarek,false,Suppress /health request logging from localhost,1,C1,C1,S6,true,1,1,0,func-body,223,223,32
+frontend,0434be5e7e97,18f3b732934a,2025-12-01,Mathieu Benoit,false,Bump container base images to fix CVEs (#3160),2,C0 C1 C2 C4 C5,C5,S5,false,2,47,44,dep-added dep-removed dep-version file-gosum func-body gomod-go gomod-toolchain import-added main-changed startup-only-changed,632,631,41
+chi,a54874f0e2f1,3328d4d3ab8a,2026-02-19,James Raspass,false,"Bump minimum Go to 1.23, always use request.Pattern (#1048)",3,C0 C1 C2 C4,C4,S5,false,1,5,1,const-removed file-go-unbuilt func-body func-removed gomod-go,0,0,21
+frontend,6b38a1979117,5e8a2b776930,2023-12-13,Nim Jayawardena,false,feat: Add support for packaging service (#2275),2,C1 C2 C5,C5,S5,false,3,8,1,func-added func-body import-added init-changed type-added var-added,408,408,19
+chi,f10dc4a9cab5,ef31c0bff3f8,2024-06-07,Maksim Terekhin,false,fix(middleware): Close created writer in the compressor middleware (#919),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,21
+frontend,03e209e9e79a,ab1ce4471ed2,2023-05-17,Nim Jayawardena,false,Implement FRONTEND_MESSAGE env var (#1773),1,C1 C2,C2,S6,true,5,6,0,func-body var-added,408,408,19

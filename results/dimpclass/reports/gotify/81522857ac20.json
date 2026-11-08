@@ -1,0 +1,89 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@12e298d78784",
+  "new": "gotify@81522857ac20",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (6): golang.org/x/crypto: dependency version changed; golang.org/x/mod: dependency version changed; golang.org/x/sync: dependency version changed; golang.org/x/sys: dependency version changed; golang.org/x/text: dependency version changed; ... and 1 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (235/235 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/crypto",
+      "detail": "v0.45.0 -\u003e v0.46.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/mod",
+      "detail": "v0.29.0 -\u003e v0.30.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/sync",
+      "detail": "v0.18.0 -\u003e v0.19.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/sys",
+      "detail": "v0.38.0 -\u003e v0.39.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/text",
+      "detail": "v0.31.0 -\u003e v0.32.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/tools",
+      "detail": "v0.38.0 -\u003e v0.39.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 309,
+    "new_funcs": 309,
+    "old_type_errors": 235,
+    "new_type_errors": 235,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

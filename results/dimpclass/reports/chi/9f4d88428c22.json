@@ -1,0 +1,150 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@248d06cc6a67",
+  "new": "chi@9f4d88428c22",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (github.com/go-chi/chi/v5/middleware.basicWriter: layout of compiled-in type basicWriter changed (1 functions use it); S6 replaces functions, not types; github.com/go-chi/chi/v5/middleware.httpFancyWriter: layout of compiled-in type httpFancyWriter changed (1 functions use it); S6 replaces functions, not types); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (2): github.com/go-chi/chi/v5/middleware.basicWriter: layout of compiled-in type basicWriter changed (1 functions use it); S6 replaces functions, not types; github.com/go-chi/chi/v5/middleware.httpFancyWriter: layout of compiled-in type httpFancyWriter changed (1 functions use it); S6 replaces functions, not types"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 6 functions"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.NewWrapResponseWriter",
+      "reason": "body changed",
+      "file": "middleware/wrap_writer.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.flushHijackWriter.Flush",
+      "reason": "added",
+      "file": "middleware/wrap_writer.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.flushHijackWriter.Hijack",
+      "reason": "added",
+      "file": "middleware/wrap_writer.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.flushWriter.Flush",
+      "reason": "added",
+      "file": "middleware/wrap_writer.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.hijackWriter.Hijack",
+      "reason": "added",
+      "file": "middleware/wrap_writer.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.httpFancyWriter.ReadFrom",
+      "reason": "body changed",
+      "file": "middleware/wrap_writer.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 6,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5/middleware.NewWrapResponseWriter",
+      "detail": "body changed (103 -\u003e 133 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5/middleware.httpFancyWriter.ReadFrom",
+      "detail": "body changed (116 -\u003e 92 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-reordered",
+      "symbol": "github.com/go-chi/chi/v5/middleware.basicWriter",
+      "detail": "ResponseWriter,tee,code,bytes,wroteHeader -\u003e ResponseWriter,wroteHeader,code,bytes,tee [not state]",
+      "s6_blocker": "layout of compiled-in type basicWriter changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/go-chi/chi/v5/middleware.flushHijackWriter",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/go-chi/chi/v5/middleware.flushHijackWriter.Flush",
+      "detail": "(*flushHijackWriter)func()"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/go-chi/chi/v5/middleware.flushHijackWriter.Hijack",
+      "detail": "(*flushHijackWriter)func() (net.Conn, *bufio.ReadWriter, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/go-chi/chi/v5/middleware.flushWriter",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/go-chi/chi/v5/middleware.flushWriter.Flush",
+      "detail": "(*flushWriter)func()"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/go-chi/chi/v5/middleware.hijackWriter",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/go-chi/chi/v5/middleware.hijackWriter.Hijack",
+      "detail": "(*hijackWriter)func() (net.Conn, *bufio.ReadWriter, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-removed",
+      "symbol": "github.com/go-chi/chi/v5/middleware.httpFancyWriter",
+      "detail": "ReaderFrom io.ReaderFrom [not state]",
+      "s6_blocker": "layout of compiled-in type httpFancyWriter changed (1 functions use it); S6 replaces functions, not types"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 157,
+    "new_funcs": 161,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 6,
+    "changed_types": 2,
+    "changed_globals": 0
+  }
+}

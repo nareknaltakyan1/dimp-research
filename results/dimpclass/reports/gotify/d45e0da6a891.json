@@ -1,0 +1,81 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@757fa17d263b",
+  "new": "gotify@d45e0da6a891",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C1"
+  ],
+  "dominant_class": "C1",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 1 function(s) (body-only change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ],
+    "risks": [
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/gotify/server/v2/api.ApplicationAPI.DeleteApplication, github.com/gotify/server/v2/api.ApplicationAPI.UpdateApplication, github.com/gotify/server/v2/api.ApplicationAPI.UploadApplicationImage, github.com/gotify/server/v2/api.ClientAPI.DeleteClient, github.com/gotify/server/v2/api.ClientAPI.UpdateClient, github.com/gotify/server/v2/api.MessageAPI.DeleteMessage, github.com/gotify/server/v2/api.MessageAPI.DeleteMessageWithApplication, github.com/gotify/server/v2/api.MessageAPI.GetMessagesWithApplication, github.com/gotify/server/v2/api.PluginAPI.DisablePlugin, github.com/gotify/server/v2/api.PluginAPI.EnablePlugin, github.com/gotify/server/v2/api.PluginAPI.GetConfig, github.com/gotify/server/v2/api.PluginAPI.GetDisplay, github.com/gotify/server/v2/api.PluginAPI.UpdateConfig, github.com/gotify/server/v2/api.UserAPI.DeleteUserByID, github.com/gotify/server/v2/api.UserAPI.GetUserByID, github.com/gotify/server/v2/api.UserAPI.UpdateUserByID",
+      "type information is partial (216/216 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/api.withID",
+      "reason": "body changed",
+      "file": "api/internalutil.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 1,
+  "inline_sensitive_callers": [
+    "github.com/gotify/server/v2/api.ApplicationAPI.DeleteApplication",
+    "github.com/gotify/server/v2/api.ApplicationAPI.UpdateApplication",
+    "github.com/gotify/server/v2/api.ApplicationAPI.UploadApplicationImage",
+    "github.com/gotify/server/v2/api.ClientAPI.DeleteClient",
+    "github.com/gotify/server/v2/api.ClientAPI.UpdateClient",
+    "github.com/gotify/server/v2/api.MessageAPI.DeleteMessage",
+    "github.com/gotify/server/v2/api.MessageAPI.DeleteMessageWithApplication",
+    "github.com/gotify/server/v2/api.MessageAPI.GetMessagesWithApplication",
+    "github.com/gotify/server/v2/api.PluginAPI.DisablePlugin",
+    "github.com/gotify/server/v2/api.PluginAPI.EnablePlugin",
+    "github.com/gotify/server/v2/api.PluginAPI.GetConfig",
+    "github.com/gotify/server/v2/api.PluginAPI.GetDisplay",
+    "github.com/gotify/server/v2/api.PluginAPI.UpdateConfig",
+    "github.com/gotify/server/v2/api.UserAPI.DeleteUserByID",
+    "github.com/gotify/server/v2/api.UserAPI.GetUserByID",
+    "github.com/gotify/server/v2/api.UserAPI.UpdateUserByID"
+  ],
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.withID",
+      "detail": "body changed (52 -\u003e 54 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "import-added",
+      "symbol": "math/bits",
+      "detail": "first direct import in github.com/gotify/server/v2/api (already linked into the old binary transitively)"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 294,
+    "new_funcs": 294,
+    "old_type_errors": 216,
+    "new_type_errors": 216,
+    "changed_funcs": 1,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

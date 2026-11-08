@@ -1,0 +1,72 @@
+{
+  "tool": "dimpclass/1",
+  "old": "testdata/cases/c2-interface-change/old",
+  "new": "testdata/cases/c2-interface-change/new",
+  "module": "example.com/c2-interface-change",
+  "classes": [
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (example.com/c2-interface-change/store.Store: interface method set changed (itabs and type assertions are compiled in)); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (1): example.com/c2-interface-change/store.Store: interface method set changed (itabs and type assertions are compiled in)"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "example.com/c2-interface-change/store.Logout",
+      "reason": "body changed",
+      "file": "store/store.go",
+      "ctx_param": true,
+      "inlinable": true
+    },
+    {
+      "symbol": "example.com/c2-interface-change/store.memStore.Delete",
+      "reason": "added",
+      "file": "store/store.go",
+      "ctx_param": true,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "example.com/c2-interface-change/store.Logout",
+      "detail": "body changed (12 -\u003e 10 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "example.com/c2-interface-change/store.Store",
+      "detail": "+Delete(context.Context, string)",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "example.com/c2-interface-change/store.memStore.Delete",
+      "detail": "(*memStore)func(context.Context, string)"
+    }
+  ],
+  "stats": {
+    "old_packages": 1,
+    "new_packages": 1,
+    "old_funcs": 4,
+    "new_funcs": 5,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 2,
+    "changed_types": 1,
+    "changed_globals": 0
+  }
+}

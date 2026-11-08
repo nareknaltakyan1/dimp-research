@@ -1,0 +1,61 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@fcbb870395e1",
+  "new": "gotify@413f081b26a6",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (github.com/gotify/server/v2/model.Application: struct tags are part of compiled-in type identity); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (1): github.com/gotify/server/v2/model.Application: struct tags are part of compiled-in type identity"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (240/240 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/database.fillMissingSortKeys",
+      "reason": "body changed",
+      "file": "database/database.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 1,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.fillMissingSortKeys",
+      "detail": "body changed (202 -\u003e 201 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-tag-changed",
+      "symbol": "github.com/gotify/server/v2/model.Application",
+      "detail": "SortKey: `gorm:\"uniqueIndex:uix_application_user_id_sort_key,priority:2\" form:\"sortKey\" query:\"sortKey\" json:\"sortKey\"` -\u003e `gorm:\"type:bytes;uniqueIndex:uix_application_user_id_sort_key,priority:2,length:255\" form:\"sortKey\" query:\"sortKey\" json:\"sortKey\"`",
+      "s6_blocker": "struct tags are part of compiled-in type identity"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 322,
+    "new_funcs": 322,
+    "old_type_errors": 240,
+    "new_type_errors": 240,
+    "changed_funcs": 1,
+    "changed_types": 1,
+    "changed_globals": 0
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "tool": "dimpclass/1",
+  "old": "testdata/cases/c5-background-goroutine/old",
+  "new": "testdata/cases/c5-background-goroutine/new",
+  "module": "example.com/c5-background-goroutine",
+  "classes": [
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (2): example.com/c5-background-goroutine/server.New: goroutine structure changed (spawned goroutines outlive the patch transaction); example.com/c5-background-goroutine/server.Server.janitor: new long-running code"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "example.com/c5-background-goroutine/server.New",
+      "reason": "body changed",
+      "file": "server/server.go",
+      "ctx_param": true
+    },
+    {
+      "symbol": "example.com/c5-background-goroutine/server.Server.janitor",
+      "reason": "added",
+      "file": "server/server.go",
+      "ctx_param": true
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C5",
+      "kind": "goroutine-structure",
+      "symbol": "example.com/c5-background-goroutine/server.New",
+      "detail": "go statements [] -\u003e [s.janitor]",
+      "s6_blocker": "goroutine structure changed (spawned goroutines outlive the patch transaction)"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-added",
+      "symbol": "example.com/c5-background-goroutine/server.Server.janitor",
+      "detail": "for {} loop with select",
+      "s6_blocker": "new long-running code"
+    }
+  ],
+  "stats": {
+    "old_packages": 1,
+    "new_packages": 1,
+    "old_funcs": 2,
+    "new_funcs": 3,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 2,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

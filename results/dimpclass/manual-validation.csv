@@ -1,0 +1,31 @@
+sample,target,commit,tool_dominant,tool_mechanism,manual_dominant,manual_mechanism,agree,note
+random,chi,c64ed7d6635f,C0,none,C0,none,yes,test file added only
+random,chi,818fdcfc4786,C1,S6,C1,S6,yes,one-line fix in Mux.routeHTTP (request path)
+random,chi,05f1ef7bb50b,C5,S5,C5,S5,yes,"fix inside closure returned by HeaderRouter.Handler; first run said C1/S6 (disagreement) -> closure-factory rule added"
+random,chi,6ceb498b221e,C1,S6,C1,S6,yes,Mux.Find body rewrite; called per request by users
+random,chi,834f94df1330,C0,none,C0,none,yes,GoDoc comment only
+random,chi,12e93227b377,C0,none,C0,none,yes,test only
+random,chi,fd8a51eb979a,C2,S6,C2,S6,yes,new exported middleware RequestSize; no running caller so patch is trivially safe
+random,chi,878319e48262,C0,none,C0,none,yes,comment typo
+random,chi,c1fd4eb431e1,C0,none,C0,none,yes,test only (first run showed no finding: eval extraction bug when go.sum absent; fixed)
+random,gotify,54deea62a54c,C3,S5+xform,C3,S5+xform,yes,stream.client gains closed chan (live websocket clients in API.clients) and the long-running write loop changes
+random,gotify,4329e571ad1f,C4,S5,C4,S5,yes,renovate dependency bump + go directive
+random,gotify,8c0f7a949963,C5,S5,C5,S5,yes,auth middleware factories and router.Create (start-up wiring) changed; Database interface grows
+random,gotify,056cd5ecb7f3,C5,S5,C5,S5,yes,router.Create wiring changed (new image FS)
+random,gotify,3454dcd60226,C5,S5,C5,S5,yes,lint refactor touching runner.Run signature / start-up code
+random,frontend,16babe62c984,C4,S5,C4,S5,yes,toolchain + deps bump (bot)
+random,frontend,a39c88dd1002,C4,S5,C4,S5,yes,deps bump (bot)
+random,frontend,101acfe5ad11,C4,S5,C4,S5,yes,otel deps bump (bot)
+random,frontend,7fb2b4df2170,C4,S5,C4,S5,yes,x/net bump (bot)
+random,frontend,fcfad0f9c6c9,C4,S5,C4,S5,yes,otel contrib bump (bot)
+random,frontend,223cb70b5faf,C4,S5,C4,S5,yes,compute bump (bot)
+hard,chi,142fada90f83,C1,S6,C1,S6,yes,strings.ReplaceAll in walk
+hard,chi,e4fe2589dd54,C1,S6,C1,S6,yes,realIP parsing fix (top-level func called from closure at request time)
+hard,gotify,a309216a1fcf,C5,S5,C5,S5,yes,zerolog introduced: new deps + main()/runner changes
+hard,gotify,6e588f3c971e,C5,S5,C5,S5,yes,route path renamed in router.Create (start-up wiring); rest is swagger comments
+hard,gotify,8f51a2c72dd2,C1,S6,C1,S6,yes,logFormatter is passed as a value to gin and called per request
+hard,frontend,0434be5e7e97,C5,S5,C4/C5,S5,yes,toolchain + deps + main() change
+hard,chi,a54874f0e2f1,C4,S5,C4,S5,yes,go directive 1.22->1.23 (loop-var semantics) + routeHTTP change
+hard,frontend,6b38a1979117,C5,S5,C5,S5,yes,new init() reads PACKAGING_SERVICE_URL; templates changed
+hard,chi,f10dc4a9cab5,C1,S6,C1,S6,yes,compressResponseWriter.Close fix
+hard,frontend,03e209e9e79a,C2,S6,C5,S5/rolling,no,"handlers pass new frontendMessage to templates parsed once at start-up (templates/header.html changed, outside the Go-only extraction) and the env var comes from a changed K8s manifest: S6 patch would not show the feature"

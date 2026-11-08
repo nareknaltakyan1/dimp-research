@@ -1,0 +1,81 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@39703bcb03f6",
+  "new": "chi@1089a7c69556",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (github.com/go-chi/chi/v5.Routes: interface method set changed (itabs and type assertions are compiled in)); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (1): github.com/go-chi/chi/v5.Routes: interface method set changed (itabs and type assertions are compiled in)"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 2 functions"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5.Mux.Find",
+      "reason": "added",
+      "file": "mux.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5.Mux.Match",
+      "reason": "body changed",
+      "file": "mux.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "mux_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5.Mux.Match",
+      "detail": "body changed (81 -\u003e 15 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/go-chi/chi/v5.Mux.Find",
+      "detail": "(*Mux)func(*Context, string, string) string"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/go-chi/chi/v5.Routes",
+      "detail": "+Find(*Context, string, string) string",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 169,
+    "new_funcs": 170,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 2,
+    "changed_types": 1,
+    "changed_globals": 0
+  }
+}

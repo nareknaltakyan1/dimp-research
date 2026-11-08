@@ -1,0 +1,83 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@e1a6847c8443",
+  "new": "gotify@7523ad0d2e33",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (1): github.com/gotify/server/v2/auth.CorsConfig: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 2 functions",
+      "type information is partial (216/216 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/auth.CorsConfig",
+      "reason": "body changed",
+      "file": "auth/cors.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.headerIgnoreCase",
+      "reason": "added",
+      "file": "auth/cors.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/cors_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "router/router_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.headerIgnoreCase",
+      "detail": "func(*github.com/gotify/server/v2/config.Configuration, string) string"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/auth.CorsConfig",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (165 -\u003e 200 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 293,
+    "new_funcs": 294,
+    "old_type_errors": 216,
+    "new_type_errors": 216,
+    "changed_funcs": 2,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

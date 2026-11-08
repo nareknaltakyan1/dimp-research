@@ -1,0 +1,47 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@5852bbb4ac03",
+  "new": "gotify@9d4e37aa87e5",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (github.com/gotify/server/v2/docs.ui: package-level initializer ran once at start-up; S6 patches functions, not data); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (1): github.com/gotify/server/v2/docs.ui: package-level initializer ran once at start-up; S6 patches functions, not data"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (223/223 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C2",
+      "kind": "var-init",
+      "symbol": "github.com/gotify/server/v2/docs.ui",
+      "detail": "initializer changed",
+      "s6_blocker": "package-level initializer ran once at start-up; S6 patches functions, not data"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 303,
+    "new_funcs": 303,
+    "old_type_errors": 223,
+    "new_type_errors": 223,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 1
+  }
+}

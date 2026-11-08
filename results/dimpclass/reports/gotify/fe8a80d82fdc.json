@@ -1,0 +1,103 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@c869052764dd",
+  "new": "gotify@fe8a80d82fdc",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 3 function(s) (interface-level (signature/added/removed functions) with call-graph closure change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store",
+      "signature changes and removals were closed over their callers; new functions and types live in the patch plugin"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ],
+    "risks": [
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/gotify/server/v2/auth.Auth.Optional, github.com/gotify/server/v2/auth.Auth.requireToken",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 3 functions",
+      "type information is partial (221/222 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.tokenFromAuthorizationHeader",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.tokenFromQueryOrHeader",
+      "reason": "calls removed Auth.tokenFromHeader; body changed",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.tokenFromXGotifyHeader",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 3,
+  "inline_sensitive_callers": [
+    "github.com/gotify/server/v2/auth.Auth.Optional",
+    "github.com/gotify/server/v2/auth.Auth.requireToken"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/authentication_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.tokenFromQueryOrHeader",
+      "detail": "body changed (40 -\u003e 58 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.tokenFromAuthorizationHeader",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) string"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.tokenFromHeader",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) string"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.tokenFromXGotifyHeader",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) string"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 300,
+    "new_funcs": 301,
+    "old_type_errors": 221,
+    "new_type_errors": 222,
+    "changed_funcs": 4,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

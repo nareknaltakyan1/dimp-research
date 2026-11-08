@@ -1,0 +1,200 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@72bd8c8ba64a",
+  "new": "gotify@a44418265af4",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (21): github.com/bytedance/sonic: dependency graph changed; github.com/chenzhuoyu/base64x: dependency graph changed; github.com/gabriel-vasile/mimetype: dependency graph changed; github.com/gin-gonic/gin: dependency version changed; github.com/go-playground/locales: dependency version changed; ... and 16 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (221/221 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/bytedance/sonic",
+      "detail": "v1.9.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/chenzhuoyu/base64x",
+      "detail": "v0.0.0-20221115062448-fe3a3abad311 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/gabriel-vasile/mimetype",
+      "detail": "v1.4.2 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gin-gonic/gin",
+      "detail": "v1.8.1 -\u003e v1.9.1",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/go-playground/locales",
+      "detail": "v0.14.0 -\u003e v0.14.1 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/go-playground/universal-translator",
+      "detail": "v0.18.0 -\u003e v0.18.1 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/go-playground/validator/v10",
+      "detail": "v10.11.0 -\u003e v10.14.1",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/goccy/go-json",
+      "detail": "v0.9.7 -\u003e v0.10.2 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/klauspost/cpuid/v2",
+      "detail": "v2.2.4 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/leodido/go-urn",
+      "detail": "v1.2.1 -\u003e v1.2.4 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/mattn/go-isatty",
+      "detail": "v0.0.14 -\u003e v0.0.19 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/pelletier/go-toml/v2",
+      "detail": "v2.0.1 -\u003e v2.0.8 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/stretchr/testify",
+      "detail": "v1.8.0 -\u003e v1.8.4",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/twitchyliquid64/golang-asm",
+      "detail": "v0.15.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/ugorji/go/codec",
+      "detail": "v1.2.7 -\u003e v1.2.11 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "golang.org/x/arch",
+      "detail": "v0.3.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/crypto",
+      "detail": "v0.0.0-20220829220503-c86fa9a7ed90 -\u003e v0.11.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/net",
+      "detail": "v0.0.0-20211112202133-69e39bad7dc2 -\u003e v0.10.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/sys",
+      "detail": "v0.0.0-20210806184541-e5e7981a1069 -\u003e v0.10.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/text",
+      "detail": "v0.3.7 -\u003e v0.11.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "google.golang.org/protobuf",
+      "detail": "v1.28.0 -\u003e v1.30.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 304,
+    "new_funcs": 304,
+    "old_type_errors": 221,
+    "new_type_errors": 221,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

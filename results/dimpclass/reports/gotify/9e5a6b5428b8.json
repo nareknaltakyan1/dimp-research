@@ -1,0 +1,696 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@6e588f3c971e",
+  "new": "gotify@9e5a6b5428b8",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (6): github.com/gotify/server/v2/api.OIDCAPI.CallbackHandler: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/gotify/server/v2/api.ClientDatabase: interface method set changed (itabs and type assertions are compiled in); github.com/gotify/server/v2/api.MessageDatabase: interface method set changed (itabs and type assertions are compiled in); github.com/gotify/server/v2/api.pendingOIDCSession: layout of compiled-in type pendingOIDCSession changed (4 functions use it); S6 replaces functions, not types; github.com/gotify/server/v2/model.Client: layout of compiled-in type Client changed (11 functions use it); S6 replaces functions, not types; ... and 1 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "github.com/gotify/server/v2/auth.GetTokenID is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/v2/auth.RegisterAuthentication is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/v2/auth.TryGetTokenID is exported: callers outside the analysed module are not in the closure",
+      "new package-level variable github.com/gotify/server/v2/auth.timeNow: under S6 it lives in the patch plugin and is re-initialised by every later patch generation",
+      "new package-level variable github.com/gotify/server/v2/model.DefaultElevationDuration: under S6 it lives in the patch plugin and is re-initialised by every later patch generation",
+      "github.com/gotify/server/v2/test.unreadableReader.Read is exported: callers outside the analysed module are not in the closure",
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/gotify/server/v2/api.UserAPI.CreateUser, github.com/gotify/server/v2/auth.Auth.evaluateOr401, github.com/gotify/server/v2/auth.GetUserID",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 36 functions",
+      "type information is partial (286/293 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/api.ClientAPI.ElevateClient",
+      "reason": "added",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.ClientAPI.GetClients",
+      "reason": "body changed",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.MessageAPI.CreateMessage",
+      "reason": "body changed; calls removed GetTokenID",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.CallbackHandler",
+      "reason": "body changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.ElevateHandler",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.createClient",
+      "reason": "body changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.handleElevationCallback",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.Login",
+      "reason": "body changed",
+      "file": "api/session.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.Logout",
+      "reason": "body changed; calls removed TryGetTokenID",
+      "file": "api/session.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.GetCurrentUser",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api/stream.API.Handle",
+      "reason": "body changed; calls removed GetTokenID",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.Optional",
+      "reason": "body changed; calls removed Auth.client; calls removed Auth.user; calls removed RegisterAuthentication",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireAdmin",
+      "reason": "body changed; calls removed Auth.client; calls removed Auth.user",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireApplicationToken",
+      "reason": "body changed; calls removed Auth.application; calls removed Auth.user",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireClient",
+      "reason": "body changed; calls removed Auth.client; calls removed Auth.user",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireElevatedClient",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.checkClientAdmin",
+      "reason": "added; uses changed constant authStateOk",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.checkClientElevated",
+      "reason": "added; uses changed constant authStateOk",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.checkUserAdmin",
+      "reason": "added; uses changed constant authStateOk",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.evaluate",
+      "reason": "body changed; uses changed constant authStateOk",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.handleApplication",
+      "reason": "added; uses changed constant authStateOk",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.handleClient",
+      "reason": "added; uses changed constant authStateOk",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.handleUser",
+      "reason": "added; uses changed constant authStateOk",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.GetApplication",
+      "reason": "added",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.GetClient",
+      "reason": "added",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.RegisterApplication",
+      "reason": "added",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.RegisterClient",
+      "reason": "added",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.RegisterUser",
+      "reason": "added",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.TryGetUserID",
+      "reason": "body changed",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.getInfo",
+      "reason": "added",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.UpdateClientElevatedUntil",
+      "reason": "added",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "reason": "body changed",
+      "file": "router/router.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/test.UnreadableReader",
+      "reason": "body changed",
+      "file": "test/asserts.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/test.WithUser",
+      "reason": "body changed",
+      "file": "test/auth.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/test/testdb.AppClientBuilder.AppWithTokenAndDefaultPriority",
+      "reason": "body changed",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/test/testdb.AppClientBuilder.NewAppWithTokenAndDefaultPriority",
+      "reason": "added",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 36,
+  "inline_sensitive_callers": [
+    "github.com/gotify/server/v2/api.UserAPI.CreateUser",
+    "github.com/gotify/server/v2/auth.Auth.evaluateOr401",
+    "github.com/gotify/server/v2/auth.GetUserID"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/client_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/message_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/session_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/stream/stream_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/user_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/authentication_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/token_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/util_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.ClientAPI.GetClients",
+      "detail": "body changed (50 -\u003e 92 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.MessageAPI.CreateMessage",
+      "detail": "body changed (185 -\u003e 158 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.createClient",
+      "detail": "body changed (65 -\u003e 85 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.Login",
+      "detail": "body changed (244 -\u003e 276 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.Logout",
+      "detail": "body changed (145 -\u003e 100 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.GetCurrentUser",
+      "detail": "body changed (49 -\u003e 126 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api/stream.API.Handle",
+      "detail": "body changed (89 -\u003e 109 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.Optional",
+      "detail": "body changed (42 -\u003e 29 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireAdmin",
+      "detail": "body changed (22 -\u003e 30 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireApplicationToken",
+      "detail": "body changed (67 -\u003e 66 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireClient",
+      "detail": "body changed (22 -\u003e 20 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.evaluate",
+      "detail": "body changed (74 -\u003e 102 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/auth.TryGetUserID",
+      "detail": "body changed (55 -\u003e 61 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/auth.authKey",
+      "detail": "= \"auth\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/auth.authStateNotElevated",
+      "detail": "= 2 (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-value",
+      "symbol": "github.com/gotify/server/v2/auth.authStateOk",
+      "detail": "2 -\u003e 3 (compile-time constant: every user must be patched)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/test.UnreadableReader",
+      "detail": "body changed (6 -\u003e 18 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/test.WithUser",
+      "detail": "body changed (27 -\u003e 18 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/test/testdb.AppClientBuilder.AppWithTokenAndDefaultPriority",
+      "detail": "body changed (51 -\u003e 27 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.ClientAPI.ElevateClient",
+      "detail": "(*ClientAPI)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/v2/api.ClientDatabase",
+      "detail": "+UpdateClientElevatedUntil(uint, *time.Time) error",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/v2/api.MessageDatabase",
+      "detail": "-GetApplicationByToken(string) (*github.com/gotify/server/v2/model.Application, error)",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.ElevateHandler",
+      "detail": "(*OIDCAPI)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.handleElevationCallback",
+      "detail": "(*OIDCAPI)func(net/http.ResponseWriter, *pendingElevation, *github.com/gotify/server/v2/model.User)"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/api.pendingElevation",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/api.pendingOIDCSession",
+      "detail": "Elevate *pendingElevation [not state]",
+      "s6_blocker": "layout of compiled-in type pendingOIDCSession changed (4 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireElevatedClient",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.application",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.checkClientAdmin",
+      "detail": "(*Auth)func(*github.com/gotify/server/v2/model.Client) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.checkClientElevated",
+      "detail": "(*Auth)func(*github.com/gotify/server/v2/model.Client) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.checkUserAdmin",
+      "detail": "(*Auth)func(*github.com/gotify/server/v2/model.User) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.client",
+      "detail": "(*Auth)func(bool) func(*github.com/gin-gonic/gin.Context) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.handleApplication",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.handleClient",
+      "detail": "(*Auth)func(...func(*github.com/gotify/server/v2/model.Client) (authState, error)) func(*github.com/gin-gonic/gin.Context) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.handleUser",
+      "detail": "(*Auth)func(...func(*github.com/gotify/server/v2/model.User) (authState, error)) func(*github.com/gin-gonic/gin.Context) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.user",
+      "detail": "(*Auth)func(bool) func(*github.com/gin-gonic/gin.Context) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.GetApplication",
+      "detail": "func(*github.com/gin-gonic/gin.Context) *github.com/gotify/server/v2/model.Application"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.GetClient",
+      "detail": "func(*github.com/gin-gonic/gin.Context) *github.com/gotify/server/v2/model.Client"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/auth.GetTokenID",
+      "detail": "func(*github.com/gin-gonic/gin.Context) string"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.RegisterApplication",
+      "detail": "func(*github.com/gin-gonic/gin.Context, *github.com/gotify/server/v2/model.Application)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/auth.RegisterAuthentication",
+      "detail": "func(*github.com/gin-gonic/gin.Context, *github.com/gotify/server/v2/model.User, uint, string)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.RegisterClient",
+      "detail": "func(*github.com/gin-gonic/gin.Context, *github.com/gotify/server/v2/model.Client)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.RegisterUser",
+      "detail": "func(*github.com/gin-gonic/gin.Context, *github.com/gotify/server/v2/model.User)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/auth.TryGetTokenID",
+      "detail": "func(*github.com/gin-gonic/gin.Context) string"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/auth.authentication",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.getInfo",
+      "detail": "func(*github.com/gin-gonic/gin.Context) *authentication"
+    },
+    {
+      "class": "C2",
+      "kind": "var-added",
+      "symbol": "github.com/gotify/server/v2/auth.timeNow",
+      "detail": "func() time.Time"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.UpdateClientElevatedUntil",
+      "detail": "(*GormDatabase)func(uint, *time.Time) error"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/model.Client",
+      "detail": "ElevatedUntil *time.Time [not state]",
+      "s6_blocker": "layout of compiled-in type Client changed (11 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/model.CurrentUserExternal",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "var-added",
+      "symbol": "github.com/gotify/server/v2/model.DefaultElevationDuration",
+      "detail": "time.Duration"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/model.ElevateRequest",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-removed",
+      "symbol": "github.com/gotify/server/v2/test.unreadableReader",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/test.unreadableReader.Read",
+      "detail": "(unreadableReader)func([]byte) (int, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/test/testdb.AppClientBuilder.NewAppWithTokenAndDefaultPriority",
+      "detail": "(*AppClientBuilder)func(uint, string, int) *github.com/gotify/server/v2/model.Application"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "testing/iotest",
+      "detail": "first import in github.com/gotify/server/v2/test (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.CallbackHandler",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (226 -\u003e 249 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (1433 -\u003e 1475 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 29,
+    "new_packages": 29,
+    "old_funcs": 345,
+    "new_funcs": 356,
+    "old_type_errors": 286,
+    "new_type_errors": 293,
+    "changed_funcs": 43,
+    "changed_types": 4,
+    "changed_globals": 3
+  }
+}

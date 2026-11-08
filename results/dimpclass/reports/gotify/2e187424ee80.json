@@ -1,0 +1,269 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@592dc45a5b40",
+  "new": "gotify@2e187424ee80",
+  "module": "github.com/gotify/server/v3",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C4",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (9): github.com/google/jsonschema-go: dependency graph changed; github.com/modelcontextprotocol/go-sdk: dependency graph changed; github.com/segmentio/asm: dependency graph changed; github.com/segmentio/encoding: dependency graph changed; github.com/yosida95/uritemplate/v3: dependency graph changed; ... and 4 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 9 functions",
+      "type information is partial (370/389 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v3/api.MCPAPI.Handle",
+      "reason": "added",
+      "file": "api/mcp.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.MCPAPI.sendMessage",
+      "reason": "added",
+      "file": "api/mcp.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.MCPAPI.serverForRequest",
+      "reason": "added",
+      "file": "api/mcp.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.MessageAPI.CreateMessage",
+      "reason": "body changed",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.MessageAPI.createMessage",
+      "reason": "added",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.NewMCP",
+      "reason": "added",
+      "file": "api/mcp.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.mcpExtras",
+      "reason": "added",
+      "file": "api/mcp.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.Get",
+      "reason": "body changed",
+      "file": "config/config.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/router.Create",
+      "reason": "body changed",
+      "file": "router/router.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 9,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/mcp_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "config/config_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "router/mcp_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v3/api.MessageAPI.CreateMessage",
+      "detail": "body changed (257 -\u003e 188 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v3/config.EnvMCPEnabled",
+      "detail": "= \"GOTIFY_MCP_ENABLED\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v3/api.MCPAPI",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.MCPAPI.Handle",
+      "detail": "(*MCPAPI)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.MCPAPI.sendMessage",
+      "detail": "(*MCPAPI)func(*github.com/gotify/server/v3/model.Application, SendMessageInput) (*github.com/modelcontextprotocol/go-sdk/mcp.CallToolResult, any, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.MCPAPI.serverForRequest",
+      "detail": "(*MCPAPI)func(*net/http.Request) *github.com/modelcontextprotocol/go-sdk/mcp.Server"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.MessageAPI.createMessage",
+      "detail": "(*MessageAPI)func(*github.com/gotify/server/v3/model.Application, *github.com/gotify/server/v3/model.CreateMessage) (*github.com/gotify/server/v3/model.MessageExternal, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.NewMCP",
+      "detail": "func(*MessageAPI, string) *MCPAPI"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v3/api.SendMessageInput",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v3/api.mcpAppKey",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.mcpExtras",
+      "detail": "func(SendMessageInput) map[string]any"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v3/config.Configuration",
+      "detail": "MCP MCP [not state]",
+      "s6_blocker": "layout of compiled-in type Configuration changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v3/config.MCP",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "github.com/modelcontextprotocol/go-sdk/mcp",
+      "detail": "first import in github.com/gotify/server/v3/api (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/google/jsonschema-go",
+      "detail": "v0.4.3 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/modelcontextprotocol/go-sdk",
+      "detail": "v1.8.0",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/segmentio/asm",
+      "detail": "v1.1.3 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/segmentio/encoding",
+      "detail": "v0.5.4 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/yosida95/uritemplate/v3",
+      "detail": "v3.0.2 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "golang.org/x/time",
+      "detail": "v0.15.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v3/config.Get",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (1002 -\u003e 1027 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v3/router.Create",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (1632 -\u003e 1686 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 30,
+    "new_packages": 30,
+    "old_funcs": 397,
+    "new_funcs": 403,
+    "old_type_errors": 370,
+    "new_type_errors": 389,
+    "changed_funcs": 9,
+    "changed_types": 1,
+    "changed_globals": 0
+  }
+}

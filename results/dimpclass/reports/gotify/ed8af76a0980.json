@@ -1,0 +1,76 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@0fd65a075f4a",
+  "new": "gotify@ed8af76a0980",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 2 function(s) (interface-level (signature/added/removed functions) with call-graph closure change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store",
+      "signature changes and removals were closed over their callers; new functions and types live in the patch plugin"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 2 functions",
+      "type information is partial (353/353 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/api.MessageAPI.CreateMessage",
+      "reason": "body changed; calls toInternalMessage whose signature changed",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.toInternalMessage",
+      "reason": "signature changed",
+      "file": "api/message.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.MessageAPI.CreateMessage",
+      "detail": "body changed (271 -\u003e 257 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/api.toInternalMessage",
+      "detail": "func(*github.com/gotify/server/v2/model.MessageExternal) *github.com/gotify/server/v2/model.Message -\u003e func(*github.com/gotify/server/v2/model.CreateMessage) *github.com/gotify/server/v2/model.Message"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/model.CreateMessage",
+      "detail": "struct"
+    }
+  ],
+  "stats": {
+    "old_packages": 30,
+    "new_packages": 30,
+    "old_funcs": 387,
+    "new_funcs": 387,
+    "old_type_errors": 353,
+    "new_type_errors": 353,
+    "changed_funcs": 2,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

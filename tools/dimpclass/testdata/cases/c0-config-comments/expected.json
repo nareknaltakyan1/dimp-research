@@ -1,0 +1,52 @@
+{
+  "tool": "dimpclass/1",
+  "old": "testdata/cases/c0-config-comments/old",
+  "new": "testdata/cases/c0-config-comments/new",
+  "module": "example.com/c0-config-comments",
+  "classes": [
+    "C0"
+  ],
+  "dominant_class": "C0",
+  "recommendation": {
+    "mechanism": "none",
+    "in_process": true,
+    "summary": "No runtime code change: nothing to patch.",
+    "justification": [
+      "the canonical token streams of all built Go sources are identical; only tests, comments, formatting or non-compiled files changed",
+      "configuration changed (config.yaml): apply by config reload (an S1-style epoch swap of the config object) or by restarting with the new ConfigMap; no code mechanism needed"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-docs",
+      "symbol": "README.md",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/handler_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-config",
+      "symbol": "config.yaml",
+      "detail": "modified"
+    }
+  ],
+  "stats": {
+    "old_packages": 1,
+    "new_packages": 1,
+    "old_funcs": 1,
+    "new_funcs": 1,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

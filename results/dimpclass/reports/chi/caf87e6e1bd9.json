@@ -1,0 +1,136 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@7fcb8a20364d",
+  "new": "chi@caf87e6e1bd9",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (github.com/go-chi/chi/v5.mALL: package-level initializer ran once at start-up; github.com/go-chi/chi/v5.methodMap: package-level initializer ran once at start-up; github.com/go-chi/chi/v5.reverseMethodMap: package-level initializer ran once at start-up; ... and 4 more); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (7): github.com/go-chi/chi/v5.mALL: package-level initializer ran once at start-up; github.com/go-chi/chi/v5.methodMap: package-level initializer ran once at start-up; github.com/go-chi/chi/v5.reverseMethodMap: package-level initializer ran once at start-up; github.com/go-chi/chi/v5.Router: interface method set changed (itabs and type assertions are compiled in); github.com/go-chi/chi/v5.mALL: package-level initializer ran once at start-up; S6 patches functions, not data; ... and 2 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 2 functions"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5.Mux.Query",
+      "reason": "added",
+      "file": "mux.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5.Mux.Trace",
+      "reason": "uses changed constant mTRACE",
+      "file": "mux.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "mux_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/go-chi/chi/v5.mQUERY",
+      "detail": "= 512 (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-value",
+      "symbol": "github.com/go-chi/chi/v5.mTRACE",
+      "detail": "512 -\u003e 1024 (compile-time constant: every user must be patched)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/go-chi/chi/v5.methodQuery",
+      "detail": "= \"QUERY\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/go-chi/chi/v5.Mux.Query",
+      "detail": "(*Mux)func(string, net/http.HandlerFunc)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/go-chi/chi/v5.Router",
+      "detail": "+Query(string, net/http.HandlerFunc)",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "var-init",
+      "symbol": "github.com/go-chi/chi/v5.mALL",
+      "detail": "initializer uses changed constant mTRACE",
+      "s6_blocker": "package-level initializer ran once at start-up"
+    },
+    {
+      "class": "C2",
+      "kind": "var-init",
+      "symbol": "github.com/go-chi/chi/v5.mALL",
+      "detail": "initializer changed",
+      "s6_blocker": "package-level initializer ran once at start-up; S6 patches functions, not data"
+    },
+    {
+      "class": "C2",
+      "kind": "var-init",
+      "symbol": "github.com/go-chi/chi/v5.methodMap",
+      "detail": "initializer uses changed constant mTRACE",
+      "s6_blocker": "package-level initializer ran once at start-up"
+    },
+    {
+      "class": "C2",
+      "kind": "var-init",
+      "symbol": "github.com/go-chi/chi/v5.methodMap",
+      "detail": "initializer changed",
+      "s6_blocker": "package-level initializer ran once at start-up; S6 patches functions, not data"
+    },
+    {
+      "class": "C2",
+      "kind": "var-init",
+      "symbol": "github.com/go-chi/chi/v5.reverseMethodMap",
+      "detail": "initializer uses changed constant mTRACE",
+      "s6_blocker": "package-level initializer ran once at start-up"
+    },
+    {
+      "class": "C2",
+      "kind": "var-init",
+      "symbol": "github.com/go-chi/chi/v5.reverseMethodMap",
+      "detail": "initializer changed",
+      "s6_blocker": "package-level initializer ran once at start-up; S6 patches functions, not data"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 179,
+    "new_funcs": 180,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 1,
+    "changed_types": 1,
+    "changed_globals": 4
+  }
+}

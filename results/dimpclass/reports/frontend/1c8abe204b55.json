@@ -1,0 +1,76 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@4ef588fc669a",
+  "new": "frontend@1c8abe204b55",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (3): github.com/GoogleCloudPlatform/microservices-demo/src/frontend.initTracing: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/GoogleCloudPlatform/microservices-demo/src/frontend.main: main() runs once at start-up (never re-executed / never returns); github.com/GoogleCloudPlatform/microservices-demo/src/frontend.mustConnGRPC: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "2 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (410/408 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.initTracing",
+      "reason": "body changed",
+      "file": "main.go",
+      "ctx_param": true
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.mustConnGRPC",
+      "reason": "body changed",
+      "file": "main.go",
+      "ctx_param": true
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.initTracing",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (125 -\u003e 103 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "main-changed",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.main",
+      "detail": "body changed (703 -\u003e 714 tokens)",
+      "s6_blocker": "main() runs once at start-up (never re-executed / never returns)"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.mustConnGRPC",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (126 -\u003e 93 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 3,
+    "new_packages": 3,
+    "old_funcs": 455,
+    "new_funcs": 455,
+    "old_type_errors": 410,
+    "new_type_errors": 408,
+    "changed_funcs": 3,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

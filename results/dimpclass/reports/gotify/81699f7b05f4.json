@@ -1,0 +1,837 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@143438055db4",
+  "new": "gotify@81699f7b05f4",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C4",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (32): github.com/cespare/xxhash/v2: dependency graph changed; github.com/go-jose/go-jose/v4: dependency graph changed; github.com/go-logr/logr: dependency graph changed; github.com/go-logr/stdr: dependency graph changed; github.com/google/uuid: dependency graph changed; ... and 27 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "github.com/gotify/server/v2/auth.Auth.Optional is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/v2/auth.Auth.RequireAdmin is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/v2/auth.Auth.RequireApplicationToken is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/v2/auth.Auth.RequireClient is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/v2/ui.Register is exported: callers outside the analysed module are not in the closure",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 32 functions",
+      "type information is partial (240/286 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/api.NewOIDC",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.CallbackHandler",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.ExternalAuthorizeHandler",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.ExternalTokenHandler",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.LoginHandler",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.createClient",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.generateState",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.popPendingSession",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.resolveUser",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.Login",
+      "reason": "added",
+      "file": "api/session.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.Logout",
+      "reason": "added",
+      "file": "api/session.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.clientExists",
+      "reason": "added",
+      "file": "api/session.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.Optional",
+      "reason": "signature changed; calls removed Auth.tokenFromQueryOrHeader; calls removed Auth.userFromBasicAuth",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireAdmin",
+      "reason": "signature changed; calls removed Auth.requireToken",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireApplicationToken",
+      "reason": "signature changed; calls removed Auth.requireToken",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireClient",
+      "reason": "signature changed; calls removed Auth.requireToken",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.abort401",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.abort403",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.application",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.client",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.evaluate",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.evaluateOr401",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.readTokenFromRequest",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.tokenFromCookie",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.user",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.SetCookie",
+      "reason": "added",
+      "file": "auth/cookie.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.TryGetTokenID",
+      "reason": "added",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/decaymap.DecayMap.Pop",
+      "reason": "in added package",
+      "file": "decaymap/decaymap.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/decaymap.DecayMap.Set",
+      "reason": "in added package",
+      "file": "decaymap/decaymap.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/decaymap.NewDecayMap",
+      "reason": "in added package",
+      "file": "decaymap/decaymap.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "reason": "calls Auth.Optional whose signature changed; calls Auth.RequireAdmin whose signature changed; calls Auth.RequireApplicationToken whose signature changed; calls Auth.RequireClient whose signature changed; body changed; calls Register whose signature changed",
+      "file": "router/router.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/ui.Register",
+      "reason": "signature changed",
+      "file": "ui/serve.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 32,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/oidc_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/session_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/authentication_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "decaymap/decaymap_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/api.pendingSessionMaxAge",
+      "detail": "= 600000000000 (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/auth.CookieMaxAge",
+      "detail": "= 604800 (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/auth.CookieName",
+      "detail": "= \"gotify-client-token\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/auth.authStateForbidden",
+      "detail": "= 1 (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/auth.authStateOk",
+      "detail": "= 2 (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/auth.authStateSkip",
+      "detail": "= 0 (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/auth.cookieName",
+      "detail": "= \"gotify-client-token\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "encoding/hex",
+      "detail": "first import in github.com/gotify/server/v2/api (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.NewOIDC",
+      "detail": "func(*github.com/gotify/server/v2/config.Configuration, *github.com/gotify/server/v2/database.GormDatabase, *UserChangeNotifier) *OIDCAPI"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.CallbackHandler",
+      "detail": "(*OIDCAPI)func() github.com/gin-gonic/gin.HandlerFunc"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.ExternalAuthorizeHandler",
+      "detail": "(*OIDCAPI)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.ExternalTokenHandler",
+      "detail": "(*OIDCAPI)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.LoginHandler",
+      "detail": "(*OIDCAPI)func() github.com/gin-gonic/gin.HandlerFunc"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.createClient",
+      "detail": "(*OIDCAPI)func(string, uint) (*github.com/gotify/server/v2/model.Client, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.generateState",
+      "detail": "(*OIDCAPI)func() (string, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.popPendingSession",
+      "detail": "(*OIDCAPI)func(string) (*pendingOIDCSession, bool)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.resolveUser",
+      "detail": "(*OIDCAPI)func(*github.com/zitadel/oidc/v3/pkg/oidc.UserInfo) (*github.com/gotify/server/v2/model.User, int, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.Login",
+      "detail": "(*SessionAPI)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.Logout",
+      "detail": "(*SessionAPI)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.clientExists",
+      "detail": "(*SessionAPI)func(string) bool"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/api.SessionDatabase",
+      "detail": "interface"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/api.pendingOIDCSession",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth",
+      "detail": "SecureCookie bool [not state]",
+      "s6_blocker": "layout of compiled-in type Auth changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.Optional",
+      "detail": "(*Auth)func() github.com/gin-gonic/gin.HandlerFunc -\u003e (*Auth)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireAdmin",
+      "detail": "(*Auth)func() github.com/gin-gonic/gin.HandlerFunc -\u003e (*Auth)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireApplicationToken",
+      "detail": "(*Auth)func() github.com/gin-gonic/gin.HandlerFunc -\u003e (*Auth)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireClient",
+      "detail": "(*Auth)func() github.com/gin-gonic/gin.HandlerFunc -\u003e (*Auth)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.abort401",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.abort403",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.application",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.client",
+      "detail": "(*Auth)func(bool) func(*github.com/gin-gonic/gin.Context) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.evaluate",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context, ...func(*github.com/gin-gonic/gin.Context) (authState, error)) bool"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.evaluateOr401",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context, ...func(*github.com/gin-gonic/gin.Context) (authState, error))"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.readTokenFromRequest",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) (string, bool)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.requireToken",
+      "detail": "(*Auth)func(authenticate) github.com/gin-gonic/gin.HandlerFunc"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.tokenFromCookie",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) string"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.tokenFromQueryOrHeader",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) string"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.user",
+      "detail": "(*Auth)func(bool) func(*github.com/gin-gonic/gin.Context) (authState, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.userFromBasicAuth",
+      "detail": "(*Auth)func(*github.com/gin-gonic/gin.Context) (*github.com/gotify/server/v2/model.User, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/v2/auth.Database",
+      "detail": "-GetPluginConfByToken(string) (*github.com/gotify/server/v2/model.PluginConf, error)",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.SetCookie",
+      "detail": "func(net/http.ResponseWriter, string, int, bool)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.TryGetTokenID",
+      "detail": "func(*github.com/gin-gonic/gin.Context) string"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/auth.authState",
+      "detail": "other"
+    },
+    {
+      "class": "C2",
+      "kind": "type-removed",
+      "symbol": "github.com/gotify/server/v2/auth.authenticate",
+      "detail": "other"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/config.Configuration",
+      "detail": "OIDC struct{Enabled bool \"default:\\\"false\\\"\"; Issuer string \"default:\\\"\\\"\"; ClientID string \"default:\\\"\\\"\"; ClientSecret string \"default:\\\"\\\"\"; UsernameClaim string \"default:\\\"preferred_username\\\"\"; RedirectURL string \"default:\\\"\\\"\"; AutoRegister bool \"default:\\\"true\\\"\"; Scopes []string} [not state]",
+      "s6_blocker": "layout of compiled-in type Configuration changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-retyped",
+      "symbol": "github.com/gotify/server/v2/config.Configuration",
+      "detail": "Server: struct{KeepAlivePeriodSeconds int; ListenAddr string \"default:\\\"\\\"\"; Port int \"default:\\\"80\\\"\"; SSL struct{Enabled bool \"default:\\\"false\\\"\"; RedirectToHTTPS bool \"default:\\\"true\\\"\"; ListenAddr string \"default:\\\"\\\"\"; Port int \"default:\\\"443\\\"\"; CertFile string \"default:\\\"\\\"\"; CertKey string \"default:\\\"\\\"\"; LetsEncrypt struct{Enabled bool \"default:\\\"false\\\"\"; AcceptTOS bool \"default:\\\"false\\\"\"; Cache string \"default:\\\"data/certs\\\"\"; DirectoryURL string \"default:\\\"\\\"\"; Hosts []string}}; ResponseHeaders map[string]string; Stream struct{PingPeriodSeconds int \"default:\\\"45\\\"\"; AllowedOrigins []string}; Cors struct{AllowOrigins []string; AllowMethods []string; AllowHeaders []string}; TrustedProxies []string} -\u003e struct{KeepAlivePeriodSeconds int; ListenAddr string \"default:\\\"\\\"\"; Port int \"default:\\\"80\\\"\"; SSL struct{Enabled bool \"default:\\\"false\\\"\"; RedirectToHTTPS bool \"default:\\\"true\\\"\"; ListenAddr string \"default:\\\"\\\"\"; Port int \"default:\\\"443\\\"\"; CertFile string \"default:\\\"\\\"\"; CertKey string \"default:\\\"\\\"\"; LetsEncrypt struct{Enabled bool \"default:\\\"false\\\"\"; AcceptTOS bool \"default:\\\"false\\\"\"; Cache string \"default:\\\"data/certs\\\"\"; DirectoryURL string \"default:\\\"\\\"\"; Hosts []string}}; ResponseHeaders map[string]string; Stream struct{PingPeriodSeconds int \"default:\\\"45\\\"\"; AllowedOrigins []string}; Cors struct{AllowOrigins []string; AllowMethods []string; AllowHeaders []string}; TrustedProxies []string; SecureCookie bool \"default:\\\"false\\\"\"} [not state]",
+      "s6_blocker": "layout of compiled-in type Configuration changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v2/decaymap",
+      "detail": "3 funcs, 1 types"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/model.GotifyInfo",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/model.OIDCExternalAuthorizeRequest",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/model.OIDCExternalAuthorizeResponse",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/model.OIDCExternalTokenRequest",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/model.OIDCExternalTokenResponse",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/ui.Register",
+      "detail": "func(*github.com/gin-gonic/gin.Engine, github.com/gotify/server/v2/model.VersionInfo, bool) -\u003e func(*github.com/gin-gonic/gin.Engine, github.com/gotify/server/v2/model.VersionInfo, bool, bool)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/ui.uiConfig",
+      "detail": "OIDC bool [not state]",
+      "s6_blocker": "layout of compiled-in type uiConfig changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "github.com/zitadel/oidc/v3/pkg/client/rp",
+      "detail": "first import in github.com/gotify/server/v2/api (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "github.com/zitadel/oidc/v3/pkg/http",
+      "detail": "first import in github.com/gotify/server/v2/api (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "github.com/zitadel/oidc/v3/pkg/oidc",
+      "detail": "first import in github.com/gotify/server/v2/api (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/cespare/xxhash/v2",
+      "detail": "v2.3.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-jose/go-jose/v4",
+      "detail": "v4.0.5 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-logr/logr",
+      "detail": "v1.4.3 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-logr/stdr",
+      "detail": "v1.2.2 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/google/uuid",
+      "detail": "v1.6.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/gorilla/securecookie",
+      "detail": "v1.1.2 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/muhlemmer/gu",
+      "detail": "v0.3.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/sirupsen/logrus",
+      "detail": "v1.9.4 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/zitadel/logging",
+      "detail": "v0.7.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/zitadel/oidc/v3",
+      "detail": "v3.45.5",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/zitadel/schema",
+      "detail": "v1.3.2 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/auto/sdk",
+      "detail": "v1.2.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/otel",
+      "detail": "v1.40.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/otel/metric",
+      "detail": "v1.40.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/otel/trace",
+      "detail": "v1.40.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "golang.org/x/oauth2",
+      "detail": "v0.35.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.Optional",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (151 -\u003e 42 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireAdmin",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (136 -\u003e 22 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireApplicationToken",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (161 -\u003e 67 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.RequireClient",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (168 -\u003e 22 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "calls Auth.Optional whose signature changed; caller is spawns a long-running goroutine (range over channel ticker.C)",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "calls Auth.RequireAdmin whose signature changed; caller is spawns a long-running goroutine (range over channel ticker.C)",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "calls Auth.RequireApplicationToken whose signature changed; caller is spawns a long-running goroutine (range over channel ticker.C)",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "calls Auth.RequireClient whose signature changed; caller is spawns a long-running goroutine (range over channel ticker.C)",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "calls Register whose signature changed; caller is spawns a long-running goroutine (range over channel ticker.C)",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (1256 -\u003e 1433 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/ui.Register",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (173 -\u003e 177 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 29,
+    "old_funcs": 322,
+    "new_funcs": 345,
+    "old_type_errors": 240,
+    "new_type_errors": 286,
+    "changed_funcs": 32,
+    "changed_types": 4,
+    "changed_globals": 0
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@c9c6246c4cd1",
+  "new": "gotify@0a7a5cd61928",
+  "module": "github.com/gotify/server",
+  "classes": [
+    "C1",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (1): github.com/gotify/server/api/stream.client.startWriteHandler: long-running function may never quiesce; running activations keep old code"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 3 functions",
+      "type information is partial (211/212 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/api/stream.client.startReading",
+      "reason": "body changed",
+      "file": "api/stream/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api/stream.client.startWriteHandler",
+      "reason": "body changed",
+      "file": "api/stream/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/api/stream.printWebSocketError",
+      "reason": "added",
+      "file": "api/stream/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 3,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/api/stream.client.startReading",
+      "detail": "body changed (96 -\u003e 103 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/api/stream.printWebSocketError",
+      "detail": "func(string, error)"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-changed",
+      "symbol": "github.com/gotify/server/api/stream.client.startWriteHandler",
+      "detail": "for {} loop with select",
+      "s6_blocker": "long-running function may never quiesce; running activations keep old code"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 288,
+    "new_funcs": 289,
+    "old_type_errors": 211,
+    "new_type_errors": 212,
+    "changed_funcs": 3,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

@@ -1,0 +1,173 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@6fcdf956d908",
+  "new": "gotify@0dc6af15ab65",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (18): github.com/gabriel-vasile/mimetype: dependency version changed; github.com/gin-contrib/cors: dependency version changed; github.com/gin-contrib/gzip: dependency version changed; github.com/go-jose/go-jose/v4: dependency version changed; github.com/go-playground/validator/v10: dependency version changed; ... and 13 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (353/353 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gabriel-vasile/mimetype",
+      "detail": "v1.4.12 -\u003e v1.4.13 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gin-contrib/cors",
+      "detail": "v1.7.6 -\u003e v1.7.7",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gin-contrib/gzip",
+      "detail": "v1.2.5 -\u003e v1.2.6",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/go-jose/go-jose/v4",
+      "detail": "v4.0.5 -\u003e v4.1.4 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/go-playground/validator/v10",
+      "detail": "v10.30.1 -\u003e v10.30.3",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/mattn/go-isatty",
+      "detail": "v0.0.20 -\u003e v0.0.22",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/zitadel/oidc/v3",
+      "detail": "v3.45.5 -\u003e v3.47.5",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel",
+      "detail": "v1.40.0 -\u003e v1.43.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/metric",
+      "detail": "v1.40.0 -\u003e v1.43.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "go.opentelemetry.io/otel/trace",
+      "detail": "v1.40.0 -\u003e v1.43.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/arch",
+      "detail": "v0.22.0 -\u003e v0.23.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/crypto",
+      "detail": "v0.48.0 -\u003e v0.53.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/net",
+      "detail": "v0.51.0 -\u003e v0.55.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/oauth2",
+      "detail": "v0.35.0 -\u003e v0.36.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/sync",
+      "detail": "v0.19.0 -\u003e v0.21.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/sys",
+      "detail": "v0.41.0 -\u003e v0.46.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/text",
+      "detail": "v0.34.0 -\u003e v0.38.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "gorm.io/gorm",
+      "detail": "v1.31.1 -\u003e v1.31.2",
+      "s6_blocker": "dependency version changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 30,
+    "new_packages": 30,
+    "old_funcs": 387,
+    "new_funcs": 387,
+    "old_type_errors": 353,
+    "new_type_errors": 353,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

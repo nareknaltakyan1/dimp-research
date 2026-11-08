@@ -1,0 +1,272 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@cc2fae5988f5",
+  "new": "gotify@1818c5dec4cd",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (github.com/gotify/server/v2/api.ApplicationParams: layout of compiled-in type ApplicationParams changed (2 functions use it); S6 replaces functions, not types; github.com/gotify/server/v2/model.Application: layout of compiled-in type Application changed (13 functions use it); S6 replaces functions, not types; github.com/gotify/server/v2/model.Application: struct tags are part of compiled-in type identity); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (3): github.com/gotify/server/v2/api.ApplicationParams: layout of compiled-in type ApplicationParams changed (2 functions use it); S6 replaces functions, not types; github.com/gotify/server/v2/model.Application: layout of compiled-in type Application changed (13 functions use it); S6 replaces functions, not types; github.com/gotify/server/v2/model.Application: struct tags are part of compiled-in type identity"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/gotify/server/v2/database.GormDatabase.DeleteMessagesByUser, github.com/gotify/server/v2/database.GormDatabase.DeleteUserByID, github.com/gotify/server/v2/test/testdb.AppClientBuilder.AppWithTokenAndDefaultPriority, github.com/gotify/server/v2/test/testdb.AppClientBuilder.newAppWithToken, github.com/gotify/server/v2/test/testdb.AppClientBuilder.newAppWithTokenAndName",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 18 functions",
+      "type information is partial (235/240 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/api.ApplicationAPI.CreateApplication",
+      "reason": "body changed",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.ApplicationAPI.UpdateApplication",
+      "reason": "body changed",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.handleApplicationError",
+      "reason": "added",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.CreateApplication",
+      "reason": "body changed",
+      "file": "database/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetApplicationsByUser",
+      "reason": "body changed",
+      "file": "database/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.New",
+      "reason": "body changed",
+      "file": "database/database.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.fillMissingSortKeys",
+      "reason": "added",
+      "file": "database/database.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/fracdex.Float64Approx",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/fracdex.KeyBetween",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/fracdex.NKeysBetween",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/fracdex.decrementInt",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/fracdex.getIntLen",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/fracdex.getIntPart",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/fracdex.incrementInt",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/fracdex.midpoint",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/fracdex.reverse",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/fracdex.validateInt",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/fracdex.validateOrderKey",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 18,
+  "inline_sensitive_callers": [
+    "github.com/gotify/server/v2/database.GormDatabase.DeleteMessagesByUser",
+    "github.com/gotify/server/v2/database.GormDatabase.DeleteUserByID",
+    "github.com/gotify/server/v2/test/testdb.AppClientBuilder.AppWithTokenAndDefaultPriority",
+    "github.com/gotify/server/v2/test/testdb.AppClientBuilder.newAppWithToken",
+    "github.com/gotify/server/v2/test/testdb.AppClientBuilder.newAppWithTokenAndName"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/database_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "fracdex/fracdex_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "test/testdb/database_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.ApplicationAPI.CreateApplication",
+      "detail": "body changed (114 -\u003e 121 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.ApplicationAPI.UpdateApplication",
+      "detail": "body changed (169 -\u003e 186 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.CreateApplication",
+      "detail": "body changed (13 -\u003e 142 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetApplicationsByUser",
+      "detail": "body changed (56 -\u003e 57 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.New",
+      "detail": "body changed (391 -\u003e 405 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "import-added",
+      "symbol": "math",
+      "detail": "first direct import in github.com/gotify/server/v2/database (already linked into the old binary transitively)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "database/sql",
+      "detail": "first import in github.com/gotify/server/v2/database (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/api.ApplicationParams",
+      "detail": "SortKey string [not state]",
+      "s6_blocker": "layout of compiled-in type ApplicationParams changed (2 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/api.handleApplicationError",
+      "detail": "func(*github.com/gin-gonic/gin.Context, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/database.fillMissingSortKeys",
+      "detail": "func(*gorm.io/gorm.DB) error"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v2/fracdex",
+      "detail": "11 funcs, 0 types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/model.Application",
+      "detail": "SortKey string [not state]",
+      "s6_blocker": "layout of compiled-in type Application changed (13 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-tag-changed",
+      "symbol": "github.com/gotify/server/v2/model.Application",
+      "detail": "UserID: `gorm:\"index\" json:\"-\"` -\u003e `gorm:\"index;uniqueIndex:uix_application_user_id_sort_key,priority:1\" json:\"-\"`",
+      "s6_blocker": "struct tags are part of compiled-in type identity"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 28,
+    "old_funcs": 309,
+    "new_funcs": 322,
+    "old_type_errors": 235,
+    "new_type_errors": 240,
+    "changed_funcs": 7,
+    "changed_types": 2,
+    "changed_globals": 0
+  }
+}

@@ -1,0 +1,544 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@ec8ce07152b1",
+  "new": "gotify@5f167eb2d955",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (14): github.com/gotify/server/v2.main: main() runs once at start-up (never re-executed / never returns); github.com/gotify/server/v2/api.ClientParams: layout of compiled-in type ClientParams changed (3 functions use it); S6 replaces functions, not types; github.com/gotify/server/v2/auth.Auth.handleClient: closures created before the patch (e.g. middleware chains built at start-up) keep the old code; only newly created closures see the fix; github.com/gotify/server/v2/auth.Database: interface method set changed (itabs and type assertions are compiled in); github.com/gotify/server/v2/router.Create: caller in the call-graph closure never returns; ... and 9 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "github.com/gotify/server/v2/database.GormDatabase.UpdateClientTokensLastUsed is exported: callers outside the analysed module are not in the closure",
+      "github.com/gotify/server/v2/database.New is exported: callers outside the analysed module are not in the closure",
+      "new package-level variable github.com/gotify/server/v2/test/testdb.Now: under S6 it lives in the patch plugin and is re-initialised by every later patch generation",
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/gotify/server/v2/api.OIDCAPI.handleElevationCallback, github.com/gotify/server/v2/api.UserAPI.CreateUser, github.com/gotify/server/v2/api.UserAPI.GetUserByID, github.com/gotify/server/v2/api.UserAPI.GetUsers, github.com/gotify/server/v2/database.GormDatabase.DeleteUserByID, github.com/gotify/server/v2/test/testdb.AppClientBuilder.NewClientWithToken, github.com/gotify/server/v2/test/testdb.Database.AssertClientExist, github.com/gotify/server/v2/test/testdb.Database.AssertClientNotExist",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 26 functions",
+      "1 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (293/298 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2.main",
+      "reason": "calls New whose signature changed",
+      "file": "app.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.ClientAPI.CreateClient",
+      "reason": "body changed",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.ClientAPI.UpdateClient",
+      "reason": "body changed",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.createClient",
+      "reason": "body changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.PluginAPI.GetPlugins",
+      "reason": "body changed",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.Login",
+      "reason": "body changed",
+      "file": "api/session.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.GetCurrentUser",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.UpdateUserByID",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.toExternalUser",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.handleClient",
+      "reason": "body changed",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.CleanupExpiredClients",
+      "reason": "added",
+      "file": "database/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.CreateClient",
+      "reason": "body changed",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetClientByID",
+      "reason": "body changed",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetClientByToken",
+      "reason": "body changed",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetClientsByUser",
+      "reason": "body changed",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.UpdateClient",
+      "reason": "body changed",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.UpdateClientTokensLastUsedAndExpiresAt",
+      "reason": "added",
+      "file": "database/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.notExpired",
+      "reason": "added",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.New",
+      "reason": "signature changed",
+      "file": "database/database.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.fillMissingCreatedAt",
+      "reason": "added",
+      "file": "database/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/model.Client.PopulateExpiresAt",
+      "reason": "added",
+      "file": "model/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/model.Client.calculateExpiresAt",
+      "reason": "added",
+      "file": "model/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "reason": "calls removed GormDatabase.UpdateClientTokensLastUsed; body changed",
+      "file": "router/router.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/test/testdb.NewDB",
+      "reason": "calls New whose signature changed; body changed",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/test/testdb.NewDBWithDefaultUser",
+      "reason": "calls New whose signature changed; body changed",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/test/testdb.nowFunc",
+      "reason": "added",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 26,
+  "inline_sensitive_callers": [
+    "github.com/gotify/server/v2/api.OIDCAPI.handleElevationCallback",
+    "github.com/gotify/server/v2/api.UserAPI.CreateUser",
+    "github.com/gotify/server/v2/api.UserAPI.GetUserByID",
+    "github.com/gotify/server/v2/api.UserAPI.GetUsers",
+    "github.com/gotify/server/v2/database.GormDatabase.DeleteUserByID",
+    "github.com/gotify/server/v2/test/testdb.AppClientBuilder.NewClientWithToken",
+    "github.com/gotify/server/v2/test/testdb.Database.AssertClientExist",
+    "github.com/gotify/server/v2/test/testdb.Database.AssertClientNotExist"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/client_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/oidc_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/session_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/user_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/client_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/database_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/migration_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/user_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "router/router_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "test/testdb/database_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.ClientAPI.CreateClient",
+      "detail": "body changed (94 -\u003e 111 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.ClientAPI.UpdateClient",
+      "detail": "body changed (150 -\u003e 167 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.OIDCAPI.createClient",
+      "detail": "body changed (85 -\u003e 91 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.PluginAPI.GetPlugins",
+      "detail": "body changed (181 -\u003e 187 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.SessionAPI.Login",
+      "detail": "body changed (276 -\u003e 288 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.GetCurrentUser",
+      "detail": "body changed (126 -\u003e 132 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.UpdateUserByID",
+      "detail": "body changed (262 -\u003e 268 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.toExternalUser",
+      "detail": "body changed (27 -\u003e 33 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.CreateClient",
+      "detail": "body changed (13 -\u003e 41 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetClientByID",
+      "detail": "body changed (62 -\u003e 67 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetClientByToken",
+      "detail": "body changed (62 -\u003e 67 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetClientsByUser",
+      "detail": "body changed (50 -\u003e 55 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.UpdateClient",
+      "detail": "body changed (13 -\u003e 19 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/test/testdb.NewDB",
+      "detail": "body changed (73 -\u003e 75 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/test/testdb.NewDBWithDefaultUser",
+      "detail": "body changed (73 -\u003e 75 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/api.ClientParams",
+      "detail": "ExpiresAfterInactivitySeconds *uint [not state]",
+      "s6_blocker": "layout of compiled-in type ClientParams changed (3 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/v2/auth.Database",
+      "detail": "-UpdateClientTokensLastUsed([]string, *time.Time) error; +UpdateClientTokensLastUsedAndExpiresAt([]string, *time.Time) error",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.CleanupExpiredClients",
+      "detail": "(*GormDatabase)func(time.Time) ([]*github.com/gotify/server/v2/model.Client, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.UpdateClientTokensLastUsed",
+      "detail": "(*GormDatabase)func([]string, *time.Time) error"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.UpdateClientTokensLastUsedAndExpiresAt",
+      "detail": "(*GormDatabase)func([]string, *time.Time) error"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.notExpired",
+      "detail": "(*GormDatabase)func(*gorm.io/gorm.DB) *gorm.io/gorm.DB"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/database.New",
+      "detail": "func(string, string, string, string, int, bool) (*GormDatabase, error) -\u003e func(string, string, string, string, int, bool, func() time.Time) (*GormDatabase, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/database.fillMissingCreatedAt",
+      "detail": "func(*gorm.io/gorm.DB, time.Time) error"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/model.Application",
+      "detail": "CreatedAt time.Time [not state]",
+      "s6_blocker": "layout of compiled-in type Application changed (14 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/model.Client",
+      "detail": "CreatedAt time.Time; ExpiresAfterInactivitySeconds uint; ExpiresAt *time.Time [not state]",
+      "s6_blocker": "layout of compiled-in type Client changed (13 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/model.Client.PopulateExpiresAt",
+      "detail": "(*Client)func()"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/model.Client.calculateExpiresAt",
+      "detail": "(*Client)func() *time.Time"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/model.CurrentUserExternal",
+      "detail": "CreatedAt time.Time [not state]",
+      "s6_blocker": "layout of compiled-in type CurrentUserExternal changed (2 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/model.PluginConf",
+      "detail": "CreatedAt time.Time [not state]",
+      "s6_blocker": "layout of compiled-in type PluginConf changed (9 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/model.PluginConfExternal",
+      "detail": "CreatedAt time.Time [not state]",
+      "s6_blocker": "layout of compiled-in type PluginConfExternal changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/model.User",
+      "detail": "CreatedAt time.Time [not state]",
+      "s6_blocker": "layout of compiled-in type User changed (13 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/model.UserExternal",
+      "detail": "CreatedAt time.Time [not state]",
+      "s6_blocker": "layout of compiled-in type UserExternal changed (3 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "var-added",
+      "symbol": "github.com/gotify/server/v2/test/testdb.Now",
+      "detail": "time.Time"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/test/testdb.nowFunc",
+      "detail": "func() time.Time"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2.main",
+      "detail": "calls New whose signature changed; caller is main()",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "main-changed",
+      "symbol": "github.com/gotify/server/v2.main",
+      "detail": "body changed (221 -\u003e 225 tokens)",
+      "s6_blocker": "main() runs once at start-up (never re-executed / never returns)"
+    },
+    {
+      "class": "C5",
+      "kind": "closure-factory-changed",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.handleClient",
+      "detail": "change is confined to the function literal(s) this factory returns",
+      "s6_blocker": "closures created before the patch (e.g. middleware chains built at start-up) keep the old code; only newly created closures see the fix"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "calls removed GormDatabase.UpdateClientTokensLastUsed; caller is spawns a long-running goroutine (range over channel ticker.C)",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (1475 -\u003e 1549 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 29,
+    "new_packages": 29,
+    "old_funcs": 356,
+    "new_funcs": 362,
+    "old_type_errors": 293,
+    "new_type_errors": 298,
+    "changed_funcs": 27,
+    "changed_types": 9,
+    "changed_globals": 1
+  }
+}

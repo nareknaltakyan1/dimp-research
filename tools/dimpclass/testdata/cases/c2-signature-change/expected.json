@@ -1,0 +1,97 @@
+{
+  "tool": "dimpclass/1",
+  "old": "testdata/cases/c2-signature-change/old",
+  "new": "testdata/cases/c2-signature-change/new",
+  "module": "example.com/c2-signature-change",
+  "classes": [
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 4 function(s) (interface-level (signature/added/removed functions) with call-graph closure change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store",
+      "signature changes and removals were closed over their callers; new functions and types live in the patch plugin"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ],
+    "risks": [
+      "1 of 4 patched functions have no context.Context parameter: they get per-call, not per-request, version consistency under S6"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "example.com/c2-signature-change/pricing.Quote",
+      "reason": "body changed; calls lookupPrice whose signature changed",
+      "file": "pricing/pricing.go",
+      "ctx_param": true,
+      "inlinable": true
+    },
+    {
+      "symbol": "example.com/c2-signature-change/pricing.Single",
+      "reason": "body changed; calls lookupPrice whose signature changed",
+      "file": "pricing/pricing.go",
+      "ctx_param": true,
+      "inlinable": true
+    },
+    {
+      "symbol": "example.com/c2-signature-change/pricing.convert",
+      "reason": "added",
+      "file": "pricing/pricing.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "example.com/c2-signature-change/pricing.lookupPrice",
+      "reason": "signature changed",
+      "file": "pricing/pricing.go",
+      "ctx_param": true,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 4,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "example.com/c2-signature-change/pricing.Quote",
+      "detail": "body changed (43 -\u003e 47 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "example.com/c2-signature-change/pricing.Single",
+      "detail": "body changed (7 -\u003e 11 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "example.com/c2-signature-change/pricing.convert",
+      "detail": "func(int, string) int"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "example.com/c2-signature-change/pricing.lookupPrice",
+      "detail": "func(string) (int, error) -\u003e func(context.Context, string, string) (int, error)"
+    }
+  ],
+  "stats": {
+    "old_packages": 1,
+    "new_packages": 1,
+    "old_funcs": 3,
+    "new_funcs": 4,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 4,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

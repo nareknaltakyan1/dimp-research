@@ -1,0 +1,114 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@ab1ce4471ed2",
+  "new": "frontend@03e209e9e79a",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 5 function(s) (interface-level (signature/added/removed functions) with call-graph closure change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store",
+      "signature changes and removals were closed over their callers; new functions and types live in the patch plugin"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ],
+    "risks": [
+      "new package-level variable github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendMessage: under S6 it lives in the patch plugin and is re-initialised by every later patch generation",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 5 functions",
+      "5 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (408/408 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.homeHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.placeOrderHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.productHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.viewCartHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.renderHTTPError",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 5,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.homeHandler",
+      "detail": "body changed (557 -\u003e 561 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.placeOrderHandler",
+      "detail": "body changed (596 -\u003e 600 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.productHandler",
+      "detail": "body changed (499 -\u003e 503 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.viewCartHandler",
+      "detail": "body changed (651 -\u003e 655 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.renderHTTPError",
+      "detail": "body changed (115 -\u003e 119 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "var-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendMessage",
+      "detail": "string"
+    }
+  ],
+  "stats": {
+    "old_packages": 3,
+    "new_packages": 3,
+    "old_funcs": 455,
+    "new_funcs": 455,
+    "old_type_errors": 408,
+    "new_type_errors": 408,
+    "changed_funcs": 5,
+    "changed_types": 0,
+    "changed_globals": 1
+  }
+}

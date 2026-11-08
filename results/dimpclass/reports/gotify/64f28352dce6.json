@@ -1,0 +1,181 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@05b93c324dad",
+  "new": "gotify@64f28352dce6",
+  "module": "github.com/gotify/server/v3",
+  "classes": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 9 function(s) (interface-level (signature/added/removed functions) with call-graph closure change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store",
+      "signature changes and removals were closed over their callers; new functions and types live in the patch plugin"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ],
+    "risks": [
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/gotify/server/v3/router.Create",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 9 functions",
+      "type information is partial (390/390 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.CreateApplication",
+      "reason": "body changed; calls removed withResolvedImage",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.GetApplications",
+      "reason": "body changed; calls removed withResolvedImage",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.RemoveApplicationImage",
+      "reason": "body changed; calls removed withResolvedImage",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.UpdateApplication",
+      "reason": "body changed; calls removed withResolvedImage",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.UploadApplicationImage",
+      "reason": "body changed; calls removed withResolvedImage",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ClientAPI.GetClients",
+      "reason": "body changed",
+      "file": "api/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ClientAPI.UpdateClient",
+      "reason": "body changed",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.sanitizeApplication",
+      "reason": "added",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.sanitizeClient",
+      "reason": "added",
+      "file": "api/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 9,
+  "inline_sensitive_callers": [
+    "github.com/gotify/server/v3/router.Create"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/client_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.CreateApplication",
+      "detail": "body changed (126 -\u003e 129 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.GetApplications",
+      "detail": "body changed (70 -\u003e 64 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.RemoveApplicationImage",
+      "detail": "body changed (181 -\u003e 181 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.UpdateApplication",
+      "detail": "body changed (186 -\u003e 186 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.UploadApplicationImage",
+      "detail": "body changed (422 -\u003e 422 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v3/api.ClientAPI.GetClients",
+      "detail": "body changed (98 -\u003e 74 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v3/api.ClientAPI.UpdateClient",
+      "detail": "body changed (167 -\u003e 178 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.sanitizeApplication",
+      "detail": "func(*github.com/gotify/server/v3/model.Application) *github.com/gotify/server/v3/model.Application"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.sanitizeClient",
+      "detail": "func(*github.com/gotify/server/v3/model.Client, time.Time)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v3/api.withResolvedImage",
+      "detail": "func(*github.com/gotify/server/v3/model.Application) *github.com/gotify/server/v3/model.Application"
+    }
+  ],
+  "stats": {
+    "old_packages": 30,
+    "new_packages": 30,
+    "old_funcs": 405,
+    "new_funcs": 406,
+    "old_type_errors": 390,
+    "new_type_errors": 390,
+    "changed_funcs": 10,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

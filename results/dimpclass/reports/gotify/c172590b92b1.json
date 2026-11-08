@@ -1,0 +1,183 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@7e261be3046b",
+  "new": "gotify@c172590b92b1",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (3): github.com/gotify/server/v2/api.UserAPI: layout of compiled-in type UserAPI changed (1 functions use it); S6 replaces functions, not types; github.com/gotify/server/v2/config.Configuration: layout of compiled-in type Configuration changed (1 functions use it); S6 replaces functions, not types; github.com/gotify/server/v2/router.Create: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/gotify/server/v2/api.ApplicationAPI.CreateApplication, github.com/gotify/server/v2/api.ApplicationAPI.DeleteApplication, github.com/gotify/server/v2/api.ApplicationAPI.GetApplications, github.com/gotify/server/v2/api.ApplicationAPI.UpdateApplication, github.com/gotify/server/v2/api.ApplicationAPI.UploadApplicationImage, github.com/gotify/server/v2/api.ClientAPI.CreateClient, github.com/gotify/server/v2/api.ClientAPI.DeleteClient, github.com/gotify/server/v2/api.ClientAPI.GetClients, github.com/gotify/server/v2/api.ClientAPI.UpdateClient, github.com/gotify/server/v2/api.MessageAPI.CreateMessage, github.com/gotify/server/v2/api.MessageAPI.DeleteMessage, github.com/gotify/server/v2/api.MessageAPI.DeleteMessageWithApplication, github.com/gotify/server/v2/api.MessageAPI.DeleteMessages, github.com/gotify/server/v2/api.MessageAPI.GetMessages, github.com/gotify/server/v2/api.MessageAPI.GetMessagesWithApplication, github.com/gotify/server/v2/api.PluginAPI.GetPlugins, github.com/gotify/server/v2/api.UserAPI.ChangePassword, github.com/gotify/server/v2/api.UserAPI.GetCurrentUser, github.com/gotify/server/v2/api.isPluginOwner, github.com/gotify/server/v2/api/stream.API.Handle",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 6 functions",
+      "type information is partial (215/220 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.CreateUser",
+      "reason": "body changed",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.Auth.Optional",
+      "reason": "added",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.GetUserID",
+      "reason": "body changed",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.TryGetUserID",
+      "reason": "added",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "reason": "body changed",
+      "file": "router/router.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/test/testdb.Database.AssertUsernameNotExist",
+      "reason": "added",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 6,
+  "inline_sensitive_callers": [
+    "github.com/gotify/server/v2/api.ApplicationAPI.CreateApplication",
+    "github.com/gotify/server/v2/api.ApplicationAPI.DeleteApplication",
+    "github.com/gotify/server/v2/api.ApplicationAPI.GetApplications",
+    "github.com/gotify/server/v2/api.ApplicationAPI.UpdateApplication",
+    "github.com/gotify/server/v2/api.ApplicationAPI.UploadApplicationImage",
+    "github.com/gotify/server/v2/api.ClientAPI.CreateClient",
+    "github.com/gotify/server/v2/api.ClientAPI.DeleteClient",
+    "github.com/gotify/server/v2/api.ClientAPI.GetClients",
+    "github.com/gotify/server/v2/api.ClientAPI.UpdateClient",
+    "github.com/gotify/server/v2/api.MessageAPI.CreateMessage",
+    "github.com/gotify/server/v2/api.MessageAPI.DeleteMessage",
+    "github.com/gotify/server/v2/api.MessageAPI.DeleteMessageWithApplication",
+    "github.com/gotify/server/v2/api.MessageAPI.DeleteMessages",
+    "github.com/gotify/server/v2/api.MessageAPI.GetMessages",
+    "github.com/gotify/server/v2/api.MessageAPI.GetMessagesWithApplication",
+    "github.com/gotify/server/v2/api.PluginAPI.GetPlugins",
+    "github.com/gotify/server/v2/api.UserAPI.ChangePassword",
+    "github.com/gotify/server/v2/api.UserAPI.GetCurrentUser",
+    "github.com/gotify/server/v2/api.isPluginOwner",
+    "github.com/gotify/server/v2/api/stream.API.Handle"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/user_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/authentication_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/util_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.CreateUser",
+      "detail": "body changed (165 -\u003e 320 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/auth.GetUserID",
+      "detail": "body changed (61 -\u003e 29 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/api.UserAPI",
+      "detail": "Registration bool [not state]",
+      "s6_blocker": "layout of compiled-in type UserAPI changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.Auth.Optional",
+      "detail": "(*Auth)func() github.com/gin-gonic/gin.HandlerFunc"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/auth.TryGetUserID",
+      "detail": "func(*github.com/gin-gonic/gin.Context) *uint"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/config.Configuration",
+      "detail": "Registration bool [not state]",
+      "s6_blocker": "layout of compiled-in type Configuration changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/test/testdb.Database.AssertUsernameNotExist",
+      "detail": "(*Database)func(string)"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/router.Create",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (878 -\u003e 898 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 295,
+    "new_funcs": 298,
+    "old_type_errors": 215,
+    "new_type_errors": 220,
+    "changed_funcs": 6,
+    "changed_types": 2,
+    "changed_globals": 0
+  }
+}

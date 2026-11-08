@@ -1,0 +1,233 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@8af44e09579d",
+  "new": "gotify@693303453c79",
+  "module": "github.com/gotify/server/v3",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (11): github.com/gotify/server/v3/api.NewOIDC: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/gotify/server/v3/api.OIDCAPI.LoginHandler: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/gotify/server/v3/api.OIDCAPI: layout of compiled-in type OIDCAPI changed (1 functions use it); S6 replaces functions, not types; github.com/gotify/server/v3/config.Get: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; github.com/gotify/server/v3/config.parseList: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing; ... and 6 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "github.com/gotify/server/v3/ui.Register is exported: callers outside the analysed module are not in the closure",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 9 functions",
+      "type information is partial (359/363 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v3/api.NewOIDC",
+      "reason": "body changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.ElevateHandler",
+      "reason": "body changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.ExternalAuthorizeHandler",
+      "reason": "body changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.LoginHandler",
+      "reason": "body changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.promptURLParams",
+      "reason": "added",
+      "file": "api/oidc.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.Get",
+      "reason": "body changed",
+      "file": "config/config.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.parseList",
+      "reason": "body changed",
+      "file": "config/parse.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/router.Create",
+      "reason": "body changed; calls Register whose signature changed",
+      "file": "router/router.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/ui.Register",
+      "reason": "signature changed",
+      "file": "ui/serve.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 9,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/oidc_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "config/config_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "router/router_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.ElevateHandler",
+      "detail": "body changed (111 -\u003e 118 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.ExternalAuthorizeHandler",
+      "detail": "body changed (176 -\u003e 203 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v3/config.EnvOIDCAutoRedirect",
+      "detail": "= \"GOTIFY_OIDC_AUTO_REDIRECT\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v3/config.EnvOIDCPrompt",
+      "detail": "= \"GOTIFY_OIDC_PROMPT\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI",
+      "detail": "Prompt []string [not state]",
+      "s6_blocker": "layout of compiled-in type OIDCAPI changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.promptURLParams",
+      "detail": "(*OIDCAPI)func() []github.com/zitadel/oidc/v3/pkg/client/rp.URLParamOpt"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v3/config.OIDC",
+      "detail": "AutoRedirect bool; Prompt []string [not state]",
+      "s6_blocker": "layout of compiled-in type OIDC changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v3/model.GotifyInfo",
+      "detail": "OIDCAutoRedirect bool [not state]",
+      "s6_blocker": "layout of compiled-in type GotifyInfo changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v3/ui.Register",
+      "detail": "func(*github.com/gin-gonic/gin.Engine, github.com/gotify/server/v3/model.VersionInfo, bool, bool, bool, string) -\u003e func(*github.com/gin-gonic/gin.Engine, github.com/gotify/server/v3/model.VersionInfo, bool, bool, bool, string, bool)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v3/ui.uiConfig",
+      "detail": "OIDCAutoRedirect bool [not state]",
+      "s6_blocker": "layout of compiled-in type uiConfig changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v3/api.NewOIDC",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (297 -\u003e 305 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.LoginHandler",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (156 -\u003e 163 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v3/config.Get",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (918 -\u003e 957 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v3/config.parseList",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (102 -\u003e 116 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v3/router.Create",
+      "detail": "calls Register whose signature changed; caller is spawns a long-running goroutine (range over channel ticker.C)",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v3/router.Create",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (1618 -\u003e 1632 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v3/ui.Register",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (186 -\u003e 190 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 30,
+    "new_packages": 30,
+    "old_funcs": 390,
+    "new_funcs": 391,
+    "old_type_errors": 359,
+    "new_type_errors": 363,
+    "changed_funcs": 9,
+    "changed_types": 4,
+    "changed_globals": 0
+  }
+}

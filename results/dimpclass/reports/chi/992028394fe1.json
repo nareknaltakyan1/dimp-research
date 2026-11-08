@@ -1,0 +1,75 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@ecd189745e00",
+  "new": "chi@992028394fe1",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0"
+  ],
+  "dominant_class": "C0",
+  "recommendation": {
+    "mechanism": "none",
+    "in_process": true,
+    "summary": "No runtime code change: nothing to patch.",
+    "justification": [
+      "the canonical token streams of all built Go sources are identical; only tests, comments, formatting or non-compiled files changed"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-go-unbuilt",
+      "symbol": "_examples/fileserver/main.go",
+      "detail": "modified (not in the linux/amd64 or wasip1 build of an analysed package)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-go-unbuilt",
+      "symbol": "_examples/limits/main.go",
+      "detail": "modified (not in the linux/amd64 or wasip1 build of an analysed package)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-go-unbuilt",
+      "symbol": "_examples/logging/main.go",
+      "detail": "modified (not in the linux/amd64 or wasip1 build of an analysed package)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-go-unbuilt",
+      "symbol": "_examples/rest/main.go",
+      "detail": "modified (not in the linux/amd64 or wasip1 build of an analysed package)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-go-unbuilt",
+      "symbol": "_examples/todos-resource/main.go",
+      "detail": "modified (not in the linux/amd64 or wasip1 build of an analysed package)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-go-unbuilt",
+      "symbol": "_examples/versions/main.go",
+      "detail": "modified (not in the linux/amd64 or wasip1 build of an analysed package)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "context_test.go",
+      "detail": "modified"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 166,
+    "new_funcs": 166,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

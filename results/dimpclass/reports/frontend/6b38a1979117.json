@@ -1,0 +1,115 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@5e8a2b776930",
+  "new": "frontend@6b38a1979117",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C1",
+    "C2",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (1): github.com/GoogleCloudPlatform/microservices-demo/src/frontend.init: init() runs once at start-up (never re-executed / never returns)"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "new package-level variable github.com/GoogleCloudPlatform/microservices-demo/src/frontend.packagingServiceUrl: under S6 it lives in the patch plugin and is re-initialised by every later patch generation",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 3 functions",
+      "3 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (408/408 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.productHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.httpGetPackagingInfo",
+      "reason": "added",
+      "file": "packaging_info.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.isPackagingServiceConfigured",
+      "reason": "added",
+      "file": "packaging_info.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 3,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.productHandler",
+      "detail": "body changed (503 -\u003e 549 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "encoding/json",
+      "detail": "first import in github.com/GoogleCloudPlatform/microservices-demo/src/frontend (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.PackagingInfo",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.httpGetPackagingInfo",
+      "detail": "func(string) (*PackagingInfo, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.isPackagingServiceConfigured",
+      "detail": "func() bool"
+    },
+    {
+      "class": "C2",
+      "kind": "var-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.packagingServiceUrl",
+      "detail": "string"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "io/ioutil",
+      "detail": "first import in github.com/GoogleCloudPlatform/microservices-demo/src/frontend (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C5",
+      "kind": "init-changed",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.init",
+      "detail": "body changed (10 -\u003e 20 tokens)",
+      "s6_blocker": "init() runs once at start-up (never re-executed / never returns)"
+    }
+  ],
+  "stats": {
+    "old_packages": 3,
+    "new_packages": 3,
+    "old_funcs": 455,
+    "new_funcs": 457,
+    "old_type_errors": 408,
+    "new_type_errors": 408,
+    "changed_funcs": 4,
+    "changed_types": 0,
+    "changed_globals": 1
+  }
+}

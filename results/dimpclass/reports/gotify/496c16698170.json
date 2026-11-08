@@ -1,0 +1,410 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@6de77209a6a0",
+  "new": "gotify@496c16698170",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C4",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (23): filippo.io/edwards25519: dependency graph changed; github.com/BurntSushi/toml: dependency version changed; github.com/go-sql-driver/mysql: dependency version changed; github.com/jackc/pgpassfile: dependency graph changed; github.com/jackc/pgservicefile: dependency graph changed; ... and 18 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "github.com/gotify/server/v2/database.GormDatabase.CountUser is exported: callers outside the analysed module are not in the closure",
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/gotify/server/v2.main",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 9 functions",
+      "type information is partial (224/235 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.Close",
+      "reason": "body changed",
+      "file": "database/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.CountUser",
+      "reason": "signature changed",
+      "file": "database/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetMessagesByApplication",
+      "reason": "body changed",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetMessagesByApplicationSince",
+      "reason": "body changed",
+      "file": "database/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetMessagesByUser",
+      "reason": "body changed",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetMessagesByUserSince",
+      "reason": "body changed",
+      "file": "database/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.Ping",
+      "reason": "body changed",
+      "file": "database/ping.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/database.New",
+      "reason": "body changed; calls removed prepareBlobColumn",
+      "file": "database/database.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/runner.LoggingRoundTripper.RoundTrip",
+      "reason": "body changed",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 9,
+  "inline_sensitive_callers": [
+    "github.com/gotify/server/v2.main"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/authentication_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/migration_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/user_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-go-unbuilt",
+      "symbol": "plugin/compat/wrap_test_race.go",
+      "detail": "modified (not in the linux/amd64 or wasip1 build of an analysed package)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "plugin/manager_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-go-unbuilt",
+      "symbol": "plugin/manager_test_race.go",
+      "detail": "modified (not in the linux/amd64 or wasip1 build of an analysed package)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetMessagesByApplication",
+      "detail": "body changed (56 -\u003e 56 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetMessagesByApplicationSince",
+      "detail": "body changed (84 -\u003e 84 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetMessagesByUser",
+      "detail": "body changed (66 -\u003e 66 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.GetMessagesByUserSince",
+      "detail": "body changed (94 -\u003e 94 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.Ping",
+      "detail": "body changed (14 -\u003e 29 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/database.New",
+      "detail": "body changed (227 -\u003e 391 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/runner.LoggingRoundTripper.RoundTrip",
+      "detail": "body changed (148 -\u003e 151 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/gotify/server/v2/api.UserDatabase",
+      "detail": "~CountUser: (...any) (int, error) -\u003e (...any) (int64, error)",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-retyped",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase",
+      "detail": "DB: *github.com/jinzhu/gorm.DB -\u003e *gorm.io/gorm.DB [not state]",
+      "s6_blocker": "layout of compiled-in type GormDatabase changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.CountUser",
+      "detail": "(*GormDatabase)func(...any) (int, error) -\u003e (*GormDatabase)func(...any) (int64, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/database.prepareBlobColumn",
+      "detail": "func(string, *github.com/jinzhu/gorm.DB) error"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-tag-changed",
+      "symbol": "github.com/gotify/server/v2/model.Application",
+      "detail": "ID: `gorm:\"primary_key;unique_index;AUTO_INCREMENT\" json:\"id\"` -\u003e `gorm:\"primaryKey;autoIncrement\" json:\"id\"`; Token: `gorm:\"type:varchar(180);unique_index\" json:\"token\"` -\u003e `gorm:\"type:varchar(180);uniqueIndex:uix_applications_token\" json:\"token\"`; Messages: `json:\"-\"` -\u003e `gorm:\"-\" json:\"-\"`",
+      "s6_blocker": "struct tags are part of compiled-in type identity"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-tag-changed",
+      "symbol": "github.com/gotify/server/v2/model.Client",
+      "detail": "ID: `gorm:\"primary_key;unique_index;AUTO_INCREMENT\" json:\"id\"` -\u003e `gorm:\"primaryKey;autoIncrement\" json:\"id\"`; Token: `gorm:\"type:varchar(180);unique_index\" json:\"token\"` -\u003e `gorm:\"type:varchar(180);uniqueIndex:uix_clients_token\" json:\"token\"`",
+      "s6_blocker": "struct tags are part of compiled-in type identity"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-tag-changed",
+      "symbol": "github.com/gotify/server/v2/model.Message",
+      "detail": "ID: `gorm:\"AUTO_INCREMENT;primary_key;index\"` -\u003e `gorm:\"autoIncrement;primaryKey;index\"`",
+      "s6_blocker": "struct tags are part of compiled-in type identity"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-tag-changed",
+      "symbol": "github.com/gotify/server/v2/model.PluginConf",
+      "detail": "ID: `gorm:\"primary_key;AUTO_INCREMENT;index\"` -\u003e `gorm:\"primaryKey;autoIncrement\"`; Token: `gorm:\"type:varchar(180);unique_index\"` -\u003e `gorm:\"type:varchar(180);uniqueIndex:uix_plugin_confs_token\"`",
+      "s6_blocker": "struct tags are part of compiled-in type identity"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-tag-changed",
+      "symbol": "github.com/gotify/server/v2/model.User",
+      "detail": "ID: `gorm:\"primary_key;unique_index;AUTO_INCREMENT\"` -\u003e `gorm:\"primaryKey;autoIncrement\"`; Name: `gorm:\"type:varchar(180);unique_index\"` -\u003e `gorm:\"type:varchar(180);uniqueIndex:uix_users_name\"`",
+      "s6_blocker": "struct tags are part of compiled-in type identity"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "github.com/mattn/go-isatty",
+      "detail": "first import in github.com/gotify/server/v2/database (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "gorm.io/driver/mysql",
+      "detail": "first import in github.com/gotify/server/v2/database (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "gorm.io/driver/postgres",
+      "detail": "first import in github.com/gotify/server/v2/database (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "gorm.io/driver/sqlite",
+      "detail": "first import in github.com/gotify/server/v2/database (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "gorm.io/gorm",
+      "detail": "first import in github.com/gotify/server/v2/database (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "gorm.io/gorm/logger",
+      "detail": "first import in github.com/gotify/server/v2/database (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "filippo.io/edwards25519",
+      "detail": "v1.1.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/BurntSushi/toml",
+      "detail": "v1.2.0 -\u003e v1.5.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/go-sql-driver/mysql",
+      "detail": "v1.5.0 -\u003e v1.9.3 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/jackc/pgpassfile",
+      "detail": "v1.0.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/jackc/pgservicefile",
+      "detail": "v0.0.0-20240606120523-5a60cdf6a761 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/jackc/pgx/v5",
+      "detail": "v5.7.6 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/jackc/puddle/v2",
+      "detail": "v2.2.2 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/jinzhu/gorm",
+      "detail": "v1.9.16",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/jinzhu/now",
+      "detail": "v1.1.5 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/lib/pq",
+      "detail": "v1.10.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/mattn/go-sqlite3",
+      "detail": "v1.14.7 -\u003e v1.14.32 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "gorm.io/driver/mysql",
+      "detail": "v1.6.0",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "gorm.io/driver/postgres",
+      "detail": "v1.6.0",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "gorm.io/driver/sqlite",
+      "detail": "v1.6.0",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "gorm.io/gorm",
+      "detail": "v1.31.0",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/database.GormDatabase.Close",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (9 -\u003e 27 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 310,
+    "new_funcs": 309,
+    "old_type_errors": 224,
+    "new_type_errors": 235,
+    "changed_funcs": 10,
+    "changed_types": 7,
+    "changed_globals": 0
+  }
+}

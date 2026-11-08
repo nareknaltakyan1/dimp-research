@@ -1,0 +1,379 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@f16ce59e6ca3",
+  "new": "gotify@c4e63863f745",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (39): : language/toolchain version changed; github.com/BurntSushi/toml: dependency graph changed; github.com/davecgh/go-spew: dependency graph changed; github.com/gin-contrib/cors: dependency version changed; github.com/gin-contrib/gzip: dependency version changed; ... and 34 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 3 functions",
+      "type information is partial (221/221 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "toolchain changed: S2/S6 plugin delivery is impossible (plugins must match the host toolchain exactly); only a new process works"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.CreateUser",
+      "reason": "body changed; calls UserAPI.toInternalUser whose signature changed",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.UpdateUserByID",
+      "reason": "body changed; calls UserAPI.toInternalUser whose signature changed",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.toInternalUser",
+      "reason": "signature changed",
+      "file": "api/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 3,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.CreateUser",
+      "detail": "body changed (320 -\u003e 340 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.UpdateUserByID",
+      "detail": "body changed (223 -\u003e 262 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/api.UserAPI.toInternalUser",
+      "detail": "(*UserAPI)func(*github.com/gotify/server/v2/model.UserExternalWithPass, []byte) *github.com/gotify/server/v2/model.User -\u003e (*UserAPI)func(*github.com/gotify/server/v2/model.UserExternal, string, []byte) *github.com/gotify/server/v2/model.User"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/model.CreateUserExternal",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/model.UpdateUserExternal",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-removed",
+      "symbol": "github.com/gotify/server/v2/model.UserExternalWithPass",
+      "detail": "struct"
+    },
+    {
+      "class": "C4",
+      "kind": "gomod-go",
+      "detail": "go directive 1.14 -\u003e 1.18",
+      "s6_blocker": "language/toolchain version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/BurntSushi/toml",
+      "detail": "v0.3.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/davecgh/go-spew",
+      "detail": "v1.1.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gin-contrib/cors",
+      "detail": "v1.3.1 -\u003e v1.4.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gin-contrib/gzip",
+      "detail": "v0.0.3 -\u003e v0.0.6",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/gin-contrib/sse",
+      "detail": "v0.1.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gin-gonic/gin",
+      "detail": "v1.6.3 -\u003e v1.8.1",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-playground/locales",
+      "detail": "v0.14.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-playground/universal-translator",
+      "detail": "v0.18.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/go-playground/validator/v10",
+      "detail": "v10.3.0 -\u003e v10.11.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-sql-driver/mysql",
+      "detail": "v1.5.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-yaml/yaml",
+      "detail": "v2.1.0+incompatible (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/goccy/go-json",
+      "detail": "v0.9.7 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/golang/protobuf",
+      "detail": "v1.4.2 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gorilla/websocket",
+      "detail": "v1.4.2 -\u003e v1.5.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/h2non/filetype",
+      "detail": "v1.1.1 -\u003e v1.1.3",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/inconshreveable/mousetrap",
+      "detail": "v1.0.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/jinzhu/inflection",
+      "detail": "v1.0.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/joho/godotenv",
+      "detail": "v1.3.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/json-iterator/go",
+      "detail": "v1.1.10 -\u003e v1.1.12 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/leodido/go-urn",
+      "detail": "v1.2.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/mattn/go-isatty",
+      "detail": "v0.0.14 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/modern-go/concurrent",
+      "detail": "v0.0.0-20180306012644-bacd9c7ef1dd (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/modern-go/reflect2",
+      "detail": "v1.0.2 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/pelletier/go-toml/v2",
+      "detail": "v2.0.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/pmezard/go-difflib",
+      "detail": "v1.0.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/robfig/cron",
+      "detail": "v0.0.0-20180505203441-b41be1df6967 -\u003e v1.2.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/rogpeppe/go-internal",
+      "detail": "v1.6.2 -\u003e v1.8.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/spf13/pflag",
+      "detail": "v1.0.3 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/stretchr/testify",
+      "detail": "v1.7.0 -\u003e v1.8.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/ugorji/go/codec",
+      "detail": "v1.2.7 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/crypto",
+      "detail": "v0.0.0-20210616213533-5ff15b29337e -\u003e v0.0.0-20220829220503-c86fa9a7ed90",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "golang.org/x/net",
+      "detail": "v0.0.0-20211112202133-69e39bad7dc2 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "golang.org/x/sync",
+      "detail": "v0.0.0-20190911185100-cd5d95a43a6e (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "golang.org/x/sys",
+      "detail": "v0.0.0-20210806184541-e5e7981a1069 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "golang.org/x/term",
+      "detail": "v0.0.0-20201126162022-7de9c90e9dd1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "golang.org/x/text",
+      "detail": "v0.3.7 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "google.golang.org/protobuf",
+      "detail": "v1.25.0 -\u003e v1.28.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "gopkg.in/yaml.v3",
+      "detail": "v3.0.1 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 300,
+    "new_funcs": 300,
+    "old_type_errors": 221,
+    "new_type_errors": 221,
+    "changed_funcs": 3,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

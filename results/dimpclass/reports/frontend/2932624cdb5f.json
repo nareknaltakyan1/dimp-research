@@ -1,0 +1,178 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@84f0ad9cce34",
+  "new": "frontend@2932624cdb5f",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C1",
+    "C2",
+    "C4",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (3): : language/toolchain version changed; github.com/GoogleCloudPlatform/microservices-demo/src/frontend.main: main() runs once at start-up (never re-executed / never returns); github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer: layout of compiled-in type frontendServer changed (1 functions use it); S6 replaces functions, not types"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "new package-level variable github.com/GoogleCloudPlatform/microservices-demo/src/frontend.assistantEnabled: under S6 it lives in the patch plugin and is re-initialised by every later patch generation",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 8 functions",
+      "8 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (411/418 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader",
+      "toolchain changed: S2/S6 plugin delivery is impossible (plugins must match the host toolchain exactly); only a new process works"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.assistantHandler",
+      "reason": "added",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.chatBotHandler",
+      "reason": "added",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.getProductByID",
+      "reason": "added",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.homeHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.placeOrderHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.productHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.viewCartHandler",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.renderHTTPError",
+      "reason": "body changed",
+      "file": "handlers.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 8,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.homeHandler",
+      "detail": "body changed (561 -\u003e 565 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.placeOrderHandler",
+      "detail": "body changed (704 -\u003e 708 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.productHandler",
+      "detail": "body changed (549 -\u003e 553 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.viewCartHandler",
+      "detail": "body changed (655 -\u003e 659 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.renderHTTPError",
+      "detail": "body changed (119 -\u003e 123 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "import-added",
+      "symbol": "io",
+      "detail": "first direct import in github.com/GoogleCloudPlatform/microservices-demo/src/frontend (already linked into the old binary transitively)"
+    },
+    {
+      "class": "C2",
+      "kind": "var-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.assistantEnabled",
+      "detail": "bool"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer",
+      "detail": "shoppingAssistantSvcAddr string [not state]",
+      "s6_blocker": "layout of compiled-in type frontendServer changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.assistantHandler",
+      "detail": "(*frontendServer)func(net/http.ResponseWriter, *net/http.Request)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.chatBotHandler",
+      "detail": "(*frontendServer)func(net/http.ResponseWriter, *net/http.Request)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer.getProductByID",
+      "detail": "(*frontendServer)func(net/http.ResponseWriter, *net/http.Request)"
+    },
+    {
+      "class": "C4",
+      "kind": "gomod-go",
+      "detail": "go directive 1.19 -\u003e 1.22",
+      "s6_blocker": "language/toolchain version changed"
+    },
+    {
+      "class": "C5",
+      "kind": "main-changed",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.main",
+      "detail": "body changed (714 -\u003e 778 tokens)",
+      "s6_blocker": "main() runs once at start-up (never re-executed / never returns)"
+    }
+  ],
+  "stats": {
+    "old_packages": 4,
+    "new_packages": 4,
+    "old_funcs": 462,
+    "new_funcs": 465,
+    "old_type_errors": 411,
+    "new_type_errors": 418,
+    "changed_funcs": 9,
+    "changed_types": 1,
+    "changed_globals": 1
+  }
+}

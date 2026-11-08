@@ -1,0 +1,89 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@60b4f5f52d70",
+  "new": "chi@fd0ff0e45e67",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 2 function(s) (interface-level (signature/added/removed functions) with call-graph closure change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store",
+      "signature changes and removals were closed over their callers; new functions and types live in the patch plugin"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 2 functions"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5.Mux.routeHTTP",
+      "reason": "body changed",
+      "file": "mux.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5.setPathValue",
+      "reason": "added",
+      "file": "path_value.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-go-unbuilt",
+      "symbol": "path_value_fallback.go",
+      "detail": "added (not in the linux/amd64 or wasip1 build of an analysed package)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "path_value_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5.Mux.routeHTTP",
+      "detail": "body changed (190 -\u003e 201 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/go-chi/chi/v5.supportsPathValue",
+      "detail": "= true (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/go-chi/chi/v5.setPathValue",
+      "detail": "func(*Context, *net/http.Request)"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 167,
+    "new_funcs": 168,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 2,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

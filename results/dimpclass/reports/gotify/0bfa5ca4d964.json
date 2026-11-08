@@ -1,0 +1,69 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@92916f011769",
+  "new": "gotify@0bfa5ca4d964",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C1",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (1): github.com/gotify/server/v2/auth.CorsConfig: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 2 functions",
+      "type information is partial (221/221 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/api/stream.isAllowedOrigin",
+      "reason": "body changed",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.CorsConfig",
+      "reason": "body changed",
+      "file": "auth/cors.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api/stream.isAllowedOrigin",
+      "detail": "body changed (97 -\u003e 92 tokens)"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/auth.CorsConfig",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (205 -\u003e 200 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 307,
+    "new_funcs": 307,
+    "old_type_errors": 221,
+    "new_type_errors": 221,
+    "changed_funcs": 2,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

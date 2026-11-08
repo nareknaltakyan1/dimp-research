@@ -1,0 +1,824 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@67b65898fc2f",
+  "new": "gotify@3db7dbc429d7",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C2",
+    "C4",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (14): github.com/BurntSushi/toml: dependency graph changed; github.com/jinzhu/configor: dependency graph changed; github.com/joho/godotenv: dependency graph changed; github.com/gotify/server/v2.main: main() runs once at start-up (never re-executed / never returns); github.com/gotify/server/v2.main: caller in the call-graph closure never returns; ... and 9 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "github.com/gotify/server/v2/config.Get is exported: callers outside the analysed module are not in the closure",
+      "new package-level variable github.com/gotify/server/v2/config.osStat: under S6 it lives in the patch plugin and is re-initialised by every later patch generation",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 27 functions",
+      "5 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (329/347 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2.main",
+      "reason": "calls noColor whose signature changed; calls Get whose signature changed",
+      "file": "app.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2.noColor",
+      "reason": "signature changed",
+      "file": "app.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2.printUsage",
+      "reason": "added",
+      "file": "app.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2.run",
+      "reason": "added",
+      "file": "app.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2.serve",
+      "reason": "added",
+      "file": "app.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api.NewOIDC",
+      "reason": "body changed",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/api/stream.newUpgrader",
+      "reason": "body changed",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/auth.CorsConfig",
+      "reason": "body changed",
+      "file": "auth/cors.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.Get",
+      "reason": "signature changed; calls removed configFiles",
+      "file": "config/config.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.LogLevel.AsZeroLogLevel",
+      "reason": "added",
+      "file": "config/loglevel.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.LogLevel.Decode",
+      "reason": "added",
+      "file": "config/loglevel.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.futureFatal",
+      "reason": "added",
+      "file": "config/error.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.getConfigHome",
+      "reason": "added",
+      "file": "config/file.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.getFiles",
+      "reason": "added",
+      "file": "config/file.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.loadFile",
+      "reason": "added",
+      "file": "config/file.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.loadFiles",
+      "reason": "added",
+      "file": "config/file.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.lookupEnv",
+      "reason": "added",
+      "file": "config/parse.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.parseBool",
+      "reason": "added",
+      "file": "config/parse.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.parseInt",
+      "reason": "added",
+      "file": "config/parse.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.parseList",
+      "reason": "added",
+      "file": "config/parse.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.parseLogLevel",
+      "reason": "added",
+      "file": "config/parse.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.parseMap",
+      "reason": "added",
+      "file": "config/parse.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config.parseString",
+      "reason": "added",
+      "file": "config/parse.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config/migrate.Config",
+      "reason": "in added package",
+      "file": "config/migrate/migrate.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config/migrate.buildEnv",
+      "reason": "in added package",
+      "file": "config/migrate/migrate.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config/migrate.marshalList",
+      "reason": "in added package",
+      "file": "config/migrate/migrate.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/config/migrate.marshalMap",
+      "reason": "in added package",
+      "file": "config/migrate/migrate.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 27,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "app_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/cors_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "config/config_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "config/loglevel_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "config/migrate/migrate_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "router/router_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "import-added",
+      "symbol": "flag",
+      "detail": "first direct import in github.com/gotify/server/v2 (already linked into the old binary transitively)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvDatabaseConnection",
+      "detail": "= \"GOTIFY_DATABASE_CONNECTION\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvDatabaseDialect",
+      "detail": "= \"GOTIFY_DATABASE_DIALECT\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvDefaultUserName",
+      "detail": "= \"GOTIFY_DEFAULTUSER_NAME\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvDefaultUserPass",
+      "detail": "= \"GOTIFY_DEFAULTUSER_PASS\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvLogLevel",
+      "detail": "= \"GOTIFY_LOGLEVEL\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvNoColor",
+      "detail": "= \"NOCOLOR\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvOIDCAutoRegister",
+      "detail": "= \"GOTIFY_OIDC_AUTOREGISTER\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvOIDCClientID",
+      "detail": "= \"GOTIFY_OIDC_CLIENTID\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvOIDCClientSecret",
+      "detail": "= \"GOTIFY_OIDC_CLIENTSECRET\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvOIDCEnabled",
+      "detail": "= \"GOTIFY_OIDC_ENABLED\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvOIDCIssuer",
+      "detail": "= \"GOTIFY_OIDC_ISSUER\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvOIDCRedirectURL",
+      "detail": "= \"GOTIFY_OIDC_REDIRECTURL\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvOIDCScopes",
+      "detail": "= \"GOTIFY_OIDC_SCOPES\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvOIDCUsernameClaim",
+      "detail": "= \"GOTIFY_OIDC_USERNAMECLAIM\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvPassStrength",
+      "detail": "= \"GOTIFY_PASSSTRENGTH\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvPluginsDir",
+      "detail": "= \"GOTIFY_PLUGINSDIR\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvRegistration",
+      "detail": "= \"GOTIFY_REGISTRATION\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerCorsAllowHeaders",
+      "detail": "= \"GOTIFY_SERVER_CORS_ALLOWHEADERS\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerCorsAllowMethods",
+      "detail": "= \"GOTIFY_SERVER_CORS_ALLOWMETHODS\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerCorsAllowOrigins",
+      "detail": "= \"GOTIFY_SERVER_CORS_ALLOWORIGINS\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerKeepAlivePeriodSeconds",
+      "detail": "= \"GOTIFY_SERVER_KEEPALIVEPERIODSECONDS\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerListenAddr",
+      "detail": "= \"GOTIFY_SERVER_LISTENADDR\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerPort",
+      "detail": "= \"GOTIFY_SERVER_PORT\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerResponseHeaders",
+      "detail": "= \"GOTIFY_SERVER_RESPONSEHEADERS\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSSLCertFile",
+      "detail": "= \"GOTIFY_SERVER_SSL_CERTFILE\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSSLCertKey",
+      "detail": "= \"GOTIFY_SERVER_SSL_CERTKEY\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSSLEnabled",
+      "detail": "= \"GOTIFY_SERVER_SSL_ENABLED\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSSLLetsEncryptAcceptTOS",
+      "detail": "= \"GOTIFY_SERVER_SSL_LETSENCRYPT_ACCEPTTOS\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSSLLetsEncryptCache",
+      "detail": "= \"GOTIFY_SERVER_SSL_LETSENCRYPT_CACHE\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSSLLetsEncryptDirectoryURL",
+      "detail": "= \"GOTIFY_SERVER_SSL_LETSENCRYPT_DIRECTORYURL\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSSLLetsEncryptEnabled",
+      "detail": "= \"GOTIFY_SERVER_SSL_LETSENCRYPT_ENABLED\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSSLLetsEncryptHosts",
+      "detail": "= \"GOTIFY_SERVER_SSL_LETSENCRYPT_HOSTS\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSSLListenAddr",
+      "detail": "= \"GOTIFY_SERVER_SSL_LISTENADDR\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSSLPort",
+      "detail": "= \"GOTIFY_SERVER_SSL_PORT\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSSLRedirectToHTTPS",
+      "detail": "= \"GOTIFY_SERVER_SSL_REDIRECTTOHTTPS\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerSecureCookie",
+      "detail": "= \"GOTIFY_SERVER_SECURECOOKIE\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerStreamAllowedOrigins",
+      "detail": "= \"GOTIFY_SERVER_STREAM_ALLOWEDORIGINS\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerStreamPingPeriodSeconds",
+      "detail": "= \"GOTIFY_SERVER_STREAM_PINGPERIODSECONDS\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvServerTrustedProxies",
+      "detail": "= \"GOTIFY_SERVER_TRUSTEDPROXIES\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C1",
+      "kind": "const-added",
+      "symbol": "github.com/gotify/server/v2/config.EnvUploadedImagesDir",
+      "detail": "= \"GOTIFY_UPLOADEDIMAGESDIR\" (inlined into the (changed) code that uses it)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "encoding/csv",
+      "detail": "first import in github.com/gotify/server/v2/config (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2.noColor",
+      "detail": "func() bool -\u003e func(string) bool"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2.printUsage",
+      "detail": "func(io.Writer)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2.run",
+      "detail": "func([]string, io.Writer, io.Writer) int"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2.serve",
+      "detail": "func(*github.com/gotify/server/v2/model.VersionInfo) int"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/gotify/server/v2/config.Configuration",
+      "detail": "LogLevel LogLevel; NoColor string [not state]",
+      "s6_blocker": "layout of compiled-in type Configuration changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-retyped",
+      "symbol": "github.com/gotify/server/v2/config.Configuration",
+      "detail": "Server: struct{KeepAlivePeriodSeconds int; ListenAddr string \"default:\\\"\\\"\"; Port int \"default:\\\"80\\\"\"; SSL struct{Enabled bool \"default:\\\"false\\\"\"; RedirectToHTTPS bool \"default:\\\"true\\\"\"; ListenAddr string \"default:\\\"\\\"\"; Port int \"default:\\\"443\\\"\"; CertFile string \"default:\\\"\\\"\"; CertKey string \"default:\\\"\\\"\"; LetsEncrypt struct{Enabled bool \"default:\\\"false\\\"\"; AcceptTOS bool \"default:\\\"false\\\"\"; Cache string \"default:\\\"data/certs\\\"\"; DirectoryURL string \"default:\\\"\\\"\"; Hosts []string}}; ResponseHeaders map[string]string; Stream struct{PingPeriodSeconds int \"default:\\\"45\\\"\"; AllowedOrigins []string}; Cors struct{AllowOrigins []string; AllowMethods []string; AllowHeaders []string}; TrustedProxies []string; SecureCookie bool \"default:\\\"false\\\"\"} -\u003e Server; Database: struct{Dialect string \"default:\\\"sqlite3\\\"\"; Connection string \"default:\\\"data/gotify.db\\\"\"} -\u003e Database; DefaultUser: struct{Name string \"default:\\\"admin\\\"\"; Pass string \"default:\\\"admin\\\"\"} -\u003e DefaultUser; OIDC: struct{Enabled bool \"default:\\\"false\\\"\"; Issuer string \"default:\\\"\\\"\"; ClientID string \"default:\\\"\\\"\"; ClientSecret string \"default:\\\"\\\"\"; UsernameClaim string \"default:\\\"preferred_username\\\"\"; RedirectURL string \"default:\\\"\\\"\"; AutoRegister bool \"default:\\\"true\\\"\"; Scopes []string} -\u003e OIDC [not state]",
+      "s6_blocker": "layout of compiled-in type Configuration changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-tag-changed",
+      "symbol": "github.com/gotify/server/v2/config.Configuration",
+      "detail": "PassStrength: `default:\"10\"` -\u003e ``; UploadedImagesDir: `default:\"data/images\"` -\u003e ``; PluginsDir: `default:\"data/plugins\"` -\u003e ``; Registration: `default:\"false\"` -\u003e ``",
+      "s6_blocker": "struct tags are part of compiled-in type identity"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/config.Cors",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/config.Database",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/config.DefaultUser",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/config.FutureLog",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/v2/config.Get",
+      "detail": "func() *Configuration -\u003e func() (*Configuration, []FutureLog)"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/config.LetsEncrypt",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/config.LogLevel",
+      "detail": "other"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.LogLevel.AsZeroLogLevel",
+      "detail": "(LogLevel)func() github.com/rs/zerolog.Level"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.LogLevel.Decode",
+      "detail": "(*LogLevel)func(string) error"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/config.OIDC",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/config.SSL",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/config.Server",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "type-added",
+      "symbol": "github.com/gotify/server/v2/config.Stream",
+      "detail": "struct"
+    },
+    {
+      "class": "C2",
+      "kind": "func-removed",
+      "symbol": "github.com/gotify/server/v2/config.configFiles",
+      "detail": "func() []string"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.futureFatal",
+      "detail": "func(string) FutureLog"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.getConfigHome",
+      "detail": "func() string"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.getFiles",
+      "detail": "func() []string"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.loadFile",
+      "detail": "func(string) (FutureLog, bool)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.loadFiles",
+      "detail": "func() []FutureLog"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.lookupEnv",
+      "detail": "func(string) (string, bool, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "var-added",
+      "symbol": "github.com/gotify/server/v2/config.osStat",
+      "detail": "func(name string) (os.FileInfo, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.parseBool",
+      "detail": "func(*bool, string) error"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.parseInt",
+      "detail": "func(*int, string) error"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.parseList",
+      "detail": "func(*[]string, string) error"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.parseLogLevel",
+      "detail": "func(*LogLevel, string) error"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.parseMap",
+      "detail": "func(*map[string]string, string) error"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/gotify/server/v2/config.parseString",
+      "detail": "func(*string, string) error"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v2/config/migrate",
+      "detail": "4 funcs, 1 types"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "github.com/joho/godotenv",
+      "detail": "first import in github.com/gotify/server/v2/config (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "runtime/debug",
+      "detail": "first import in github.com/gotify/server/v2 (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/BurntSushi/toml",
+      "detail": "v1.5.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/jinzhu/configor",
+      "detail": "v1.2.2",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/joho/godotenv",
+      "detail": "v1.5.1",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2.main",
+      "detail": "calls noColor whose signature changed; caller is main()",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/gotify/server/v2.main",
+      "detail": "calls Get whose signature changed; caller is main()",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "main-changed",
+      "symbol": "github.com/gotify/server/v2.main",
+      "detail": "body changed (273 -\u003e 25 tokens)",
+      "s6_blocker": "main() runs once at start-up (never re-executed / never returns)"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2.noColor",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (47 -\u003e 42 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/api.NewOIDC",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (289 -\u003e 263 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/api/stream.newUpgrader",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (56 -\u003e 45 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/auth.CorsConfig",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (200 -\u003e 137 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/config.Get",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (58 -\u003e 805 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 29,
+    "new_packages": 30,
+    "old_funcs": 365,
+    "new_funcs": 385,
+    "old_type_errors": 329,
+    "new_type_errors": 347,
+    "changed_funcs": 24,
+    "changed_types": 1,
+    "changed_globals": 1
+  }
+}

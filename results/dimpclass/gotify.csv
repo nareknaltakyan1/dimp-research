@@ -1,0 +1,151 @@
+target,commit,parent,date,author,bot,subject,go_files,classes,dominant,mechanism,in_process,patch_size,findings,s6_blockers,kinds,type_err_old,type_err_new,ms
+gotify,63b183719ce1,f4de6199f080,2026-10-25,Jannis Mattheis,false,Merge pull request #1058 from piyush295/fix/bound-elevation-duration,5,C0 C1 C2,C2,S6,true,3,6,0,const-added file-test func-added func-body,390,390,965
+gotify,64f28352dce6,05b93c324dad,2026-10-15,饺子w (Yumechi),false,Merge pull request #1076 from gotify/hide-token-in-update,4,C0 C1 C2,C2,S6,true,9,12,0,file-test func-added func-body func-removed,390,390,45
+gotify,05b93c324dad,6a49e9c9c0d8,2026-10-14,Jannis Mattheis,false,Merge pull request #1073 from TameTheGame/fix/max-body-bytes,4,C0 C1 C3 C5,C3,S5+xform,false,2,5,3,const-added file-test startup-only-changed struct-field-added,389,390,45
+gotify,6a49e9c9c0d8,2e67149f2952,2026-10-11,饺子w (Yumechi),false,Merge pull request #1057 from SulimanAbdulrazzaq/fix/concurrent-app-image-upload,2,C0 C1 C2,C2,S6,true,3,5,0,file-test func-added func-body import-added,389,389,44
+gotify,2e67149f2952,792691658bc2,2026-10-11,饺子w (Yumechi),false,Merge pull request #1071 from gotify/prevent-leak,1,C1,C1,S6,true,1,1,0,func-body,389,389,45
+gotify,2e187424ee80,592dc45a5b40,2026-10-10,Jannis Mattheis,false,Merge pull request #1066 from RedwindA/feat/mcp,8,C0 C1 C2 C4 C5,C5,S5,false,9,26,9,const-added dep-added file-gosum file-test func-added func-body import-added startup-only-changed struct-field-added type-added,370,389,45
+gotify,f77d8a0ce897,d02796bd084a,2026-09-30,Jannis Mattheis,false,Merge pull request #1060 from lbellows/docs-swagger-ui-sri,2,C0 C2,C2,S5,false,0,2,1,file-test var-init,370,370,44
+gotify,d02796bd084a,74b75e931e61,2026-09-24,Jannis Mattheis,false,Merge pull request #1054 from gotify/match-fully-allowed-regex,6,C0 C1 C2 C5,C5,S5,false,5,10,2,file-test func-added func-body func-removed startup-only-changed,370,370,43
+gotify,d3331e09ca6b,e6361caa5125,2026-09-20,Jannis Mattheis,false,Merge pull request #994 from gotify/renovate/bump-dependencies-go,0,C0 C4,C4,S5,false,0,39,38,dep-added dep-removed dep-version file-gosum gomod-go gomod-toolchain,370,370,45
+gotify,e6361caa5125,0c24edaa8dc0,2026-09-12,Jannis Mattheis,false,Merge pull request #1048 from gotify/fix-create-user-permission,7,C0 C1 C2 C5,C5,S5,false,8,13,2,file-test func-added func-body func-removed long-running-caller startup-only-changed,367,370,42
+gotify,0c24edaa8dc0,d6a01f08013d,2026-09-09,Jannis Mattheis,false,Merge pull request #1046 from NotAFlightRisk/fix-letsencrypt-transport-error,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,367,367,44
+gotify,14bfc2562767,54deea62a54c,2026-08-26,Jannis Mattheis,false,Merge pull request #1033 from UiP9AV6Y/feature/oidc-claim-mapping,4,C0 C1 C2 C5,C5,S5,false,10,16,5,const-added file-test func-added func-body func-signature startup-only-changed struct-field-added,363,367,44
+gotify,54deea62a54c,693303453c79,2026-08-23,Jannis Mattheis,false,Merge pull request #1035 from gotify/panic,3,C0 C1 C3 C5,C3,S5+xform,false,5,7,2,file-test func-body long-running-changed struct-field-added,363,363,44
+gotify,693303453c79,8af44e09579d,2026-08-20,Jannis Mattheis,false,Merge pull request #1029 from DerDummePunkt/github_1007_option_to_redirect_to_idp_when_logged_out,10,C0 C1 C2 C5,C5,S5,false,9,20,11,const-added file-test func-added func-body func-signature long-running-caller startup-only-changed struct-field-added,359,363,43
+gotify,8af44e09579d,ef41eba7970e,2026-08-16,饺子w (Yumechi),false,Merge pull request #1030 from gotify/go-imports,72,C0 C2 C4 C5,C5,S5,false,390,99,14,file-test gomod-module goroutine-structure package-added package-removed,359,359,43
+gotify,ef41eba7970e,aceb5ff51913,2026-08-15,Jannis Mattheis,false,Merge pull request #1022 from DerDummePunkt/github_991_ux_improvments_configurable_oidc_login_button_text,7,C0 C1 C2 C5,C5,S5,false,3,11,7,const-added file-test func-signature long-running-caller startup-only-changed struct-field-added,359,359,43
+gotify,aceb5ff51913,491a17a53030,2026-08-13,Jannis Mattheis,false,Merge pull request #1020 from DerDummePunkt/github_1007_option_to_disable_local_login_when_oidc_enabled,12,C0 C1 C2 C5,C5,S5,false,7,20,11,closure-factory-changed const-added file-test func-body func-signature long-running-caller startup-only-changed struct-field-added,359,359,43
+gotify,f99673f031da,c27a381a67ea,2026-08-10,饺子w (Yumechi),false,Merge pull request #1014 from gotify/bcrypt-errors,11,C0 C1 C2 C5,C5,S5,false,8,14,1,file-test func-added func-body func-signature startup-only-changed,358,359,47
+gotify,d543a8aad22f,ad137d69ad9e,2026-07-24,饺子w (Yumechi),false,Merge pull request #1010 from gotify/keep-oidc-id,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,358,358,46
+gotify,ad137d69ad9e,497f9459d2bc,2026-07-22,饺子w (Yumechi),false,Merge pull request #1005 from Osamaali313/fix/plugin-instances-map-race,1,C1,C1,S6,true,1,1,0,func-body,358,358,45
+gotify,497f9459d2bc,50b917af4d50,2026-07-18,Jannis Mattheis,false,Merge pull request #1003 from gotify/csrf,4,C0 C1 C2 C5,C5,S5,false,3,7,4,file-test func-added func-body startup-only-changed struct-field-added struct-tag-changed,355,358,44
+gotify,50b917af4d50,bd6dd763c6ed,2026-07-17,Jannis Mattheis,false,Merge pull request #1000 from gotify/next,3,C0 C1,C1,S6,true,1,2,0,file-test func-body,356,355,44
+gotify,ec4e2d50a1d3,e2b6a2e8280c,2026-07-16,饺子w (Yumechi),false,Merge pull request #998 from TowyTowy/fix/plugin-messenger-application-id,4,C0 C1 C2,C2,S6,true,4,6,0,file-test func-added func-body,356,356,43
+gotify,e2b6a2e8280c,9f7dc63defae,2026-07-15,Jannis Mattheis,false,Merge pull request #992 from gotify/oidc-log,1,C2 C5,C5,S5,false,1,2,1,import-added startup-only-changed,353,356,42
+gotify,ed8af76a0980,0fd65a075f4a,2026-07-06,Jannis Mattheis,false,Merge pull request #990 from gotify/appid-spec,2,C1 C2,C2,S6,true,2,3,0,func-body func-signature type-added,353,353,44
+gotify,0fd65a075f4a,89e1968374de,2026-07-04,饺子w (Yumechi),false,Merge pull request #988 from gotify/sec-update-rekey,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,353,353,43
+gotify,0dc6af15ab65,6fcdf956d908,2026-07-01,饺子w (Yumechi),false,Merge pull request #932 from gotify/renovate/bump-dependencies-go,0,C0 C4,C4,S5,false,0,19,18,dep-version file-gosum,353,353,44
+gotify,6fcdf956d908,e33d576ce935,2026-07-01,饺子w (Yumechi),false,Merge pull request #986 from gotify/sec-update-rekey,4,C0 C2 C5,C5,S5,false,2,6,1,file-test func-added startup-only-changed type-added,352,353,43
+gotify,ad977d3d9c53,8221c0b895fd,2026-06-28,饺子w (Yumechi),false,feat: EdDSA token for database leakage/index mitigation (#971),40,C0 C1 C2 C5,C5,S5,false,25,69,8,closure-factory-changed const-added file-go-unbuilt file-test func-added func-body func-removed func-signature import-added startup-only-changed struct-tag-changed type-added var-added var-func-type var-init var-removed,352,352,42
+gotify,8221c0b895fd,fe3e36635ddb,2026-06-20,Jannis Mattheis,false,Merge pull request #982 from gotify/oidc-discover-algs,1,C5,C5,S5,false,1,1,1,startup-only-changed,351,352,42
+gotify,fe3e36635ddb,3db7dbc429d7,2026-06-20,Jannis Mattheis,false,Merge pull request #977 from gotify/oidc-link-user,6,C0 C1 C2 C5,C5,S5,false,8,13,6,const-added file-test func-added func-body func-signature startup-only-changed struct-field-added,347,351,41
+gotify,3db7dbc429d7,67b65898fc2f,2026-06-14,Jannis Mattheis,false,Merge pull request #967 from gotify/env,17,C0 C1 C2 C4 C5,C5,S5,false,27,97,14,const-added dep-added dep-removed file-gosum file-test func-added func-removed func-signature import-added long-running-caller main-changed package-added startup-only-changed struct-field-added struct-field-retyped struct-tag-changed type-added var-added,329,347,40
+gotify,0e32e56f6736,a309216a1fcf,2026-05-26,Jannis Mattheis,false,Merge pull request #964 from gotify/appid,5,C0 C1 C2 C5,C5,S5,false,3,5,1,file-test func-added func-body startup-only-changed,328,329,40
+gotify,a309216a1fcf,5f167eb2d955,2026-05-20,Jannis Mattheis,false,Merge pull request #962 from gotify/log,7,C0 C1 C2 C4 C5,C5,S5,false,17,26,10,dep-added file-gosum func-added func-body func-removed import-added long-running-caller main-changed startup-only-changed type-added,298,328,38
+gotify,5f167eb2d955,ec8ce07152b1,2026-05-18,Jannis Mattheis,false,Merge pull request #959 from gotify/expiry,26,C0 C1 C2 C5,C5,S5,false,26,50,14,closure-factory-changed file-test func-added func-body func-removed func-signature interface-changed long-running-caller main-changed startup-only-changed struct-field-added var-added,293,298,38
+gotify,9e5a6b5428b8,6e588f3c971e,2026-04-26,Jannis Mattheis,false,Merge pull request #952 from gotify/oidc-next,25,C0 C1 C2 C5,C5,S5,false,36,66,6,const-added const-value file-test func-added func-body func-removed import-added interface-changed startup-only-changed struct-field-added type-added type-removed var-added,286,293,36
+gotify,6e588f3c971e,838f0e72f3ae,2026-04-19,Jannis Mattheis,false,Merge pull request #954 from gotify/logout-swagger,3,C0 C5,C5,S5,false,1,2,1,file-test startup-only-changed,286,286,37
+gotify,81699f7b05f4,143438055db4,2026-04-12,Jannis Mattheis,false,Merge pull request #941 from gotify/oidc,17,C0 C1 C2 C4 C5,C5,S5,false,32,91,32,const-added dep-added file-gosum file-test func-added func-removed func-signature import-added interface-changed long-running-caller package-added startup-only-changed struct-field-added struct-field-retyped type-added type-removed,240,286,36
+gotify,143438055db4,061053711ffa,2026-03-29,饺子w (Yumechi),false,enhance: bump token keyspace to >128 bits (#939),1,C2,C2,S5,false,0,1,1,var-init,240,240,33
+gotify,061053711ffa,01ca5a977df2,2026-03-11,renovate[bot],true,chore(deps): update bump go dependencies (#913),0,C0 C4,C4,S5,false,0,17,16,dep-added dep-removed dep-version file-gosum gomod-go,240,240,34
+gotify,4fa74cea5513,413f081b26a6,2026-02-28,Jannis Mattheis,false,Merge pull request #912 from gotify/renovate/docker.io-gotify-build-1.x,0,C4,C4,S5,false,0,1,1,gomod-toolchain,240,240,32
+gotify,413f081b26a6,fcbb870395e1,2026-02-28,Jannis Mattheis,false,Merge pull request #923 from gotify/sort-key-fixes,2,C1 C2,C2,S5,false,1,2,1,func-body struct-tag-changed,240,240,32
+gotify,ade6dd3d209a,1818c5dec4cd,2026-02-06,Jannis Mattheis,false,Merge pull request #899 from gotify/renovate/bump-dependencies-go,0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum,240,240,34
+gotify,1818c5dec4cd,cc2fae5988f5,2026-01-28,Jannis Mattheis,false,Merge pull request #909 from gotify/sort_key,9,C0 C1 C2,C2,S5,false,18,17,3,file-test func-added func-body import-added package-added struct-field-added struct-tag-changed,235,240,32
+gotify,f85c38928a14,ae3b824014cd,2025-12-29,renovate[bot],true,chore(deps): update module github.com/go-playground/validator/v10 to v10.30.1 (#892),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,235,235,30
+gotify,81522857ac20,12e298d78784,2025-12-29,renovate[bot],true,chore(deps): update module golang.org/x/crypto to v0.46.0 (#888),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum,235,235,34
+gotify,79788eb050ae,de7a4e97f117,2025-11-19,renovate[bot],true,chore(deps): update bump go dependencies (#871),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum,235,235,31
+gotify,de7a4e97f117,9216661dda38,2025-11-19,Trung Ng,false,Subpath handling for Gotify (#533) (#875),1,C5,C5,S5,false,1,1,1,startup-only-changed,235,235,31
+gotify,2a6f9fbc7cc4,2b67bc33cb14,2025-11-16,Jannis Mattheis,false,Merge pull request #873 from LaurenceJJones/fix-default-image-delete,1,C0,C0,none,true,0,0,0,,235,235,30
+gotify,71e38b982428,f263221133fc,2025-11-05,Laurence Jones,false,Add file type restriction to image upload input using accept attribute (#872),1,C1,C1,S6,true,1,1,0,func-body,235,235,30
+gotify,6d5abae5826c,496c16698170,2025-11-01,renovate[bot],true,chore(deps): update module github.com/gin-contrib/gzip to v1.2.5 (#867),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,235,235,31
+gotify,496c16698170,6de77209a6a0,2025-10-29,饺子w (Yumechi),false,chore: Migrate github.com/jinzhu/gorm to gorm.io/gorm (#863),23,C0 C1 C2 C4 C5,C5,S5,false,9,46,23,dep-added dep-removed dep-version file-go-unbuilt file-gosum file-test func-body func-removed func-signature import-added interface-changed startup-only-changed struct-field-retyped struct-tag-changed,224,235,31
+gotify,6de77209a6a0,4849e1e40f97,2025-10-20,renovate[bot],true,chore(deps): update bump go dependencies (#854),0,C0 C4,C4,S5,false,0,16,15,dep-added dep-removed dep-version file-gosum,224,224,31
+gotify,4bc42d2c1d7e,f77d404bba6f,2025-10-03,昨夜雨疏风骤,false,Optimize uniq function for better performance (#852),1,C1,C1,S5,false,1,1,1,func-body,224,224,30
+gotify,632ccc9282a4,4329e571ad1f,2025-09-20,renovate[bot],true,chore(deps): update module github.com/gin-gonic/gin to v1.11.0 (#849),0,C0 C4,C4,S5,false,0,15,14,dep-added dep-version file-gosum,224,224,31
+gotify,4329e571ad1f,9262a24abc41,2025-09-19,renovate[bot],true,chore(deps): update bump go dependencies (#830),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum gomod-go,224,224,31
+gotify,9262a24abc41,9e1455ff7d30,2025-09-19,饺子w (Yumechi),false,feat: refine AutoCert logic (#843),2,C2 C5,C5,S5,false,3,6,3,func-added import-added startup-only-changed struct-field-retyped type-added,223,224,90
+gotify,93ffad9abe5f,9ab62b657d13,2025-09-13,Jannis Mattheis,false,Merge pull request #837 from gotify/renovate/docker.io-gotify-build-1.x,0,C4,C4,S5,false,0,1,1,gomod-toolchain,223,223,32
+gotify,751dff4b45ac,7b9e8d9f83d6,2025-08-09,Jannis Mattheis,false,Merge pull request #821 from gotify/renovate/bump-dependencies-go,0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,223,223,30
+gotify,ebf6a6423d46,a9ecbdc94edb,2025-08-08,Jannis Mattheis,false,Merge pull request #818 from gotify/upgrade-ui,1,C5,C5,S5,false,1,1,1,startup-only-changed,223,223,31
+gotify,a96db710b4bd,bfcd1cb03715,2025-07-11,renovate[bot],true,chore(deps): update bump go dependencies (#803),0,C0 C4,C4,S5,false,0,13,12,dep-version file-gosum,223,223,30
+gotify,bfcd1cb03715,c1cb2e855aa0,2025-07-09,饺子w (Yumechi),false,fix: skip dotfiles and directories in plugin loading (#811) (#812),2,C0 C5,C5,S5,false,1,2,1,file-test startup-only-changed,223,223,30
+gotify,2498e6e19f9a,afe2a730dc48,2025-05-29,renovate[bot],true,chore(deps): update module github.com/gin-gonic/gin to v1.10.1 (#799),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,223,223,30
+gotify,afe2a730dc48,307b2aaada15,2025-05-29,Luc Didry,false,fix: consistent app ordering (#802),1,C1,C1,S6,true,1,1,0,func-body,223,223,31
+gotify,307b2aaada15,f11755d706bd,2025-05-05,renovate[bot],true,chore(deps): update bump go dependencies (#784),0,C0 C4,C4,S5,false,0,15,14,dep-version file-gosum,223,223,32
+gotify,cc20acb186e3,c44c4ef98010,2025-03-13,renovate[bot],true,chore(deps): update bump go dependencies (#770),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum gomod-go gomod-toolchain,223,223,30
+gotify,0cd03980ce19,a0bad7bd5a79,2025-02-13,renovate[bot],true,chore(deps): Update Go to 1.24 and bump dependencies (#758),0,C0 C4,C4,S5,false,0,6,5,dep-version file-gosum gomod-toolchain,223,223,30
+gotify,a0bad7bd5a79,63cfc1f04542,2025-01-17,renovate[bot],true,chore(deps): update bump go dependencies (#751),8,C0 C1 C4 C5,C5,S5,false,4,28,21,dep-removed dep-version file-gosum file-test func-body gomod-go gomod-toolchain main-changed startup-only-changed,223,223,68
+gotify,63cfc1f04542,c81a9a2c8855,2024-11-24,renovate[bot],true,chore(deps): update bump go dependencies (#736),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,223,223,30
+gotify,c81a9a2c8855,cc7da2ace306,2024-11-22,饺子w (Yumechi),false," Set umask=0 when creating unix sockets (#743)",3,C0 C2 C5,C5,S5,false,1,3,1,file-go-unbuilt startup-only-changed var-added,223,223,30
+gotify,cc7da2ace306,8639316ead73,2024-11-16,Jannis Mattheis,false,Merge pull request #734 from gotify/panic-bool,3,C2 C5,C5,S5,false,3,4,4,startup-only-changed struct-field-retyped,223,223,30
+gotify,8639316ead73,2eee8009f37a,2024-11-15,Jannis Mattheis,false,Merge pull request #733 from gotify/silent,1,C5,C5,S5,false,1,1,1,startup-only-changed,223,223,29
+gotify,bf177f2487e1,bb2403989e28,2024-11-09,renovate[bot],true,chore(deps): update module golang.org/x/crypto to v0.29.0 (#728),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,223,223,30
+gotify,60bafd2b98dd,2d6601747b54,2024-11-07,renovate[bot],true,chore(deps): update module gopkg.in/yaml.v2 to v3 (#719),3,C0 C2 C4,C4,S5,false,0,4,1,dep-removed file-gosum file-test import-added,223,223,31
+gotify,2d6601747b54,7c9d7706ebfc,2024-11-07,饺子w (Yumechi),false,Switch to upstream jinzhu/configor (#727),1,C0 C2 C4 C5,C5,S5,false,1,8,6,dep-added dep-removed dep-version file-gosum import-added startup-only-changed,223,223,30
+gotify,443d4b43ec11,a328be19513e,2024-11-02,renovate[bot],true,chore(deps): update bump go dependencies (#712),0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,223,223,29
+gotify,ec0235058741,58084c8dea57,2024-10-22,饺子w (Yumechi),false,Docker multiarch image  (#703),1,C0,C0,none,true,0,1,0,file-test,223,223,31
+gotify,58084c8dea57,a58b0be362a3,2024-09-22,Moin Ahmad,false,implement HEAD /health (#688),1,C5,C5,S5,false,1,1,1,startup-only-changed,223,223,31
+gotify,a58b0be362a3,a8a4fefd866c,2024-09-20,饺子w (Yumechi),false,bug: fixed a race condition in database test (#690),1,C1,C1,S6,true,2,2,0,func-body,223,223,32
+gotify,a8a4fefd866c,69c939ed9410,2024-07-02,Jannis Mattheis,false,Merge pull request #665 from gotify/fix-ui-config,1,C5,C5,S5,false,1,1,1,startup-only-changed,223,223,30
+gotify,69c939ed9410,12c7164f2e17,2024-06-23,Jannis Mattheis,false,Merge pull request #661 from gotify/update-backend,0,C0 C4,C4,S5,false,0,25,24,dep-added dep-removed dep-version file-gosum,223,223,30
+gotify,46281d6a51dc,d32d131d08a7,2024-02-10,Jannis Mattheis,false,Merge pull request #624 from LaurenceJJones/trusted-proxies,2,C2 C5,C5,S5,false,1,2,2,startup-only-changed struct-field-retyped,222,223,30
+gotify,d32d131d08a7,0bfa5ca4d964,2024-01-20,Jannis Mattheis,false,Merge pull request #621 from LaurenceJJones/master,4,C0 C1 C2 C5,C5,S5,false,8,17,6,file-test func-added func-removed func-signature import-added long-running-caller main-changed startup-only-changed,221,222,32
+gotify,0bfa5ca4d964,92916f011769,2023-10-23,Eng Zer Jun,false,perf: avoid allocations with `(*regexp.Regexp).MatchString` (#604),2,C1 C5,C5,S5,false,2,2,1,func-body startup-only-changed,221,221,31
+gotify,97f180b65091,8c0f7a949963,2023-09-17,Jannis Mattheis,false,Merge pull request #592 from gotify/build,12,C0 C2 C4,C4,S5,false,0,9,4,dep-version file-gosum file-test func-removed,221,221,30
+gotify,8c0f7a949963,a44418265af4,2023-08-06,Jannis Mattheis,false,Merge pull request #582 from eternal-flame-AD/lastping,13,C0 C2 C5,C5,S5,false,7,16,6,file-test func-added interface-changed startup-only-changed struct-field-added,221,221,32
+gotify,a44418265af4,72bd8c8ba64a,2023-07-30,Jannis Mattheis,false,Merge pull request #584 from gotify/update-deps,1,C0 C4,C4,S5,false,0,23,21,dep-added dep-version file-gosum file-test,221,221,32
+gotify,72bd8c8ba64a,aedc3e2ba657,2023-07-19,chrispruitt,false,Add default message priority for applications,10,C0 C1 C2 C3 C5,C3,S5+xform,false,8,14,4,file-test func-added func-body startup-only-changed struct-field-added struct-field-retyped,221,221,32
+gotify,aedc3e2ba657,5cd2d5411f08,2023-07-15,饺子w (Yumechi),false,Migrate from packr to go:embed (#581),3,C0 C1 C2 C4 C5,C5,S5,false,4,25,16,dep-removed file-gosum func-added func-body func-removed import-added package-removed startup-only-changed var-added var-init var-removed,224,221,31
+gotify,5cd2d5411f08,a37afcebfc0d,2023-05-28,Helmut K. C. Tessarek,false,Add delete application image endpoint,3,C0 C2 C5,C5,S5,false,2,3,1,file-test func-added startup-only-changed,223,224,34
+gotify,a37afcebfc0d,8f51a2c72dd2,2023-05-24,Helmut K. C. Tessarek,false,Improve log format (#567),1,C1,C1,S6,true,1,1,0,func-body,223,223,30
+gotify,8f51a2c72dd2,62a1c9984199,2023-05-24,Helmut K. C. Tessarek,false,Suppress /health request logging from localhost,1,C1,C1,S6,true,1,1,0,func-body,223,223,29
+gotify,a18970ea19d5,9d4e37aa87e5,2023-04-28,Jannis Mattheis,false,Merge pull request #560 from mateuscelio/master,2,C0 C1 C2,C2,S6,true,2,4,0,file-test func-body type-added,223,223,30
+gotify,9d4e37aa87e5,5852bbb4ac03,2023-01-10,Jannis Mattheis,false,Fix swagger-ui style,1,C2,C2,S5,false,0,1,1,var-init,223,223,30
+gotify,a261d8cd9f26,056cd5ecb7f3,2023-01-10,Jannis Mattheis,false,Merge pull request #541 from gotify/swagger-ui-xss,1,C2,C2,S5,false,0,1,1,var-init,223,223,31
+gotify,056cd5ecb7f3,022603ddf92d,2022-12-29,Jannis Mattheis,false,Merge pull request #535 from gotify/xss,2,C1 C2 C5,C5,S5,false,4,5,1,func-added func-body startup-only-changed type-added,222,223,29
+gotify,022603ddf92d,c8f78e84694c,2022-12-28,Jannis Mattheis,false,Merge pull request #534 from gotify/fix-xss,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,222,222,28
+gotify,c8f78e84694c,fe8a80d82fdc,2022-12-03,Jannis Mattheis,false,Merge pull request #529 from gotify/redirect,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,222,222,32
+gotify,fe8a80d82fdc,c869052764dd,2022-12-03,Jannis Mattheis,false,Merge pull request #527 from mateuscelio/add-authorization-header-auth,9,C0 C1 C2,C2,S6,true,3,5,0,file-test func-added func-body func-removed,221,222,30
+gotify,0250a48c2cd4,c4e63863f745,2022-09-11,Jannis Mattheis,false,Log loaded plugins,1,C5,C5,S5,false,1,1,1,startup-only-changed,221,221,29
+gotify,c4e63863f745,f16ce59e6ca3,2022-09-10,Jannis Mattheis,false,Merge pull request #508 from gotify/update,2,C0 C1 C2 C4,C4,S5,false,3,46,39,dep-added dep-removed dep-version file-gosum func-body func-signature gomod-go type-added type-removed,221,221,30
+gotify,f16ce59e6ca3,0d18b421e178,2022-07-24,mateuscelio,false,Prevent setting id while inserting / updating applications,2,C0 C1 C2,C2,S6,true,2,4,0,file-test func-body type-added,221,221,30
+gotify,0d18b421e178,a23666aaf0d5,2022-05-29,Jannis Mattheis,false,Merge pull request #489 from rwese/fix-login-form-autofill,9,C0 C1 C5,C5,S5,false,1,7,1,file-test func-body main-changed,221,221,30
+gotify,8affeced49f4,d2e5dee67dbe,2021-09-27,Jannis Mattheis,false,Mask token in log,1,C2 C5,C5,S5,false,2,3,1,func-added startup-only-changed var-added,220,221,31
+gotify,36eb8d8b2b74,c172590b92b1,2021-08-04,Jannis Mattheis,false,Inject register & version information into index.html,2,C2 C5,C5,S5,false,4,7,3,func-added func-signature startup-only-changed type-added,220,220,29
+gotify,c172590b92b1,7e261be3046b,2021-08-04,pigpig,false,Add registration,10,C0 C1 C2 C5,C5,S5,false,6,12,3,file-test func-added func-body startup-only-changed struct-field-added,215,220,29
+gotify,3364f1a9fe78,9abe803cf89e,2021-06-19,Jannis Mattheis,false,Update go deps,0,C0 C4,C4,S5,false,0,8,7,dep-removed dep-version file-gosum,215,215,30
+gotify,11aac90be43f,93b421fdcf7d,2021-04-16,Jannis Mattheis,false,Remove serviceWorker,1,C5,C5,S5,false,1,1,1,startup-only-changed,215,215,31
+gotify,93b421fdcf7d,dc24471fe8c6,2021-04-16,Jannis Mattheis,false,Update lib/pq,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,215,215,28
+gotify,dc24471fe8c6,1183313f144c,2021-04-16,Jannis Mattheis,false,Update sqlite,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,215,215,29
+gotify,1183313f144c,6c50f8287c5d,2021-04-16,Jannis Mattheis,false,Update stretchr/testify,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,215,215,28
+gotify,3454dcd60226,44e441a8c566,2020-11-01,Jannis Mattheis,false,Use golangci-lint,44,C0 C1 C2 C5,C5,S5,false,8,28,5,file-test func-body func-signature long-running-caller startup-only-changed,216,215,29
+gotify,1a3ad1d706c6,4b12b5884607,2020-10-05,Jannis Mattheis,false,Downgrade packr because of build errors,0,C0 C4,C4,S5,false,0,11,10,dep-added dep-removed dep-version file-gosum,216,216,28
+gotify,dd8664623426,de226ce0cf18,2020-09-12,Jannis Mattheis,false,Update go deps,0,C0 C4,C4,S5,false,0,23,22,dep-added dep-removed dep-version file-gosum,216,216,28
+gotify,de226ce0cf18,909eeff406fa,2020-09-10,Jannis Mattheis,false,Make ws ping interval configurable,2,C2 C5,C5,S5,false,1,2,2,startup-only-changed struct-field-retyped,216,216,29
+gotify,909eeff406fa,7993d0eef8a8,2020-09-10,Jannis Mattheis,false,Make keepalive period configurable,3,C0 C1 C2 C5,C5,S5,false,2,5,2,file-test func-added import-added startup-only-changed struct-field-retyped,216,216,29
+gotify,923030cf443b,307e61474bfd,2020-08-20,Richard Szolár,false,"Update ""github.com/go-yaml/yaml"" import path to ""gopkg.in/yaml.v2"" as recommended per the project's documentation",3,C0 C2 C4,C4,S5,false,0,5,2,dep-added dep-removed file-gosum file-test import-added,216,216,30
+gotify,307e61474bfd,d45e0da6a891,2020-07-18,Jannis Mattheis,false,Update gotify/configor,0,C0 C4,C4,S5,false,0,3,2,dep-removed dep-version file-gosum,216,216,30
+gotify,d45e0da6a891,757fa17d263b,2020-07-01,Jannis Mattheis,false,Allow delete for > uint32 ids,1,C1,C1,S6,true,1,2,0,func-body import-added,216,216,29
+gotify,757fa17d263b,348f96b89138,2020-06-24,Jannis Mattheis,false,Use int64 as input,5,C0,C0,none,true,0,0,0,,216,216,29
+gotify,a9249bbd28e3,92a468bf74f2,2020-06-23,Jannis Mattheis,false,Don't use id provided from POST /message api,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,216,216,29
+gotify,92a468bf74f2,52efbbccebfa,2020-06-01,Jannis Mattheis,false,Fix packets.go:36: unexpected EOF,1,C1,C1,S6,true,1,1,0,func-body,216,216,30
+gotify,93b30c5c441b,7523ad0d2e33,2020-05-10,Stewart Thomson,false,Allows browser extensions in cors (#317),2,C0 C5,C5,S5,false,1,2,1,file-test startup-only-changed,216,216,28
+gotify,7523ad0d2e33,e1a6847c8443,2020-05-09,Jannis Mattheis,false,Use response header if cors config is empty,3,C0 C2 C5,C5,S5,false,2,4,1,file-test func-added startup-only-changed,216,216,29
+gotify,97876c5a2b83,a8b7a5fde029,2020-05-08,Jannis Mattheis,false,Update go 1.14.2,0,C4,C4,S5,false,0,1,1,gomod-go,216,216,27
+gotify,a8b7a5fde029,41c28e93856d,2020-05-08,Jannis Mattheis,false,Update mattn/go-sqlite3,0,C0 C4,C4,S5,false,0,2,1,dep-added file-gosum,216,216,29
+gotify,41c28e93856d,808ad482d2a3,2020-05-08,Jannis Mattheis,false,Remove apache thrift replace directive,0,C4,C4,S5,false,0,1,1,dep-replace,216,216,29
+gotify,808ad482d2a3,33bc7051f845,2020-05-08,Jannis Mattheis,false,Update lib/pq,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,216,216,30
+gotify,33bc7051f845,1629a66c143b,2020-05-08,Jannis Mattheis,false,Update x/crypto,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,216,216,29
+gotify,1629a66c143b,ca233dd8b5dd,2020-05-08,Jannis Mattheis,false,Update stretchr/testify,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,216,216,28
+gotify,ca233dd8b5dd,415dd862f82e,2020-05-08,Jannis Mattheis,false,Update gin-gonic,1,C0 C2 C4,C4,S5,false,2,13,10,dep-added dep-removed dep-version file-gosum func-signature import-added,216,216,29
+gotify,7b90b8a8f527,75c63bdf3948,2020-05-08,Jannis Mattheis,false,Use v2 in package path,67,C0 C2 C4 C5,C5,S5,false,293,92,14,file-test gomod-module goroutine-structure package-added package-removed,216,216,29
+gotify,3f04d50088c8,d22326bba8ed,2020-04-26,Stewart Thomson,false,Allow multiple CORS origins,6,C0 C2 C4 C5,C5,S5,false,3,10,3,dep-added file-gosum file-test func-added import-added startup-only-changed struct-field-retyped,213,216,29
+gotify,66ae74f830bc,0863aba9cb33,2020-03-14,Jannis Mattheis,false,Skip /etc/gotify/config.yml in tests,2,C0 C2 C5,C5,S5,false,2,3,1,file-test func-added startup-only-changed,213,213,28
+gotify,0863aba9cb33,e9c9a6e261d7,2020-03-07,Jannis Mattheis,false,Update packr/v2,3,C0 C1 C2 C4 C5,C5,S5,false,3,17,12,dep-added dep-removed dep-version file-gosum func-body import-added package-added startup-only-changed var-added var-init,212,213,28
+gotify,0a8fc47e5092,b2b56e09af0e,2020-01-18,Jannis Mattheis,false,Reduce ping interval,1,C5,C5,S5,false,1,1,1,startup-only-changed,212,212,28
+gotify,0a7a5cd61928,c9c6246c4cd1,2019-11-28,Jannis Mattheis,false,Add logging to websocket errors,1,C1 C2 C5,C5,S5,false,3,3,1,func-added func-body long-running-changed,211,212,29
+gotify,670594c0cb94,db1b703e1a3d,2019-11-28,Jannis Mattheis,false,Update gin-gonic/gin,1,C0 C2 C4,C4,S5,false,2,12,9,dep-added dep-removed dep-version file-gosum func-signature import-added,211,211,28
+gotify,db1b703e1a3d,7f1047b606e8,2019-11-28,Jannis Mattheis,false,Update h2non/filetype,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,211,211,29
+gotify,7f1047b606e8,5816a2686e90,2019-11-28,Jannis Mattheis,false,Update stretchr/testify,0,C0 C4,C4,S5,false,0,3,2,dep-added dep-version file-gosum,211,211,28
+gotify,5816a2686e90,98da88c0f86c,2019-11-28,Jannis Mattheis,false,Update crypto library,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,211,211,28
+gotify,98da88c0f86c,dc741493b4c5,2019-11-28,Jannis Mattheis,false,Gorm v1.9.11,0,C0 C4,C4,S5,false,0,11,10,dep-removed dep-version file-gosum,211,211,28
+gotify,179f51f38746,956c089abbb2,2019-09-28,Jannis Mattheis,false,Update go -> 1.13.1,0,C4,C4,S5,false,0,1,1,gomod-go,211,211,28
+gotify,ede9cd61d9d5,e60ee06a7eb3,2019-09-04,Jannis Mattheis,false,[#214] Replace thrift dep from apache.org with github repo,0,C0 C4,C4,S5,false,0,2,1,dep-replace file-gosum,211,211,28
+gotify,2b85b0bb8205,81c4a73df38c,2019-08-16,Jannis Mattheis,false,Update pq driver because Ping() wasn't implemented in v1.0,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,211,211,29
+gotify,81c4a73df38c,ad157a138b49,2019-08-16,Jannis Mattheis,false,Add health api,6,C0 C1 C2 C5,C5,S5,false,3,11,1,const-added file-test func-added startup-only-changed type-added,210,211,28
+gotify,44f4ff31cb77,11e0a4b0dfab,2019-06-27,Noa Amran,false,Fix typos,5,C0,C0,none,true,0,0,0,,210,210,28
+gotify,11e0a4b0dfab,05a1aa26510f,2019-06-11,饺子w,false,Fix blob inconsistency in mysql (#196),1,C1 C2,C2,S6,true,2,2,0,func-added func-body,209,210,27
+gotify,67493c643eb6,11165faa068b,2019-05-25,饺子w,false,Return 500 server error on database failures (#191),30,C0 C1 C2 C5,C5,S5,false,79,101,13,file-test func-added func-body func-signature interface-changed startup-only-changed type-changed,182,209,27
+gotify,11165faa068b,909fb80d48f0,2019-05-05,饺子w,false,fixed plugin storage update during enable|disable (#188),1,C1,C1,S6,true,1,1,0,func-body,182,182,27

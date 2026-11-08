@@ -1,0 +1,261 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@63cfc1f04542",
+  "new": "gotify@a0bad7bd5a79",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C0",
+    "C1",
+    "C4",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (21): : language/toolchain version changed; : toolchain changed (patch plugins must be built with the host's exact toolchain); github.com/bytedance/sonic: dependency version changed; github.com/bytedance/sonic/loader: dependency version changed; github.com/cloudwego/iasm: dependency graph changed; ... and 16 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 4 functions",
+      "type information is partial (223/223 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader",
+      "toolchain changed: S2/S6 plugin delivery is impossible (plugins must match the host toolchain exactly); only a new process works"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/api.PluginAPI.UpdateConfig",
+      "reason": "body changed",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.loadPlugins",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/test.BodyEquals",
+      "reason": "body changed",
+      "file": "test/asserts.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v2/test.NewTmpDir",
+      "reason": "body changed",
+      "file": "test/tmpdir.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 4,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "error/handler_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "test/asserts_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api.PluginAPI.UpdateConfig",
+      "detail": "body changed (250 -\u003e 250 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/test.BodyEquals",
+      "detail": "body changed (39 -\u003e 39 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/test.NewTmpDir",
+      "detail": "body changed (20 -\u003e 20 tokens)"
+    },
+    {
+      "class": "C4",
+      "kind": "gomod-go",
+      "detail": "go directive 1.18 -\u003e 1.21.0",
+      "s6_blocker": "language/toolchain version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "gomod-toolchain",
+      "detail": "toolchain (none) -\u003e go1.23.4",
+      "s6_blocker": "toolchain changed (patch plugins must be built with the host's exact toolchain)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/bytedance/sonic",
+      "detail": "v1.11.6 -\u003e v1.12.7 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/bytedance/sonic/loader",
+      "detail": "v0.1.1 -\u003e v0.2.2 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "github.com/cloudwego/iasm",
+      "detail": "v0.2.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gabriel-vasile/mimetype",
+      "detail": "v1.4.3 -\u003e v1.4.8 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gin-contrib/cors",
+      "detail": "v1.7.2 -\u003e v1.7.3",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gin-contrib/gzip",
+      "detail": "v1.0.1 -\u003e v1.2.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gin-contrib/sse",
+      "detail": "v0.1.0 -\u003e v1.0.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/go-playground/validator/v10",
+      "detail": "v10.23.0 -\u003e v10.24.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/goccy/go-json",
+      "detail": "v0.10.2 -\u003e v0.10.4 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/klauspost/cpuid/v2",
+      "detail": "v2.2.7 -\u003e v2.2.9 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/pelletier/go-toml/v2",
+      "detail": "v2.2.2 -\u003e v2.2.3 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/arch",
+      "detail": "v0.8.0 -\u003e v0.13.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/crypto",
+      "detail": "v0.29.0 -\u003e v0.32.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/net",
+      "detail": "v0.25.0 -\u003e v0.34.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/sys",
+      "detail": "v0.27.0 -\u003e v0.29.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "golang.org/x/text",
+      "detail": "v0.20.0 -\u003e v0.21.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "google.golang.org/protobuf",
+      "detail": "v1.34.1 -\u003e v1.36.2 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C5",
+      "kind": "main-changed",
+      "symbol": "github.com/gotify/server/v2.main",
+      "detail": "body changed (236 -\u003e 221 tokens)",
+      "s6_blocker": "main() runs once at start-up (never re-executed / never returns)"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.loadPlugins",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (165 -\u003e 165 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 309,
+    "new_funcs": 309,
+    "old_type_errors": 223,
+    "new_type_errors": 223,
+    "changed_funcs": 5,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@c4e63863f745",
+  "new": "gotify@0250a48c2cd4",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (1): github.com/gotify/server/v2/plugin.Manager.loadPlugins: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (221/221 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.loadPlugins",
+      "reason": "body changed",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 1,
+  "findings": [
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/gotify/server/v2/plugin.Manager.loadPlugins",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (155 -\u003e 165 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 300,
+    "new_funcs": 300,
+    "old_type_errors": 221,
+    "new_type_errors": 221,
+    "changed_funcs": 1,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

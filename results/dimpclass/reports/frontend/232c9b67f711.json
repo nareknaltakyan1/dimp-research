@@ -1,0 +1,75 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@1f89fa37a187",
+  "new": "frontend@232c9b67f711",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C0",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (4): : toolchain changed (patch plugins must be built with the host's exact toolchain); github.com/gabriel-vasile/mimetype: dependency version changed; github.com/go-playground/validator/v10: dependency version changed; github.com/leodido/go-urn: dependency version changed"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (631/631 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "toolchain changed: S2/S6 plugin delivery is impossible (plugins must match the host toolchain exactly); only a new process works"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C4",
+      "kind": "gomod-toolchain",
+      "detail": "toolchain go1.27.0 -\u003e go1.27.1",
+      "s6_blocker": "toolchain changed (patch plugins must be built with the host's exact toolchain)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gabriel-vasile/mimetype",
+      "detail": "v1.4.13 -\u003e v1.4.15 (indirect)",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/go-playground/validator/v10",
+      "detail": "v10.30.3 -\u003e v10.30.4",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/leodido/go-urn",
+      "detail": "v1.4.0 -\u003e v1.5.0 (indirect)",
+      "s6_blocker": "dependency version changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 4,
+    "new_packages": 4,
+    "old_funcs": 373,
+    "new_funcs": 373,
+    "old_type_errors": 631,
+    "new_type_errors": 631,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

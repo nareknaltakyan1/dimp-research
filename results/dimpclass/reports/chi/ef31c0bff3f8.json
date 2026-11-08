@@ -1,0 +1,44 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@c1f2a7a12e66",
+  "new": "chi@ef31c0bff3f8",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (github.com/go-chi/chi/v5.Context: layout of compiled-in type Context changed (4 functions use it); S6 replaces functions, not types); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (1): github.com/go-chi/chi/v5.Context: layout of compiled-in type Context changed (4 functions use it); S6 replaces functions, not types"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C2",
+      "kind": "struct-field-reordered",
+      "symbol": "github.com/go-chi/chi/v5.Context",
+      "detail": "Routes,parentCtx,RoutePath,RouteMethod,URLParams,routeParams,routePattern,RoutePatterns,methodNotAllowed,methodsAllowed -\u003e Routes,parentCtx,RoutePath,RouteMethod,URLParams,routeParams,routePattern,RoutePatterns,methodsAllowed,methodNotAllowed [not state]",
+      "s6_blocker": "layout of compiled-in type Context changed (4 functions use it); S6 replaces functions, not types"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 168,
+    "new_funcs": 168,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 0,
+    "changed_types": 1,
+    "changed_globals": 0
+  }
+}

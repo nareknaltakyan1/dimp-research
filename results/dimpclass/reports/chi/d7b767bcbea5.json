@@ -1,0 +1,51 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@3b50c7cc35ff",
+  "new": "chi@d7b767bcbea5",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (github.com/go-chi/chi/v5/middleware.defaultCompressibleContentTypes: package-level initializer ran once at start-up; S6 patches functions, not data); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (1): github.com/go-chi/chi/v5/middleware.defaultCompressibleContentTypes: package-level initializer ran once at start-up; S6 patches functions, not data"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/compress_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C2",
+      "kind": "var-init",
+      "symbol": "github.com/go-chi/chi/v5/middleware.defaultCompressibleContentTypes",
+      "detail": "initializer changed",
+      "s6_blocker": "package-level initializer ran once at start-up; S6 patches functions, not data"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 178,
+    "new_funcs": 178,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 1
+  }
+}

@@ -1,0 +1,3227 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@ef41eba7970e",
+  "new": "gotify@8af44e09579d",
+  "module": "github.com/gotify/server/v3",
+  "classes": [
+    "C0",
+    "C2",
+    "C4",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (14): github.com/gotify/server/v3: new program entry point; github.com/gotify/server/v3/api/stream.API.Handle: new long-running goroutine; github.com/gotify/server/v3/api/stream.client.startWriteHandler: new long-running goroutine; github.com/gotify/server/v3/plugin.NewManager: new long-running goroutine; github.com/gotify/server/v3/plugin/example/clock: new program entry point; ... and 9 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 390 functions",
+      "42 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (359/359 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v3.main",
+      "reason": "in added package",
+      "file": "app.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3.noColor",
+      "reason": "in added package",
+      "file": "app.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3.printUsage",
+      "reason": "in added package",
+      "file": "app.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3.run",
+      "reason": "in added package",
+      "file": "app.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3.serve",
+      "reason": "in added package",
+      "file": "app.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.CreateApplication",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.DeleteApplication",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.GetApplications",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.RemoveApplicationImage",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.UpdateApplication",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.UpdateApplicationSecurity",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ApplicationAPI.UploadApplicationImage",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ClientAPI.CreateClient",
+      "reason": "in added package",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ClientAPI.DeleteClient",
+      "reason": "in added package",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ClientAPI.ElevateClient",
+      "reason": "in added package",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ClientAPI.GetClients",
+      "reason": "in added package",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ClientAPI.UpdateClient",
+      "reason": "in added package",
+      "file": "api/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.HealthAPI.Health",
+      "reason": "in added package",
+      "file": "api/health.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.MessageAPI.CreateMessage",
+      "reason": "in added package",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.MessageAPI.DeleteMessage",
+      "reason": "in added package",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.MessageAPI.DeleteMessageWithApplication",
+      "reason": "in added package",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.MessageAPI.DeleteMessages",
+      "reason": "in added package",
+      "file": "api/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.MessageAPI.GetMessages",
+      "reason": "in added package",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.MessageAPI.GetMessagesWithApplication",
+      "reason": "in added package",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.NewOIDC",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.CallbackHandler",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.ElevateHandler",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.ExternalAuthorizeHandler",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.ExternalTokenHandler",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.LoginHandler",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.createClient",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.generateState",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.handleElevationCallback",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.linkExistingUser",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.popPendingSession",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.registerUser",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.OIDCAPI.resolveUser",
+      "reason": "in added package",
+      "file": "api/oidc.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.PluginAPI.DisablePlugin",
+      "reason": "in added package",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.PluginAPI.EnablePlugin",
+      "reason": "in added package",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.PluginAPI.GetConfig",
+      "reason": "in added package",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.PluginAPI.GetDisplay",
+      "reason": "in added package",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.PluginAPI.GetPlugins",
+      "reason": "in added package",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.PluginAPI.UpdateConfig",
+      "reason": "in added package",
+      "file": "api/plugin.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.SessionAPI.Login",
+      "reason": "in added package",
+      "file": "api/session.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.SessionAPI.Logout",
+      "reason": "in added package",
+      "file": "api/session.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.UserAPI.ChangePassword",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.UserAPI.CreateUser",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.UserAPI.DeleteUserByID",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.UserAPI.GetCurrentUser",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.UserAPI.GetUserByID",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.UserAPI.GetUsers",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.UserAPI.UpdateUserByID",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.UserChangeNotifier.OnUserAdded",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.UserChangeNotifier.OnUserDeleted",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.UserChangeNotifier.fireUserAdded",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.UserChangeNotifier.fireUserDeleted",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.ValidApplicationImageExt",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.buildWithPaging",
+      "reason": "in added package",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.exist",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.generateNonExistingImageName",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.handleApplicationError",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.isPluginOwner",
+      "reason": "in added package",
+      "file": "api/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.successOrAbort",
+      "reason": "in added package",
+      "file": "api/errorHandling.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.supportOrAbort",
+      "reason": "in added package",
+      "file": "api/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.toExternalMessage",
+      "reason": "in added package",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.toExternalMessages",
+      "reason": "in added package",
+      "file": "api/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.toExternalUser",
+      "reason": "in added package",
+      "file": "api/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.toInternalMessage",
+      "reason": "in added package",
+      "file": "api/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.withID",
+      "reason": "in added package",
+      "file": "api/internalutil.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.withPaging",
+      "reason": "in added package",
+      "file": "api/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api.withResolvedImage",
+      "reason": "in added package",
+      "file": "api/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.API.Close",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.API.CollectConnectedClientTokens",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.API.Handle",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.API.Notify",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.API.NotifyDeletedClient",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.API.NotifyDeletedUser",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.API.register",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.API.remove",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.New",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.client.Close",
+      "reason": "in added package",
+      "file": "api/stream/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.client.NotifyClose",
+      "reason": "in added package",
+      "file": "api/stream/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.client.startReading",
+      "reason": "in added package",
+      "file": "api/stream/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.client.startWriteHandler",
+      "reason": "in added package",
+      "file": "api/stream/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.compileAllowedWebSocketOrigins",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.isAllowedOrigin",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.newClient",
+      "reason": "in added package",
+      "file": "api/stream/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.newUpgrader",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.once.Do",
+      "reason": "in added package",
+      "file": "api/stream/once.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.once.mayExecute",
+      "reason": "in added package",
+      "file": "api/stream/once.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.printWebSocketError",
+      "reason": "in added package",
+      "file": "api/stream/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/api/stream.uniq",
+      "reason": "in added package",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.Optional",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.RequireAdmin",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.RequireApplicationOrClient",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.RequireApplicationToken",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.RequireClient",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.RequireElevatedClient",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.abort401",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.abort403",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.checkClientAdmin",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.checkClientElevated",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.checkUserAdmin",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.evaluate",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.evaluateOr401",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.handleApplication",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.handleClient",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.handleUser",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.readTokenFromRequest",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.rejectForeignOrigin",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.tokenFromAuthorizationHeader",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.tokenFromCookie",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.tokenFromQuery",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.Auth.tokenFromXGotifyHeader",
+      "reason": "in added package",
+      "file": "auth/authentication.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.CorsConfig",
+      "reason": "in added package",
+      "file": "auth/cors.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.EnhancedToken.PublicForm",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.EnhancedToken.Sign",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.EnhancedToken.String",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.EnhancedToken.ValidateTimestamp",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.GenerateApplicationToken",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.GenerateClientToken",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.GenerateImageName",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.GeneratePluginToken",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.GetApplication",
+      "reason": "in added package",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.GetClient",
+      "reason": "in added package",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.GetUserID",
+      "reason": "in added package",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.NewEnhancedToken",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.ParseEnhancedToken",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.RegisterApplication",
+      "reason": "in added package",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.RegisterClient",
+      "reason": "in added package",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.RegisterUser",
+      "reason": "in added package",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.SetCookie",
+      "reason": "in added package",
+      "file": "auth/cookie.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.TryGetUserID",
+      "reason": "in added package",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.compileAllowedCORSOrigins",
+      "reason": "in added package",
+      "file": "auth/cors.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.generateRandomString",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.getInfo",
+      "reason": "in added package",
+      "file": "auth/util.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.headerIgnoreCase",
+      "reason": "in added package",
+      "file": "auth/cors.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.init",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth.randIntn",
+      "reason": "in added package",
+      "file": "auth/token.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth/password.ComparePassword",
+      "reason": "in added package",
+      "file": "auth/password/password.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth/password.CreatePassword",
+      "reason": "in added package",
+      "file": "auth/password/password.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/auth/password.ValidateNewPassword",
+      "reason": "in added package",
+      "file": "auth/password/password.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.Get",
+      "reason": "in added package",
+      "file": "config/config.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.LogLevel.AsZeroLogLevel",
+      "reason": "in added package",
+      "file": "config/loglevel.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.LogLevel.Decode",
+      "reason": "in added package",
+      "file": "config/loglevel.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.addTrailingSlashToPaths",
+      "reason": "in added package",
+      "file": "config/config.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.futureFatal",
+      "reason": "in added package",
+      "file": "config/error.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.getConfigHome",
+      "reason": "in added package",
+      "file": "config/file.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.getFiles",
+      "reason": "in added package",
+      "file": "config/file.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.loadFile",
+      "reason": "in added package",
+      "file": "config/file.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.loadFiles",
+      "reason": "in added package",
+      "file": "config/file.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.lookupEnv",
+      "reason": "in added package",
+      "file": "config/parse.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.parseBool",
+      "reason": "in added package",
+      "file": "config/parse.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.parseInt",
+      "reason": "in added package",
+      "file": "config/parse.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.parseList",
+      "reason": "in added package",
+      "file": "config/parse.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.parseLogLevel",
+      "reason": "in added package",
+      "file": "config/parse.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.parseMap",
+      "reason": "in added package",
+      "file": "config/parse.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config.parseString",
+      "reason": "in added package",
+      "file": "config/parse.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config/migrate.Config",
+      "reason": "in added package",
+      "file": "config/migrate/migrate.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config/migrate.buildEnv",
+      "reason": "in added package",
+      "file": "config/migrate/migrate.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config/migrate.marshalList",
+      "reason": "in added package",
+      "file": "config/migrate/migrate.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/config/migrate.marshalMap",
+      "reason": "in added package",
+      "file": "config/migrate/migrate.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.CleanupExpiredClients",
+      "reason": "in added package",
+      "file": "database/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.Close",
+      "reason": "in added package",
+      "file": "database/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.CountUser",
+      "reason": "in added package",
+      "file": "database/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.CreateApplication",
+      "reason": "in added package",
+      "file": "database/application.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.CreateClient",
+      "reason": "in added package",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.CreateMessage",
+      "reason": "in added package",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.CreatePluginConf",
+      "reason": "in added package",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.CreateUser",
+      "reason": "in added package",
+      "file": "database/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.DeleteApplicationByID",
+      "reason": "in added package",
+      "file": "database/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.DeleteClientByID",
+      "reason": "in added package",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.DeleteMessageByID",
+      "reason": "in added package",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.DeleteMessagesByApplication",
+      "reason": "in added package",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.DeleteMessagesByUser",
+      "reason": "in added package",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.DeletePluginConfByID",
+      "reason": "in added package",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.DeleteUserByID",
+      "reason": "in added package",
+      "file": "database/user.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetApplicationByID",
+      "reason": "in added package",
+      "file": "database/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetApplicationByToken",
+      "reason": "in added package",
+      "file": "database/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetApplicationsByUser",
+      "reason": "in added package",
+      "file": "database/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetClientByID",
+      "reason": "in added package",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetClientByToken",
+      "reason": "in added package",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetClientsByUser",
+      "reason": "in added package",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetMessageByID",
+      "reason": "in added package",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetMessagesByApplication",
+      "reason": "in added package",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetMessagesByApplicationSince",
+      "reason": "in added package",
+      "file": "database/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetMessagesByUser",
+      "reason": "in added package",
+      "file": "database/message.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetMessagesByUserSince",
+      "reason": "in added package",
+      "file": "database/message.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetPluginConfByApplicationID",
+      "reason": "in added package",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetPluginConfByID",
+      "reason": "in added package",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetPluginConfByToken",
+      "reason": "in added package",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetPluginConfByUser",
+      "reason": "in added package",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetPluginConfByUserAndPath",
+      "reason": "in added package",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetUserByID",
+      "reason": "in added package",
+      "file": "database/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetUserByName",
+      "reason": "in added package",
+      "file": "database/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetUserByOIDC",
+      "reason": "in added package",
+      "file": "database/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.GetUsers",
+      "reason": "in added package",
+      "file": "database/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.Ping",
+      "reason": "in added package",
+      "file": "database/ping.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.UpdateApplication",
+      "reason": "in added package",
+      "file": "database/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.UpdateApplicationTokenLastUsed",
+      "reason": "in added package",
+      "file": "database/application.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.UpdateClient",
+      "reason": "in added package",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.UpdateClientElevatedUntil",
+      "reason": "in added package",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.UpdateClientTokensLastUsedAndExpiresAt",
+      "reason": "in added package",
+      "file": "database/client.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.UpdatePluginConf",
+      "reason": "in added package",
+      "file": "database/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.UpdateUser",
+      "reason": "in added package",
+      "file": "database/user.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.GormDatabase.notExpired",
+      "reason": "in added package",
+      "file": "database/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.New",
+      "reason": "in added package",
+      "file": "database/database.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.createDirectoryIfSqlite",
+      "reason": "in added package",
+      "file": "database/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.fillMissingCreatedAt",
+      "reason": "in added package",
+      "file": "database/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.fillMissingSortKeys",
+      "reason": "in added package",
+      "file": "database/database.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/database.gormLogWriter.Printf",
+      "reason": "in added package",
+      "file": "database/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/decaymap.DecayMap.Pop",
+      "reason": "in added package",
+      "file": "decaymap/decaymap.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/decaymap.DecayMap.Set",
+      "reason": "in added package",
+      "file": "decaymap/decaymap.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/decaymap.NewDecayMap",
+      "reason": "in added package",
+      "file": "decaymap/decaymap.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/docs.Serve",
+      "reason": "in added package",
+      "file": "docs/swagger.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/docs.UI",
+      "reason": "in added package",
+      "file": "docs/ui.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/docs.getSwaggerJSON",
+      "reason": "in added package",
+      "file": "docs/swagger.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/error.Handler",
+      "reason": "in added package",
+      "file": "error/handler.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/error.NotFound",
+      "reason": "in added package",
+      "file": "error/notfound.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/error.validationErrorToText",
+      "reason": "in added package",
+      "file": "error/handler.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/error.writeError",
+      "reason": "in added package",
+      "file": "error/handler.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/fracdex.Float64Approx",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/fracdex.KeyBetween",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/fracdex.NKeysBetween",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/fracdex.decrementInt",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/fracdex.getIntLen",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/fracdex.getIntPart",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/fracdex.incrementInt",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/fracdex.midpoint",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/fracdex.reverse",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/fracdex.validateInt",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/fracdex.validateOrderKey",
+      "reason": "in added package",
+      "file": "fracdex/fracdex.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/mode.Get",
+      "reason": "in added package",
+      "file": "mode/mode.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/mode.IsDev",
+      "reason": "in added package",
+      "file": "mode/mode.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/mode.Set",
+      "reason": "in added package",
+      "file": "mode/mode.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/mode.updateGinMode",
+      "reason": "in added package",
+      "file": "mode/mode.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/model.Client.PopulateExpiresAt",
+      "reason": "in added package",
+      "file": "model/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/model.Client.calculateExpiresAt",
+      "reason": "in added package",
+      "file": "model/client.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.HasInstance",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.InitializeForUserID",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.Instance",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.LoadPlugin",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.PluginInfo",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.RemoveUser",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.SetPluginEnabled",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.createInternalApplication",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.createPluginConf",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.initializeConfigurerForSingleUserPlugin",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.initializeForUser",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.initializeSingleUserPlugin",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.Manager.loadPlugins",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.NewManager",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.dbStorageHandler.Load",
+      "reason": "in added package",
+      "file": "plugin/storagehandler.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.dbStorageHandler.Save",
+      "reason": "in added package",
+      "file": "plugin/storagehandler.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.pluginFileLoadError.Error",
+      "reason": "in added package",
+      "file": "plugin/manager.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.redirectToChannel.SendMessage",
+      "reason": "in added package",
+      "file": "plugin/messagehandler.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin.requirePluginEnabled",
+      "reason": "in added package",
+      "file": "plugin/pluginenabled.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.Capabilities.Strings",
+      "reason": "in added package",
+      "file": "plugin/compat/instance.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.HasSupport",
+      "reason": "in added package",
+      "file": "plugin/compat/instance.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.Info.String",
+      "reason": "in added package",
+      "file": "plugin/compat/plugin.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1.APIVersion",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1.NewPluginInstance",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1.PluginInfo",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1Instance.DefaultConfig",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1Instance.Disable",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1Instance.Enable",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1Instance.GetDisplay",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1Instance.RegisterWebhook",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1Instance.SetMessageHandler",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1Instance.SetStorageHandler",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1Instance.Supports",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1Instance.ValidateAndSetConfig",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1MessageHandler.SendMessage",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1StorageHandler.Load",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.PluginV1StorageHandler.Save",
+      "reason": "in added package",
+      "file": "plugin/compat/v1.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/compat.Wrap",
+      "reason": "in added package",
+      "file": "plugin/compat/wrap.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/clock.GetGotifyPluginInfo",
+      "reason": "in added package",
+      "file": "plugin/example/clock/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/clock.NewGotifyPluginInstance",
+      "reason": "in added package",
+      "file": "plugin/example/clock/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/clock.Plugin.Disable",
+      "reason": "in added package",
+      "file": "plugin/example/clock/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/clock.Plugin.Enable",
+      "reason": "in added package",
+      "file": "plugin/example/clock/main.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/clock.Plugin.SetMessageHandler",
+      "reason": "in added package",
+      "file": "plugin/example/clock/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/clock.main",
+      "reason": "in added package",
+      "file": "plugin/example/clock/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo.EchoPlugin.DefaultConfig",
+      "reason": "in added package",
+      "file": "plugin/example/echo/echo.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo.EchoPlugin.Disable",
+      "reason": "in added package",
+      "file": "plugin/example/echo/echo.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo.EchoPlugin.Enable",
+      "reason": "in added package",
+      "file": "plugin/example/echo/echo.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo.EchoPlugin.GetDisplay",
+      "reason": "in added package",
+      "file": "plugin/example/echo/echo.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo.EchoPlugin.RegisterWebhook",
+      "reason": "in added package",
+      "file": "plugin/example/echo/echo.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo.EchoPlugin.SetMessageHandler",
+      "reason": "in added package",
+      "file": "plugin/example/echo/echo.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo.EchoPlugin.SetStorageHandler",
+      "reason": "in added package",
+      "file": "plugin/example/echo/echo.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo.EchoPlugin.ValidateAndSetConfig",
+      "reason": "in added package",
+      "file": "plugin/example/echo/echo.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo.GetGotifyPluginInfo",
+      "reason": "in added package",
+      "file": "plugin/example/echo/echo.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo.NewGotifyPluginInstance",
+      "reason": "in added package",
+      "file": "plugin/example/echo/echo.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo.main",
+      "reason": "in added package",
+      "file": "plugin/example/echo/echo.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/minimal.GetGotifyPluginInfo",
+      "reason": "in added package",
+      "file": "plugin/example/minimal/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/minimal.NewGotifyPluginInstance",
+      "reason": "in added package",
+      "file": "plugin/example/minimal/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/minimal.Plugin.Disable",
+      "reason": "in added package",
+      "file": "plugin/example/minimal/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/minimal.Plugin.Enable",
+      "reason": "in added package",
+      "file": "plugin/example/minimal/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/example/minimal.main",
+      "reason": "in added package",
+      "file": "plugin/example/minimal/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/cantinstantiate.GetGotifyPluginInfo",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/cantinstantiate/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/cantinstantiate.NewGotifyPluginInstance",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/cantinstantiate/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/cantinstantiate.Plugin.Disable",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/cantinstantiate/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/cantinstantiate.Plugin.Enable",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/cantinstantiate/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/cantinstantiate.main",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/cantinstantiate/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/malformedconstructor.GetGotifyPluginInfo",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/malformedconstructor/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/malformedconstructor.NewGotifyPluginInstance",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/malformedconstructor/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/malformedconstructor.Plugin.Disable",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/malformedconstructor/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/malformedconstructor.Plugin.Enable",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/malformedconstructor/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/malformedconstructor.main",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/malformedconstructor/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/noinstance.GetGotifyPluginInfo",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/noinstance/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/noinstance.main",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/noinstance/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/nothing.main",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/nothing/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/unknowninfo.GetGotifyPluginInfo",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/unknowninfo/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/unknowninfo.main",
+      "reason": "in added package",
+      "file": "plugin/testing/broken/unknowninfo/main.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.Plugin.APIVersion",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.Plugin.NewPluginInstance",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.Plugin.PluginInfo",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.DefaultConfig",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.Disable",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.Enable",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.GetDisplay",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.GetStorage",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.RegisterWebhook",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.SetCapability",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.SetMessageHandler",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.SetStorage",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.SetStorageHandler",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.Supports",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.TriggerMessage",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.PluginInstance.ValidateAndSetConfig",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.ReturnErrorOnDisableForUser",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock.ReturnErrorOnEnableForUser",
+      "reason": "in added package",
+      "file": "plugin/testing/mock/mock.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/router.Create",
+      "reason": "in added package",
+      "file": "router/router.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/router.accessLogger",
+      "reason": "in added package",
+      "file": "router/router.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/router.onlyImageFS.Open",
+      "reason": "in added package",
+      "file": "router/router.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/runner.LoggingRoundTripper.RoundTrip",
+      "reason": "in added package",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/runner.Run",
+      "reason": "in added package",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/runner.applyLetsEncrypt",
+      "reason": "in added package",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/runner.doShutdown",
+      "reason": "in added package",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/runner.doShutdownOnSignal",
+      "reason": "in added package",
+      "file": "runner/runner.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/runner.getNetworkAndAddr",
+      "reason": "in added package",
+      "file": "runner/runner.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/runner.startListening",
+      "reason": "in added package",
+      "file": "runner/runner.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test.BodyEquals",
+      "reason": "in added package",
+      "file": "test/asserts.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test.GetProjectDir",
+      "reason": "in added package",
+      "file": "test/filepath.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test.JSONEquals",
+      "reason": "in added package",
+      "file": "test/asserts.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test.NewTmpDir",
+      "reason": "in added package",
+      "file": "test/tmpdir.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test.TmpDir.Clean",
+      "reason": "in added package",
+      "file": "test/tmpdir.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test.TmpDir.Path",
+      "reason": "in added package",
+      "file": "test/tmpdir.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test.UnreadableReader",
+      "reason": "in added package",
+      "file": "test/asserts.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test.WithUser",
+      "reason": "in added package",
+      "file": "test/auth.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test.WithWd",
+      "reason": "in added package",
+      "file": "test/filepath.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.App",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.AppWithToken",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.AppWithTokenAndDefaultPriority",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.AppWithTokenAndName",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.Client",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.ClientWithToken",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.InternalApp",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.InternalAppWithToken",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.InternalAppWithTokenAndName",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.NewAppWithToken",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.NewAppWithTokenAndDefaultPriority",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.NewAppWithTokenAndName",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.NewClientWithToken",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.NewInternalAppWithToken",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.NewInternalAppWithTokenAndName",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.app",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.appWithToken",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.appWithTokenAndName",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.newAppWithToken",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.AppClientBuilder.newAppWithTokenAndName",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.AssertAppExist",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.AssertAppNotExist",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.AssertClientExist",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.AssertClientNotExist",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.AssertMessageExist",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.AssertMessageNotExist",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.AssertUserExist",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.AssertUserNotExist",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.AssertUsernameNotExist",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.NewUser",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.NewUserWithName",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.Database.User",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.MessageBuilder.Message",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.MessageBuilder.NewMessage",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.NewDB",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.NewDBWithDefaultUser",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/test/testdb.nowFunc",
+      "reason": "in added package",
+      "file": "test/testdb/database.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/ui.Register",
+      "reason": "in added package",
+      "file": "ui/serve.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/ui.noop",
+      "reason": "in added package",
+      "file": "ui/serve.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/gotify/server/v3/ui.serveFile",
+      "reason": "in added package",
+      "file": "ui/serve.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 390,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/client_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/health_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/message_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/oidc_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/plugin_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/session_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/stream/stream_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "api/user_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/authentication_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/cors_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "auth/util_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "config/config_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/application_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/client_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/database_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/message_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/migration_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/plugin_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "database/user_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "docs/swagger_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "docs/ui_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "error/handler_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "error/notfound_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "plugin/compat/plugin_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "plugin/compat/wrap_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "plugin/manager_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "plugin/messagehandler_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "plugin/pluginenabled_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "router/router_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "test/asserts_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "test/auth_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "test/testdb/database_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/api"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/api/stream"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/auth"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/auth/password"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/config"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/config/migrate"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/database"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/decaymap"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/docs"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/error"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/fracdex"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/mode"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/model"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/plugin"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/plugin/compat"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/plugin/example/clock"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/plugin/example/echo"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/plugin/example/minimal"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/plugin/testing/broken/cantinstantiate"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/plugin/testing/broken/malformedconstructor"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/plugin/testing/broken/noinstance"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/plugin/testing/broken/nothing"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/plugin/testing/broken/unknowninfo"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/plugin/testing/mock"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/router"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/runner"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/test"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/test/testdb"
+    },
+    {
+      "class": "C2",
+      "kind": "package-removed",
+      "symbol": "github.com/gotify/server/v2/ui"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/api",
+      "detail": "66 funcs, 22 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/api/stream",
+      "detail": "21 funcs, 3 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/auth",
+      "detail": "47 funcs, 5 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/auth/password",
+      "detail": "3 funcs, 0 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/config",
+      "detail": "16 funcs, 11 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/config/migrate",
+      "detail": "4 funcs, 1 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/database",
+      "detail": "49 funcs, 2 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/decaymap",
+      "detail": "3 funcs, 1 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/docs",
+      "detail": "3 funcs, 0 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/error",
+      "detail": "4 funcs, 0 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/fracdex",
+      "detail": "11 funcs, 0 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/mode",
+      "detail": "4 funcs, 0 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/model",
+      "detail": "2 funcs, 27 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/plugin",
+      "detail": "19 funcs, 7 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/plugin/compat",
+      "detail": "19 funcs, 13 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/plugin/testing/mock",
+      "detail": "18 funcs, 3 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/router",
+      "detail": "3 funcs, 1 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/runner",
+      "detail": "7 funcs, 1 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/test",
+      "detail": "9 funcs, 1 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/test/testdb",
+      "detail": "37 funcs, 3 types"
+    },
+    {
+      "class": "C2",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/ui",
+      "detail": "3 funcs, 1 types"
+    },
+    {
+      "class": "C4",
+      "kind": "gomod-module",
+      "detail": "github.com/gotify/server/v2 -\u003e github.com/gotify/server/v3"
+    },
+    {
+      "class": "C5",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3",
+      "detail": "5 funcs, 0 types",
+      "s6_blocker": "new program entry point"
+    },
+    {
+      "class": "C5",
+      "kind": "goroutine-structure",
+      "symbol": "github.com/gotify/server/v3/api/stream.API.Handle",
+      "detail": "new package spawns goroutines / long-running code: (none)",
+      "s6_blocker": "new long-running goroutine"
+    },
+    {
+      "class": "C5",
+      "kind": "goroutine-structure",
+      "symbol": "github.com/gotify/server/v3/api/stream.client.startWriteHandler",
+      "detail": "new package spawns goroutines / long-running code: for {} loop with select",
+      "s6_blocker": "new long-running goroutine"
+    },
+    {
+      "class": "C5",
+      "kind": "goroutine-structure",
+      "symbol": "github.com/gotify/server/v3/plugin.NewManager",
+      "detail": "new package spawns goroutines / long-running code: spawns a long-running goroutine (for {} loop with channel receive)",
+      "s6_blocker": "new long-running goroutine"
+    },
+    {
+      "class": "C5",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/plugin/example/clock",
+      "detail": "6 funcs, 1 types",
+      "s6_blocker": "new program entry point"
+    },
+    {
+      "class": "C5",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/plugin/example/echo",
+      "detail": "11 funcs, 3 types",
+      "s6_blocker": "new program entry point"
+    },
+    {
+      "class": "C5",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/plugin/example/minimal",
+      "detail": "5 funcs, 1 types",
+      "s6_blocker": "new program entry point"
+    },
+    {
+      "class": "C5",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/cantinstantiate",
+      "detail": "5 funcs, 1 types",
+      "s6_blocker": "new program entry point"
+    },
+    {
+      "class": "C5",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/malformedconstructor",
+      "detail": "5 funcs, 1 types",
+      "s6_blocker": "new program entry point"
+    },
+    {
+      "class": "C5",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/noinstance",
+      "detail": "2 funcs, 0 types",
+      "s6_blocker": "new program entry point"
+    },
+    {
+      "class": "C5",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/nothing",
+      "detail": "1 funcs, 0 types",
+      "s6_blocker": "new program entry point"
+    },
+    {
+      "class": "C5",
+      "kind": "package-added",
+      "symbol": "github.com/gotify/server/v3/plugin/testing/broken/unknowninfo",
+      "detail": "2 funcs, 0 types",
+      "s6_blocker": "new program entry point"
+    },
+    {
+      "class": "C5",
+      "kind": "goroutine-structure",
+      "symbol": "github.com/gotify/server/v3/router.Create",
+      "detail": "new package spawns goroutines / long-running code: spawns a long-running goroutine (range over channel ticker.C)",
+      "s6_blocker": "new long-running goroutine"
+    },
+    {
+      "class": "C5",
+      "kind": "goroutine-structure",
+      "symbol": "github.com/gotify/server/v3/runner.Run",
+      "detail": "new package spawns goroutines / long-running code: calls blocking server loop ServeTLS()",
+      "s6_blocker": "new long-running goroutine"
+    }
+  ],
+  "stats": {
+    "old_packages": 30,
+    "new_packages": 30,
+    "old_funcs": 390,
+    "new_funcs": 390,
+    "old_type_errors": 359,
+    "new_type_errors": 359,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

@@ -1,0 +1,137 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@db1b703e1a3d",
+  "new": "gotify@670594c0cb94",
+  "module": "github.com/gotify/server",
+  "classes": [
+    "C0",
+    "C2",
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (9): github.com/gin-contrib/gzip: dependency version changed; github.com/gin-gonic/gin: dependency version changed; github.com/go-playground/universal-translator: dependency graph changed; github.com/json-iterator/go: dependency graph changed; github.com/leodido/go-urn: dependency graph changed; ... and 4 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 2 functions",
+      "type information is partial (211/211 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/error.Handler",
+      "reason": "calls validationErrorToText whose signature changed",
+      "file": "error/handler.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/gotify/server/error.validationErrorToText",
+      "reason": "signature changed",
+      "file": "error/handler.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/gotify/server/error.validationErrorToText",
+      "detail": "func(*gopkg.in/go-playground/validator.v8.FieldError) string -\u003e func(gopkg.in/go-playground/validator.v9.FieldError) string"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "gopkg.in/go-playground/validator.v9",
+      "detail": "first import in github.com/gotify/server/error (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gin-contrib/gzip",
+      "detail": "v0.0.0-20190101123152-0eb78e93402e -\u003e v0.0.1",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-version",
+      "symbol": "github.com/gin-gonic/gin",
+      "detail": "v1.3.0 -\u003e v1.5.0",
+      "s6_blocker": "dependency version changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-playground/universal-translator",
+      "detail": "v0.17.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/json-iterator/go",
+      "detail": "v1.1.8 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/leodido/go-urn",
+      "detail": "v1.2.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/mattn/go-isatty",
+      "detail": "v0.0.10 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "golang.org/x/sys",
+      "detail": "v0.0.0-20191128015809-6d18c012aee9 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-removed",
+      "symbol": "gopkg.in/go-playground/validator.v8",
+      "detail": "v8.18.2",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "gopkg.in/go-playground/validator.v9",
+      "detail": "v9.30.2",
+      "s6_blocker": "dependency graph changed"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 288,
+    "new_funcs": 288,
+    "old_type_errors": 211,
+    "new_type_errors": 211,
+    "changed_funcs": 1,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

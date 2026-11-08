@@ -1,0 +1,59 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@04f7f55a7b5d",
+  "new": "chi@9f8adb1aabaa",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C1"
+  ],
+  "dominant_class": "C1",
+  "recommendation": {
+    "mechanism": "S6",
+    "in_process": true,
+    "summary": "S6 transactional patch set of 1 function(s) (body-only change).",
+    "justification": [
+      "no state-schema, dependency, toolchain, goroutine-structure or long-running-code change",
+      "every member of the patch set is an ordinary non-generic function or method, so each can be redirected through its slot, and the whole set is published in one atomic PatchSet store"
+    ],
+    "alternatives": [
+      "S2 Go plugin swap of the affected handler (same toolchain; old code leaks)",
+      "S1 epoch swap if v2 is compiled in alongside v1 (pre-staged release)",
+      "S5 FD-passing handoff (identity state transfer) or rolling update as fallback"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.httpFancyWriter.ReadFrom",
+      "reason": "body changed",
+      "file": "middleware/wrap_writer.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 1,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/wrap_writer_readfrom_test.go",
+      "detail": "added"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5/middleware.httpFancyWriter.ReadFrom",
+      "detail": "body changed (87 -\u003e 110 tokens)"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 187,
+    "new_funcs": 187,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 1,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

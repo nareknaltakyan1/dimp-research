@@ -1,0 +1,113 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@7f280968675b",
+  "new": "chi@4b14b832d53c",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (github.com/go-chi/chi/v5.Context: layout of compiled-in type Context changed (4 functions use it); S6 replaces functions, not types); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (1): github.com/go-chi/chi/v5.Context: layout of compiled-in type Context changed (4 functions use it); S6 replaces functions, not types"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "github.com/go-chi/chi/v5.Mux.MethodNotAllowedHandler is exported: callers outside the analysed module are not in the closure",
+      "new package-level variable github.com/go-chi/chi/v5.reverseMethodMap: under S6 it lives in the patch plugin and is re-initialised by every later patch generation",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 4 functions"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5.Mux.MethodNotAllowedHandler",
+      "reason": "signature changed; calls methodNotAllowedHandler whose signature changed",
+      "file": "mux.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5.Mux.routeHTTP",
+      "reason": "calls Mux.MethodNotAllowedHandler whose signature changed; body changed",
+      "file": "mux.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5.methodNotAllowedHandler",
+      "reason": "signature changed",
+      "file": "mux.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5.node.findRoute",
+      "reason": "body changed",
+      "file": "tree.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 4,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "mux_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5.Mux.routeHTTP",
+      "detail": "body changed (186 -\u003e 190 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5.node.findRoute",
+      "detail": "body changed (591 -\u003e 659 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/go-chi/chi/v5.Context",
+      "detail": "methodsAllowed []methodTyp [not state]",
+      "s6_blocker": "layout of compiled-in type Context changed (4 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/go-chi/chi/v5.Mux.MethodNotAllowedHandler",
+      "detail": "(*Mux)func() net/http.HandlerFunc -\u003e (*Mux)func(...methodTyp) net/http.HandlerFunc"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/go-chi/chi/v5.methodNotAllowedHandler",
+      "detail": "func(net/http.ResponseWriter, *net/http.Request) -\u003e func(...methodTyp) func(net/http.ResponseWriter, *net/http.Request)"
+    },
+    {
+      "class": "C2",
+      "kind": "var-added",
+      "symbol": "github.com/go-chi/chi/v5.reverseMethodMap",
+      "detail": "map[github.com/go-chi/chi/v5.methodTyp]string"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 166,
+    "new_funcs": 166,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 4,
+    "changed_types": 1,
+    "changed_globals": 1
+  }
+}

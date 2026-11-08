@@ -1,0 +1,47 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@413f081b26a6",
+  "new": "gotify@4fa74cea5513",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C4"
+  ],
+  "dominant_class": "C4",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "S6 blockers (1): : toolchain changed (patch plugins must be built with the host's exact toolchain)"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (240/240 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "toolchain changed: S2/S6 plugin delivery is impossible (plugins must match the host toolchain exactly); only a new process works"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [
+    {
+      "class": "C4",
+      "kind": "gomod-toolchain",
+      "detail": "toolchain go1.25.1 -\u003e go1.26.0",
+      "s6_blocker": "toolchain changed (patch plugins must be built with the host's exact toolchain)"
+    }
+  ],
+  "stats": {
+    "old_packages": 28,
+    "new_packages": 28,
+    "old_funcs": 322,
+    "new_funcs": 322,
+    "old_type_errors": 240,
+    "new_type_errors": 240,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

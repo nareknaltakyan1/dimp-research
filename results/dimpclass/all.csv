@@ -1,0 +1,451 @@
+target,commit,parent,date,author,bot,subject,go_files,classes,dominant,mechanism,in_process,patch_size,findings,s6_blockers,kinds,type_err_old,type_err_new,ms
+chi,c64ed7d6635f,9f8adb1aabaa,2026-11-07,timiltitus07,false,middleware: add tests for RequestSize (#1252),1,C0,C0,none,true,0,1,0,file-test,0,0,1290
+chi,9f8adb1aabaa,04f7f55a7b5d,2026-10-18,Cheruku Sri Charan Reddy,false,middleware: preserve status after empty ReadFrom (#1213),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,23
+chi,04f7f55a7b5d,3a33ba578e0d,2026-10-18,dependabot[bot],true,build(deps): bump github.com/go-chi/chi/v5 in /_examples/rest (#1228),0,C0,C0,none,true,0,1,0,file-gosum,0,0,22
+chi,3a33ba578e0d,607557061251,2026-10-14,Vojtech Vitek (golang.cz),false,middleware: SupressNotFound must not mutate the request's route context (#1220),2,C0 C5,C5,S5,false,1,2,1,closure-factory-changed file-test,0,0,24
+chi,607557061251,46295d0582d9,2026-10-14,Vojtech Vitek (golang.cz),false,middleware: parse quoted ContentCharset media parameters (#1218),2,C0 C1 C2,C2,S6,true,1,3,0,file-test func-body import-added,0,0,24
+chi,46295d0582d9,c6e33a1a9dd4,2026-10-14,Vojtech Vitek (golang.cz),false,middleware: test Retry-After rounding in one table test (#1217),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,24
+chi,c6e33a1a9dd4,c9744a364145,2026-10-13,Ahmet Kamer Çivi,false,middleware: build Maybe handler once (#1197),2,C0 C5,C5,S5,false,1,2,1,closure-factory-changed file-test,0,0,26
+chi,c9744a364145,fff8bb28cbeb,2026-10-13,Renan Martins Pimentel,false,middleware: test ClientIPFromHeader does not fall back to other headers (#1208),1,C0,C0,none,true,0,1,0,file-test,0,0,23
+chi,fff8bb28cbeb,7f9b7448f51d,2026-10-13,Vojtech Vitek (golang.cz),false,"middleware: add Deprecation (RFC 9745), make Sunset RFC 8594 only (#1195)",4,C0 C1 C2,C2,S6,true,2,4,0,file-test func-added func-body,0,0,23
+chi,7f9b7448f51d,167e1e3bd039,2026-10-12,Vojtech Vitek (golang.cz),false,middleware: treat RemoteAddr as the rightmost hop in ClientIPFrom* (#1214),4,C0 C1 C2 C5,C5,S5,false,6,9,1,closure-factory-changed file-test func-added func-body func-signature,0,0,24
+chi,3d1777a1ef88,b1c9ab47626c,2026-09-18,Leul Tewodros Agonafer,false,middleware: honor Discard when flushing (#1185),2,C0 C1 C2,C2,S6,true,5,6,0,file-test func-added func-body,0,0,22
+chi,b1c9ab47626c,ae6be7469132,2026-09-08,Jake Wang,false,middleware: record response status when flushing (#1174),2,C0 C1,C1,S6,true,4,5,0,file-test func-body,0,0,34
+chi,ae6be7469132,50ef4e4c311f,2026-08-31,James Raspass,false,"Simplify chi.URLParam, call chi.URLParamFromCtx (#1168)",1,C1,C1,S6,true,1,1,0,func-body,0,0,29
+chi,50ef4e4c311f,77074b34b939,2026-08-31,James Raspass,false,"Replace ""interface{}"" with ""any"" (#1167)",8,C0 C1,C1,S6,true,2,4,0,file-test func-body,0,0,31
+chi,77074b34b939,756fcb8d630f,2026-08-31,James Raspass,false,Use slices.Backward where appropriate (#1165),3,C1,C1,S6,true,3,3,0,func-body,0,0,45
+chi,756fcb8d630f,5ac7a8277d4d,2026-08-31,James Raspass,false,"Bump minimum Go to 1.24, use b.Loop() (#1164)",4,C0 C4,C4,S5,false,0,5,1,file-test gomod-go,0,0,24
+chi,5ac7a8277d4d,36611d24579a,2026-08-31,James Raspass,false,Remove superfluous import aliases (#1166),6,C0,C0,none,true,0,6,0,file-test,0,0,24
+chi,36611d24579a,aba86186a274,2026-08-27,Szilárd Nagy,false,test(middleware): Improves test coverage (#700),7,C0,C0,none,true,0,7,0,file-test,0,0,30
+chi,aba86186a274,735ae2b87f8c,2026-08-27,Sanjay Kanth A,false,fix: panic on Mount() when a router is mounted onto itself (#1159),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,29
+chi,735ae2b87f8c,87c34a24a649,2026-08-20,Stefan Moser,false,Update compress middleware support Brotli support documentation (#1007),1,C0,C0,none,true,0,0,0,,0,0,26
+chi,87c34a24a649,15767233591f,2026-08-20,Vojtech Vitek (golang.cz),false,middleware: ContentCharset should skip requests without a body (#1158),2,C0 C5,C5,S5,false,1,2,1,closure-factory-changed file-test,0,0,23
+chi,15767233591f,6adf733e0ebb,2026-08-20,Vojtech Vitek (golang.cz),false,Add Clone method to Context (#1157),2,C0 C2,C2,S6,true,1,2,0,file-test func-added,0,0,27
+chi,6adf733e0ebb,38939062c5df,2026-08-20,Olivier Mengué,false,Improve godoc: add links and titles (#1027),1,C0,C0,none,true,0,0,0,,0,0,23
+chi,38939062c5df,9b6ddcddb96a,2026-08-20,Vojtech Vitek (golang.cz),false,"fix(middleware): reject catch-all compress wildcards ""/*"" and ""*/*"" (#1156)",2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,22
+chi,9b6ddcddb96a,29164f023bf9,2026-08-20,Jonathan Hall,false,Don't duplicate methods in Allow: header for 405 responses (#1029),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,22
+chi,29164f023bf9,bc02284e9db2,2026-08-20,Vojtech Vitek (golang.cz),false,fix: don't drop handlers that collide with a Mount()/Route() pattern (#1148),2,C0 C1 C2,C2,S6,true,2,4,0,file-test func-added func-body import-added,0,0,23
+chi,bc02284e9db2,60ecea54191a,2026-08-20,Vojtech Vitek (golang.cz),false,docs: deployment recipe + verify checklist for ClientIPFromXFFTrustedProxies (#1111),3,C0,C0,none,true,0,2,0,file-test,0,0,22
+chi,60ecea54191a,8b258c7bb28f,2026-08-20,Vojtech Vitek (golang.cz),false,"feat(middleware): add text/markdown, text/csv, text/vtt to default compressible types (#1151)",2,C0 C2,C2,S5,false,0,2,1,file-test var-init,0,0,23
+chi,caf87e6e1bd9,7fcb8a20364d,2026-07-05,Vojtech Vitek (golang.cz),false,feat(mux): support http QUERY method ietf rfc10008 (#1132),4,C0 C1 C2,C2,S5,false,2,12,7,const-added const-value file-test func-added interface-changed var-init,0,0,23
+chi,7fcb8a20364d,878fe71fc9e5,2026-07-05,Vojtech Vitek (golang.cz),false,middleware: document printPrettyStack and harden NoColor panic test (#1131),2,C0,C0,none,true,0,1,0,file-test,0,0,22
+chi,878fe71fc9e5,d7b767bcbea5,2026-07-05,Arif Dogan,false,Fix defaultLogEntry.Panic not respecting NoColor setting (#1050),3,C0 C1 C2,C2,S6,true,4,5,0,file-test func-added func-body func-signature,0,0,23
+chi,d7b767bcbea5,3b50c7cc35ff,2026-07-03,Vojtech Vitek (golang.cz),false,feat(middleware): add text/xml and application/xml to default compressible types (#1127),2,C0 C2,C2,S5,false,0,2,1,file-test var-init,0,0,22
+chi,3b50c7cc35ff,2b9fca258f92,2026-06-22,James Raspass,false,Tidy build directives (#1113),2,C0,C0,none,true,0,1,0,file-test,0,0,22
+chi,2b9fca258f92,3b171578ca44,2026-06-14,Minh Lê,false,Honor Discard() in httpFancyWriter.ReadFrom (#1110),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,23
+chi,3b171578ca44,818fdcfc4786,2026-05-22,Vojtech Vitek (golang.cz),false,"feat: middleware.ClientIP, a replacement for middleware.RealIP (#967)",6,C0 C1 C2,C2,S6,true,10,16,0,const-added file-test func-added func-body import-added var-added,0,0,22
+chi,818fdcfc4786,f975af0cb10c,2026-05-20,吴杨帆,false,fix: set Request.Pattern from RoutePattern() (#1097),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,22
+chi,f975af0cb10c,4ef87eaf2cfb,2026-05-16,狗娃子,false,Fix typo in Route doc comment (#1073),1,C0,C0,none,true,0,0,0,,0,0,21
+chi,4ef87eaf2cfb,a54874f0e2f1,2026-05-16,Ali Asghar,false,middleware: fix httpFancyWriter.ReadFrom double-counting bytes with Tee (#1085),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,20
+chi,a54874f0e2f1,3328d4d3ab8a,2026-02-19,James Raspass,false,"Bump minimum Go to 1.23, always use request.Pattern (#1048)",3,C0 C1 C2 C4,C4,S5,false,1,5,1,const-removed file-go-unbuilt func-body func-removed gomod-go,0,0,21
+chi,3328d4d3ab8a,be60b2ec5755,2026-02-19,James Raspass,false,Apply the stringscutprefix modernizer (#1051),1,C1,C1,S6,true,1,1,0,func-body,0,0,21
+chi,be60b2ec5755,a36a925a6a19,2026-02-19,James Raspass,false,Simplify chi.walk with slices.Concat (#1053),1,C1,C1,S6,true,1,1,0,func-body,0,0,21
+chi,a36a925a6a19,7d93ee3e86b4,2026-02-19,James Raspass,false,Remove last uses of io/ioutil (#1054),2,C0,C0,none,true,0,2,0,file-test,0,0,23
+chi,903cff2596ea,142fada90f83,2026-02-12,Lukas Jenicek,false,Propagate inline middlewares across mounted subrouters (#1049),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,22
+chi,142fada90f83,05f1ef7bb50b,2026-02-08,James Raspass,false,Use strings.ReplaceAll where applicable (#1046),2,C0 C1,C1,S6,true,1,2,0,file-go-unbuilt func-body,0,0,21
+chi,05f1ef7bb50b,6eb35881c0e4,2026-02-05,Mahan Adhikari,false,fix(middleware): add missing return in RouteHeaders empty check (#1045),2,C0 C5,C5,S5,false,1,2,1,closure-factory-changed file-test,0,0,21
+chi,6eb35881c0e4,de0d16e6d230,2026-01-14,Peter Kieltyka,false,middleware: harden RedirectSlashes handler (#1044),2,C0 C5,C5,S5,false,1,2,1,closure-factory-changed file-test,0,0,23
+chi,de0d16e6d230,9fb4a15daa6d,2025-10-09,James Raspass,false,Update comment about min Go version (#1023),1,C0,C0,none,true,0,0,0,,0,0,20
+chi,9fb4a15daa6d,51c977c2da87,2025-10-08,Ehden Sinai,false,update reverseMethodMap in RegisterMethod (#1022),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,21
+chi,51c977c2da87,563ab118626b,2025-09-17,cui,false,Refactor to use atomic type (#1019),1,C1 C3 C5,C3,S5+xform,false,2,3,2,closure-factory-changed func-body var-type,0,0,22
+chi,563ab118626b,a52c582b532c,2025-09-17,mikereid1,false,Refactor graceful shutdown example (#994),1,C0,C0,none,true,0,1,0,file-go-unbuilt,0,0,24
+chi,a52c582b532c,9b9fb55def40,2025-09-17,James Raspass,false,Bump minimum Go and use new features (#1017),9,C0 C1 C2 C4,C4,S5,false,5,14,1,const-removed file-go-unbuilt file-test func-body func-removed gomod-go import-added,0,0,22
+chi,9b9fb55def40,0265fcd786c9,2025-08-26,James Raspass,false,Replace methodTypString func with reverseMethodMap (#1018),1,C1 C2,C2,S6,true,1,2,0,func-body func-removed,0,0,23
+chi,0265fcd786c9,cf537d4016bf,2025-08-26,srpvpn,false,refactor: iterative wildcard collapsing and add test for consecutive wildcards (#1012),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,22
+chi,cf537d4016bf,9040e95a07b4,2025-08-26,Vasily Tsybenko,false,Optimize throttle middleware by avoiding unnecessary timer creation (#1011),2,C0 C5,C5,S5,false,1,2,1,closure-factory-changed file-test,0,0,23
+chi,9040e95a07b4,d12cc49622f3,2025-08-26,Otávio Bernardes,false,fix/608 - Fix flaky Throttle middleware test by synchronizing token usage (#1016),1,C0,C0,none,true,0,1,0,file-test,0,0,22
+chi,d12cc49622f3,1c2d011f59c4,2025-08-26,Gusted,false,feat(mux): support http.Request.Pattern in Go 1.23 (#986),4,C0 C1 C2,C2,S6,true,2,5,0,const-added file-go-unbuilt file-test func-added func-body,0,0,22
+chi,1c2d011f59c4,78591377377c,2025-08-15,Maxim Korotkov,false,Avoid potential nil dereference (#1008),1,C5,C5,S5,false,1,1,1,closure-factory-changed,0,0,24
+chi,78591377377c,80d8da2a18da,2025-08-15,James Raspass,false,Allow multiple whitespace between method & pattern (#1013),2,C0 C1,C1,S6,true,2,3,0,file-test func-body,0,0,21
+chi,80d8da2a18da,23c395f8524a,2025-08-15,Tatsuya Kaneko,false,Add pathvalue example to README and implement PathValue handler. (#985),1,C0,C0,none,true,0,1,0,file-go-unbuilt,0,0,21
+chi,23c395f8524a,5516d147c14a,2025-06-20,Steven Dee (Jōshin),false,Correct documentation (#992),1,C0,C0,none,true,0,0,0,,0,0,21
+chi,e235052c1014,1be7ad938cc9,2025-06-20,Ville Skyttä,false,Make use of strings.Cut (#1005),3,C1 C5,C5,S5,false,4,4,1,closure-factory-changed func-body,0,0,21
+chi,1be7ad938cc9,d7034fdfdaef,2025-06-20,Vojtech Vitek (golang.cz),false,Merge commit from fork,2,C0 C5,C5,S5,false,1,2,1,closure-factory-changed file-test,0,0,22
+chi,d7034fdfdaef,d04703412f63,2025-02-18,Char,false,Exclude profiler when use tinygo (#982),1,C0,C0,none,true,0,0,0,,0,0,23
+chi,d04703412f63,fe2c065bc046,2025-02-18,efraimbart,false,support tinygo (#978),3,C0,C0,none,true,0,2,0,file-go-unbuilt file-test,0,0,22
+chi,1aae5b2d2dc8,c6225e35a488,2025-02-12,Leo Antunes,false,chore: delint ioutil usage (#962),4,C0 C1,C1,S6,true,2,4,0,file-test func-body,0,0,59
+chi,e846b8304c76,72fbe460b555,2025-02-05,Ruslan Semagin,false,Apply fieldalignment fixes to optimize struct memory layout (#974),4,C0 C2 C3,C3,S5+xform,false,0,4,2,file-test struct-field-reordered,0,0,21
+chi,72fbe460b555,877e8762059c,2025-02-05,James Raspass,false,Fix non-constant format strings in t.Fatalf (#972),3,C0,C0,none,true,0,3,0,file-test,0,0,20
+chi,877e8762059c,71307f9b7e4e,2025-02-04,James Raspass,false,Use strings.Cut in a few places (#971),4,C1,C1,S6,true,4,4,0,func-body,0,0,20
+chi,71307f9b7e4e,0a20a0e3400e,2025-01-20,Vojtech Vitek (golang.cz),false,Support the four most recent major versions of Go (#969),0,C4,C4,S5,false,0,1,1,gomod-go,0,0,21
+chi,0a20a0e3400e,d9d5e318c270,2024-12-14,Vojtech Vitek (golang.cz),false,"Revert ""feat(): add CF-Connecting-IP (#908)"" (#966)",2,C0 C2 C5,C5,S5,false,2,9,1,closure-factory-changed file-test func-added func-removed var-added var-removed,0,0,20
+chi,d9d5e318c270,6ceb498b221e,2024-12-14,Leo Antunes,false,fix: allow multiple informational status (#961),1,C1,C1,S6,true,1,1,0,func-body,0,0,20
+chi,6ceb498b221e,882c15e6462c,2024-09-26,Joseph Riddle,false,Fix `Mux.Find` not correctly handling nested routes (#954),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,19
+chi,882c15e6462c,1f927a8ec868,2024-09-18,Goran Marić,false,Update content_type.go (#880),1,C5,C5,S5,false,2,2,2,closure-factory-changed,0,0,19
+chi,1f927a8ec868,2c4d128ffd48,2024-09-18,Vasily Tsybenko,false,Ability to specify response HTTP status code for Throttle middleware (#571),2,C0 C1 C2 C3,C3,S5+xform,false,1,5,3,file-test func-body struct-field-added struct-field-reordered,0,0,21
+chi,2c4d128ffd48,5dd771695519,2024-09-18,Hongkuan Wang,false,set up go module for _examples/versions (#948),0,C0,C0,none,true,0,1,0,file-gosum,0,0,21
+chi,5dd771695519,73350509aa6e,2024-09-18,Miroslav Šedivý,false,add strip prefix. (#875),2,C0 C2,C2,S6,true,1,2,0,file-test func-added,0,0,21
+chi,73350509aa6e,df0303d61b1d,2024-09-18,Taichi Sasaki,false,Fix condition in TestRedirectSlashes (#856),1,C0,C0,none,true,0,1,0,file-test,0,0,20
+chi,df0303d61b1d,cbaac313e4f2,2024-09-18,Joseph Tams,false,Fixed incorrect comment about routing (#887),1,C0,C0,none,true,0,0,0,,0,0,21
+chi,cbaac313e4f2,134f373b64a7,2024-09-18,n33pm,false,feat(): add CF-Connecting-IP (#908),2,C0 C2 C5,C5,S5,false,3,9,1,closure-factory-changed file-test func-added func-removed var-added var-removed,0,0,21
+chi,1089a7c69556,39703bcb03f6,2024-09-18,Joseph Riddle,false,Add `Find` to `Routes` interface (#872),3,C0 C1 C2,C2,S5,false,2,4,1,file-test func-added func-body interface-changed,0,0,21
+chi,39703bcb03f6,6fedde2a70dc,2024-09-17,Marco Franssen,false,govet: Fix non-constant format string (#952),1,C0,C0,none,true,0,1,0,file-test,0,0,22
+chi,6fedde2a70dc,dac67d9cbf41,2024-08-23,Gaiaz Iusipov,false,Make Context.RoutePattern() nil-safe (#927),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,19
+chi,67be7d9cafda,7957c0d4ddae,2024-06-28,Patryk Kalinowski,false,middleware: add Discard method to WrapResponseWriter (#926),2,C0 C1 C2,C2,S5,false,3,6,2,file-test func-added func-body interface-changed struct-field-added,0,0,20
+chi,7957c0d4ddae,f728a1c19769,2024-06-21,Vojtech Vitek (golang.cz),false,"Revert ""fix(middleware): Close created writer in the compressor middleware (#…"" (#924)",2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,19
+chi,f10dc4a9cab5,ef31c0bff3f8,2024-06-07,Maksim Terekhin,false,fix(middleware): Close created writer in the compressor middleware (#919),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,20
+chi,ef31c0bff3f8,c1f2a7a12e66,2024-05-07,Justin Burr,false,reduce context struct size from 216 bytes to 208 bytes (#912),1,C2,C2,S5,false,0,1,1,struct-field-reordered,0,0,20
+chi,c1f2a7a12e66,1191921289e8,2024-03-31,Zero King,false,middleware: fix typo in RealIP doc (#903),1,C0,C0,none,true,0,0,0,,0,0,20
+chi,ec67a8683291,fd0ff0e45e67,2024-02-16,Peter Kieltyka,false,"go 1.22, PathValue wildcard test",1,C0,C0,none,true,0,1,0,file-test,0,0,21
+chi,fd0ff0e45e67,60b4f5f52d70,2024-02-16,Angelo Fallaria,false,feat(mux): add 1.22-style path value support (#901),4,C0 C1 C2,C2,S6,true,2,5,0,const-added file-go-unbuilt file-test func-added func-body,0,0,21
+chi,60b4f5f52d70,9436cc85db0d,2024-02-16,Angelo Fallaria,false,feat: update HTTP method parsing in patterns for `Handle` and `HandleFunc` (#900),2,C0 C1,C1,S6,true,2,3,0,file-test func-body,0,0,19
+chi,bec368abbd90,7446950424da,2024-01-22,Gromet Spaal,false,Fix a typo in maybe middleware doc (#889),1,C0,C0,none,true,0,0,0,,0,0,20
+chi,7446950424da,f6b97edbcf6a,2024-01-18,Ayushman,false,Extend Handle method to parse HTTP method in pattern (#897),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,21
+chi,9dd8b4a7b593,245295424dfd,2023-12-19,Peter Kieltyka,false,reset methodsAllowed on contexts in sync pool,1,C1,C1,S6,true,1,1,0,func-body,0,0,20
+chi,58ca6d6119ed,beeb54136a07,2023-10-21,Peter Kieltyka,false,middleware: new SupressNotFound handler,1,C2,C2,S6,true,1,1,0,func-added,0,0,21
+chi,beeb54136a07,992028394fe1,2023-10-21,Peter Kieltyka,false,Update _examples/logging source to point at go-chi/httplog,1,C0,C0,none,true,0,1,0,file-go-unbuilt,0,0,20
+chi,992028394fe1,ecd189745e00,2023-10-19,Oleksandr Redko,false,Reformat godoc comments according to the latest Go (#867),14,C0,C0,none,true,0,7,0,file-go-unbuilt file-test,0,0,21
+chi,ecd189745e00,247397ca7861,2023-10-19,Oleksandr Redko,false,Refactor: drop else statements where if block ends with a return (#865),3,C1,C1,S6,true,3,3,0,func-body,0,0,20
+chi,247397ca7861,3954a76a285f,2023-10-18,Sergey Podgornyy,false,Use original expvar handler for profiler middleware (#848),1,C1 C2,C2,S6,true,1,2,0,func-body func-removed,0,0,20
+chi,3954a76a285f,f4ab9b1f050b,2023-10-18,Saddam H,false,feat(middleware): add sunset/deprecation header middleware (#844),2,C0 C2,C2,S6,true,1,2,0,file-test func-added,0,0,20
+chi,f4ab9b1f050b,355dd04bad97,2023-10-18,Athfan Fasee,false,fix: #846 (#847),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,19
+chi,355dd04bad97,779d661a0ce1,2023-10-18,Oleksandr Redko,false,Fix typos in comments and variable names (#849),5,C0 C1 C2 C3 C5,C3,S5+xform,false,4,10,3,closure-factory-changed file-go-unbuilt file-test func-added func-body func-removed struct-field-added struct-field-removed,0,0,19
+chi,779d661a0ce1,834f94df1330,2023-10-18,guangwu,false,chore: unnecessary guard around call to delete (#859),1,C1,C1,S6,true,1,1,0,func-body,0,0,19
+chi,834f94df1330,f2509839f304,2023-10-18,TheRandomCharacter,false,"Removes ambiguity around ""fresh middleware stack"" in GoDoc (#862)",1,C0,C0,none,true,0,0,0,,0,0,19
+chi,f2509839f304,1129e362d6cc,2023-10-18,TheRandomCharacter,false,remove mute conversion from Router to *Mux (#863),1,C1,C1,S6,true,1,1,0,func-body,0,0,18
+chi,12e93227b377,cfd6c464dacf,2023-07-13,Peter Kieltyka,false,fixed small edge case in tests of v5.0.9 for older Go versions,1,C0,C0,none,true,0,1,0,file-test,0,0,19
+chi,4b14b832d53c,7f280968675b,2023-07-13,Ewen Quimerc'h,false,Adds the Allow header on 405 response (#776),4,C0 C1 C2,C2,S5,false,4,7,1,file-test func-body func-signature struct-field-added var-added,0,0,18
+chi,7f280968675b,8cbdac602a71,2023-05-02,Ville Skyttä,false,Spelling and grammar fixes (#820),6,C0,C0,none,true,0,4,0,file-go-unbuilt file-test,0,0,19
+chi,8cbdac602a71,77d709fcde55,2023-05-02,Kei Arima,false,middleware.Compress: implement Unwrap() method to the compressResponseWriter (#819),1,C2,C2,S6,true,1,1,0,func-added,0,0,19
+chi,fd8a51eb979a,51068a747f1a,2023-03-31,Faraz Fazli,false,Request size middleware (#808) (#809),1,C2,C2,S6,true,1,1,0,func-added,0,0,19
+chi,51068a747f1a,883aa989d045,2023-02-20,wangxiaolei,false,chore: recoverer middleware skip write header on upgrade connection (#795),1,C5,C5,S5,false,1,1,1,closure-factory-changed,0,0,18
+chi,df664f171213,528cd326482a,2023-01-09,Nicholas Cheng,false,Don't pass in logFields again (#779),1,C0,C0,none,true,0,1,0,file-go-unbuilt,0,0,18
+chi,528cd326482a,85f523bed1e0,2022-12-22,Brady Briggs,false,Update logging example to use preview version of new log/slog (#771),1,C0,C0,none,true,0,1,0,file-go-unbuilt,0,0,18
+chi,85f523bed1e0,e6baba61759b,2022-12-22,Torsten Bronger,false,Correct doc comment (#775),1,C0,C0,none,true,0,0,0,,0,0,19
+chi,e6baba61759b,878319e48262,2022-12-18,Kevin Falentio,false,Use timestamps in GMT format per RFC2616 (#772),1,C2,C2,S5,false,0,1,1,var-init,0,0,19
+chi,878319e48262,da69873df486,2022-12-10,Michal Bric,false,Fix typo (#767),1,C0,C0,none,true,0,0,0,,0,0,18
+chi,0fe6bf1ba3ac,42a41a8f6773,2022-10-27,Daniel Tebbutt,false,Use RoutePath in URLFormat middleware (#718),2,C0 C5,C5,S5,false,1,2,1,closure-factory-changed file-test,0,0,18
+chi,42a41a8f6773,e5529d9db4d3,2022-10-27,Peter Kieltyka,false,update comment in source,1,C0,C0,none,true,0,0,0,,0,0,20
+chi,9db25e5b381f,b75b525e1d50,2022-06-26,Tatsuya Kaneko,false,middleware: fix broken comment on go doc (#735),1,C0,C0,none,true,0,0,0,,0,0,18
+chi,c97bc988430d,7dbe9a0bd10f,2022-02-14,0daryo,false,Remove unsed mux test structs (#705),1,C0,C0,none,true,0,1,0,file-test,0,0,18
+chi,7dbe9a0bd10f,b750c805b4ee,2022-01-03,Nicola Murino,false,recoverer: don't recover http.ErrAbortHandler (#624),2,C0 C5,C5,S5,false,1,2,1,closure-factory-changed file-test,0,0,20
+chi,b750c805b4ee,55dd7fc550fe,2022-01-03,yutsuki,false,middleware: fix set Vary header (#640),1,C1,C1,S6,true,1,1,0,func-body,0,0,18
+chi,55dd7fc550fe,3e5747d1f803,2022-01-03,Peter Kieltyka,false,comments,1,C0,C0,none,true,0,0,0,,0,0,19
+chi,3e5747d1f803,98fc81f57061,2022-01-03,Peter Kieltyka,false,context: clean RoutePattern suffixes,1,C1,C1,S6,true,1,1,0,func-body,0,0,19
+chi,98fc81f57061,ad481b38d918,2022-01-03,Peter Kieltyka,false,comments,2,C0,C0,none,true,0,1,0,file-go-unbuilt,0,0,18
+chi,ad481b38d918,06573a69be04,2022-01-03,Peter Kieltyka,false,middleware.RealIP: short-circuit ip test,1,C1,C1,S6,true,1,1,0,func-body,0,0,18
+chi,06573a69be04,ba10645980b4,2022-01-03,Mohammed,false,add net.ParseIP() as validation to RealIP middleware (#665),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,19
+chi,ba10645980b4,e4fe2589dd54,2022-01-03,Peter Kieltyka,false,fix warning in test,1,C0,C0,none,true,0,1,0,file-test,0,0,18
+chi,e4fe2589dd54,0316d5a1df85,2021-12-02,evgenyKharitonov,false,support ip chain without spaces in xForwarded header (#684),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,18
+chi,991ad53c7034,66d6a4d9814d,2021-11-18,Peter Kieltyka,false,middleware.RealIP: also check True-Client-IP request header (#678),1,C1 C2,C2,S6,true,1,2,0,func-body var-added,0,0,18
+chi,520175f12a01,2bfa50829bc2,2021-11-15,Peter Kieltyka,false,middleware: add Maybe helper,1,C2,C2,S6,true,1,1,0,func-added,0,0,19
+chi,2bfa50829bc2,b9a8b9d0a092,2021-11-08,Swastika Gupta,false,correction (#675),1,C0,C0,none,true,0,0,0,,0,0,18
+chi,ecd468d8a624,df44563f0692,2021-10-27,Peter Kieltyka,false,middleware: Heartbeat middleware to respond to HEAD methods as well,1,C5,C5,S5,false,1,1,1,closure-factory-changed,0,0,18
+chi,df44563f0692,2976a592c4ca,2021-08-30,subtle-byte,false,Fix middleware.Recoverer under Go 1.17+ (again) (#654),2,C0 C1 C2,C2,S6,true,2,4,0,file-test func-body var-added,0,0,18
+chi,2e1364ace2a1,69b85589c614,2021-07-14,Peter Kieltyka,false,middleware.PathRewrite,2,C1 C2,C2,S6,true,2,2,0,func-added func-body,0,0,19
+chi,69b85589c614,a63dd1f8a9ea,2021-07-14,Peter Kieltyka,false,middleware.PageRoute (#639),1,C2,C2,S6,true,1,1,0,func-added,0,0,19
+chi,a63dd1f8a9ea,188a1675b707,2021-07-05,Peter Kieltyka,false,"_examples: new graceful example, better",1,C0,C0,none,true,0,1,0,file-go-unbuilt,0,0,18
+chi,188a1675b707,a6f8a3eb8012,2021-06-29,James Raspass,false,Fix middleware.Recoverer under Go 1.17+ (#633),2,C0 C1,C1,S6,true,1,2,0,file-test func-body,0,0,18
+chi,a6f8a3eb8012,f16f8704ccc3,2021-06-25,Igor Baskakov,false,fix comments and messages for users routes in todos-resource (#631),1,C0,C0,none,true,0,1,0,file-go-unbuilt,0,0,18
+chi,9f4d88428c22,248d06cc6a67,2021-04-29,Peter Kieltyka,false,middleware: improve WrapResponseWriter impls (#618),1,C1 C2,C2,S5,false,6,11,2,func-added func-body struct-field-removed struct-field-reordered type-added,0,0,18
+chi,248d06cc6a67,fd503d90dcc1,2021-04-25,Dmitry Zolotukhin,false,Fix support for httptest.ResponseRecorder (#584),3,C0 C1 C2,C2,S5,false,2,5,1,file-test func-body struct-field-added,0,0,18
+chi,fd503d90dcc1,f71cd7d61909,2021-04-25,henripqt,false,Feat/add pprof handlers (#613),1,C1,C1,S6,true,1,1,0,func-body,0,0,17
+chi,f71cd7d61909,25eb15cdd4f6,2021-04-25,John Maguire,false,Correct docs regarding X-Real-IP/X-Forwarded-For precedence (#614),2,C0,C0,none,true,0,1,0,file-test,0,0,18
+chi,25eb15cdd4f6,d32a83448b5f,2021-04-25,Peter Kieltyka,false,"middleware throttle, disable flaky test",1,C0,C0,none,true,0,1,0,file-test,0,0,19
+chi,969d7fcccb46,ab14a9ac6e76,2021-03-25,Peter Kieltyka,false,fix #587 by reverting 894714a and 00cc734 (#606),1,C1,C1,S6,true,2,2,0,func-body,0,0,19
+chi,ab14a9ac6e76,a846defca2e0,2021-03-25,Peter Kieltyka,false,"rest example, update comment",1,C0,C0,none,true,0,1,0,file-go-unbuilt,0,0,18
+chi,a846defca2e0,c1fd4eb431e1,2021-03-25,Peter Kieltyka,false,examples: add go.mod for rest example (#605),0,C0,C0,none,true,0,1,0,file-gosum,0,0,18
+chi,c1fd4eb431e1,1e23150d1e45,2021-03-25,Peter Kieltyka,false,middleware: update flaky throttle test,1,C0,C0,none,true,0,1,0,file-test,0,0,18
+chi,1e23150d1e45,5086f887c59f,2021-03-11,Peter Kieltyka,false,"mux: while testing chi, offer smooth xp when path is empty (#603)",1,C1,C1,S6,true,1,1,0,func-body,0,0,18
+chi,089e78249757,34d54d6d59fc,2021-03-09,Peter Kieltyka,false,"go.mod: set to go 1.14 directive for better compat, I hope (#601)",0,C4,C4,S5,false,0,1,1,gomod-go,0,0,17
+chi,34d54d6d59fc,bed8648a2212,2021-03-07,Peter Kieltyka,false,methodTyp as uint to fix go 1.14 compatibility (#599),2,C0 C3,C3,S5+xform,false,0,2,1,file-test state-type-changed,0,0,18
+gotify,63b183719ce1,f4de6199f080,2026-10-25,Jannis Mattheis,false,Merge pull request #1058 from piyush295/fix/bound-elevation-duration,5,C0 C1 C2,C2,S6,true,3,6,0,const-added file-test func-added func-body,390,390,965
+gotify,64f28352dce6,05b93c324dad,2026-10-15,饺子w (Yumechi),false,Merge pull request #1076 from gotify/hide-token-in-update,4,C0 C1 C2,C2,S6,true,9,12,0,file-test func-added func-body func-removed,390,390,45
+gotify,05b93c324dad,6a49e9c9c0d8,2026-10-14,Jannis Mattheis,false,Merge pull request #1073 from TameTheGame/fix/max-body-bytes,4,C0 C1 C3 C5,C3,S5+xform,false,2,5,3,const-added file-test startup-only-changed struct-field-added,389,390,45
+gotify,6a49e9c9c0d8,2e67149f2952,2026-10-11,饺子w (Yumechi),false,Merge pull request #1057 from SulimanAbdulrazzaq/fix/concurrent-app-image-upload,2,C0 C1 C2,C2,S6,true,3,5,0,file-test func-added func-body import-added,389,389,44
+gotify,2e67149f2952,792691658bc2,2026-10-11,饺子w (Yumechi),false,Merge pull request #1071 from gotify/prevent-leak,1,C1,C1,S6,true,1,1,0,func-body,389,389,45
+gotify,2e187424ee80,592dc45a5b40,2026-10-10,Jannis Mattheis,false,Merge pull request #1066 from RedwindA/feat/mcp,8,C0 C1 C2 C4 C5,C5,S5,false,9,26,9,const-added dep-added file-gosum file-test func-added func-body import-added startup-only-changed struct-field-added type-added,370,389,45
+gotify,f77d8a0ce897,d02796bd084a,2026-09-30,Jannis Mattheis,false,Merge pull request #1060 from lbellows/docs-swagger-ui-sri,2,C0 C2,C2,S5,false,0,2,1,file-test var-init,370,370,44
+gotify,d02796bd084a,74b75e931e61,2026-09-24,Jannis Mattheis,false,Merge pull request #1054 from gotify/match-fully-allowed-regex,6,C0 C1 C2 C5,C5,S5,false,5,10,2,file-test func-added func-body func-removed startup-only-changed,370,370,43
+gotify,d3331e09ca6b,e6361caa5125,2026-09-20,Jannis Mattheis,false,Merge pull request #994 from gotify/renovate/bump-dependencies-go,0,C0 C4,C4,S5,false,0,39,38,dep-added dep-removed dep-version file-gosum gomod-go gomod-toolchain,370,370,45
+gotify,e6361caa5125,0c24edaa8dc0,2026-09-12,Jannis Mattheis,false,Merge pull request #1048 from gotify/fix-create-user-permission,7,C0 C1 C2 C5,C5,S5,false,8,13,2,file-test func-added func-body func-removed long-running-caller startup-only-changed,367,370,42
+gotify,0c24edaa8dc0,d6a01f08013d,2026-09-09,Jannis Mattheis,false,Merge pull request #1046 from NotAFlightRisk/fix-letsencrypt-transport-error,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,367,367,44
+gotify,14bfc2562767,54deea62a54c,2026-08-26,Jannis Mattheis,false,Merge pull request #1033 from UiP9AV6Y/feature/oidc-claim-mapping,4,C0 C1 C2 C5,C5,S5,false,10,16,5,const-added file-test func-added func-body func-signature startup-only-changed struct-field-added,363,367,44
+gotify,54deea62a54c,693303453c79,2026-08-23,Jannis Mattheis,false,Merge pull request #1035 from gotify/panic,3,C0 C1 C3 C5,C3,S5+xform,false,5,7,2,file-test func-body long-running-changed struct-field-added,363,363,44
+gotify,693303453c79,8af44e09579d,2026-08-20,Jannis Mattheis,false,Merge pull request #1029 from DerDummePunkt/github_1007_option_to_redirect_to_idp_when_logged_out,10,C0 C1 C2 C5,C5,S5,false,9,20,11,const-added file-test func-added func-body func-signature long-running-caller startup-only-changed struct-field-added,359,363,43
+gotify,8af44e09579d,ef41eba7970e,2026-08-16,饺子w (Yumechi),false,Merge pull request #1030 from gotify/go-imports,72,C0 C2 C4 C5,C5,S5,false,390,99,14,file-test gomod-module goroutine-structure package-added package-removed,359,359,43
+gotify,ef41eba7970e,aceb5ff51913,2026-08-15,Jannis Mattheis,false,Merge pull request #1022 from DerDummePunkt/github_991_ux_improvments_configurable_oidc_login_button_text,7,C0 C1 C2 C5,C5,S5,false,3,11,7,const-added file-test func-signature long-running-caller startup-only-changed struct-field-added,359,359,43
+gotify,aceb5ff51913,491a17a53030,2026-08-13,Jannis Mattheis,false,Merge pull request #1020 from DerDummePunkt/github_1007_option_to_disable_local_login_when_oidc_enabled,12,C0 C1 C2 C5,C5,S5,false,7,20,11,closure-factory-changed const-added file-test func-body func-signature long-running-caller startup-only-changed struct-field-added,359,359,43
+gotify,f99673f031da,c27a381a67ea,2026-08-10,饺子w (Yumechi),false,Merge pull request #1014 from gotify/bcrypt-errors,11,C0 C1 C2 C5,C5,S5,false,8,14,1,file-test func-added func-body func-signature startup-only-changed,358,359,47
+gotify,d543a8aad22f,ad137d69ad9e,2026-07-24,饺子w (Yumechi),false,Merge pull request #1010 from gotify/keep-oidc-id,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,358,358,46
+gotify,ad137d69ad9e,497f9459d2bc,2026-07-22,饺子w (Yumechi),false,Merge pull request #1005 from Osamaali313/fix/plugin-instances-map-race,1,C1,C1,S6,true,1,1,0,func-body,358,358,45
+gotify,497f9459d2bc,50b917af4d50,2026-07-18,Jannis Mattheis,false,Merge pull request #1003 from gotify/csrf,4,C0 C1 C2 C5,C5,S5,false,3,7,4,file-test func-added func-body startup-only-changed struct-field-added struct-tag-changed,355,358,44
+gotify,50b917af4d50,bd6dd763c6ed,2026-07-17,Jannis Mattheis,false,Merge pull request #1000 from gotify/next,3,C0 C1,C1,S6,true,1,2,0,file-test func-body,356,355,44
+gotify,ec4e2d50a1d3,e2b6a2e8280c,2026-07-16,饺子w (Yumechi),false,Merge pull request #998 from TowyTowy/fix/plugin-messenger-application-id,4,C0 C1 C2,C2,S6,true,4,6,0,file-test func-added func-body,356,356,43
+gotify,e2b6a2e8280c,9f7dc63defae,2026-07-15,Jannis Mattheis,false,Merge pull request #992 from gotify/oidc-log,1,C2 C5,C5,S5,false,1,2,1,import-added startup-only-changed,353,356,42
+gotify,ed8af76a0980,0fd65a075f4a,2026-07-06,Jannis Mattheis,false,Merge pull request #990 from gotify/appid-spec,2,C1 C2,C2,S6,true,2,3,0,func-body func-signature type-added,353,353,44
+gotify,0fd65a075f4a,89e1968374de,2026-07-04,饺子w (Yumechi),false,Merge pull request #988 from gotify/sec-update-rekey,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,353,353,43
+gotify,0dc6af15ab65,6fcdf956d908,2026-07-01,饺子w (Yumechi),false,Merge pull request #932 from gotify/renovate/bump-dependencies-go,0,C0 C4,C4,S5,false,0,19,18,dep-version file-gosum,353,353,44
+gotify,6fcdf956d908,e33d576ce935,2026-07-01,饺子w (Yumechi),false,Merge pull request #986 from gotify/sec-update-rekey,4,C0 C2 C5,C5,S5,false,2,6,1,file-test func-added startup-only-changed type-added,352,353,43
+gotify,ad977d3d9c53,8221c0b895fd,2026-06-28,饺子w (Yumechi),false,feat: EdDSA token for database leakage/index mitigation (#971),40,C0 C1 C2 C5,C5,S5,false,25,69,8,closure-factory-changed const-added file-go-unbuilt file-test func-added func-body func-removed func-signature import-added startup-only-changed struct-tag-changed type-added var-added var-func-type var-init var-removed,352,352,42
+gotify,8221c0b895fd,fe3e36635ddb,2026-06-20,Jannis Mattheis,false,Merge pull request #982 from gotify/oidc-discover-algs,1,C5,C5,S5,false,1,1,1,startup-only-changed,351,352,42
+gotify,fe3e36635ddb,3db7dbc429d7,2026-06-20,Jannis Mattheis,false,Merge pull request #977 from gotify/oidc-link-user,6,C0 C1 C2 C5,C5,S5,false,8,13,6,const-added file-test func-added func-body func-signature startup-only-changed struct-field-added,347,351,41
+gotify,3db7dbc429d7,67b65898fc2f,2026-06-14,Jannis Mattheis,false,Merge pull request #967 from gotify/env,17,C0 C1 C2 C4 C5,C5,S5,false,27,97,14,const-added dep-added dep-removed file-gosum file-test func-added func-removed func-signature import-added long-running-caller main-changed package-added startup-only-changed struct-field-added struct-field-retyped struct-tag-changed type-added var-added,329,347,40
+gotify,0e32e56f6736,a309216a1fcf,2026-05-26,Jannis Mattheis,false,Merge pull request #964 from gotify/appid,5,C0 C1 C2 C5,C5,S5,false,3,5,1,file-test func-added func-body startup-only-changed,328,329,40
+gotify,a309216a1fcf,5f167eb2d955,2026-05-20,Jannis Mattheis,false,Merge pull request #962 from gotify/log,7,C0 C1 C2 C4 C5,C5,S5,false,17,26,10,dep-added file-gosum func-added func-body func-removed import-added long-running-caller main-changed startup-only-changed type-added,298,328,38
+gotify,5f167eb2d955,ec8ce07152b1,2026-05-18,Jannis Mattheis,false,Merge pull request #959 from gotify/expiry,26,C0 C1 C2 C5,C5,S5,false,26,50,14,closure-factory-changed file-test func-added func-body func-removed func-signature interface-changed long-running-caller main-changed startup-only-changed struct-field-added var-added,293,298,38
+gotify,9e5a6b5428b8,6e588f3c971e,2026-04-26,Jannis Mattheis,false,Merge pull request #952 from gotify/oidc-next,25,C0 C1 C2 C5,C5,S5,false,36,66,6,const-added const-value file-test func-added func-body func-removed import-added interface-changed startup-only-changed struct-field-added type-added type-removed var-added,286,293,36
+gotify,6e588f3c971e,838f0e72f3ae,2026-04-19,Jannis Mattheis,false,Merge pull request #954 from gotify/logout-swagger,3,C0 C5,C5,S5,false,1,2,1,file-test startup-only-changed,286,286,37
+gotify,81699f7b05f4,143438055db4,2026-04-12,Jannis Mattheis,false,Merge pull request #941 from gotify/oidc,17,C0 C1 C2 C4 C5,C5,S5,false,32,91,32,const-added dep-added file-gosum file-test func-added func-removed func-signature import-added interface-changed long-running-caller package-added startup-only-changed struct-field-added struct-field-retyped type-added type-removed,240,286,36
+gotify,143438055db4,061053711ffa,2026-03-29,饺子w (Yumechi),false,enhance: bump token keyspace to >128 bits (#939),1,C2,C2,S5,false,0,1,1,var-init,240,240,33
+gotify,061053711ffa,01ca5a977df2,2026-03-11,renovate[bot],true,chore(deps): update bump go dependencies (#913),0,C0 C4,C4,S5,false,0,17,16,dep-added dep-removed dep-version file-gosum gomod-go,240,240,34
+gotify,4fa74cea5513,413f081b26a6,2026-02-28,Jannis Mattheis,false,Merge pull request #912 from gotify/renovate/docker.io-gotify-build-1.x,0,C4,C4,S5,false,0,1,1,gomod-toolchain,240,240,32
+gotify,413f081b26a6,fcbb870395e1,2026-02-28,Jannis Mattheis,false,Merge pull request #923 from gotify/sort-key-fixes,2,C1 C2,C2,S5,false,1,2,1,func-body struct-tag-changed,240,240,32
+gotify,ade6dd3d209a,1818c5dec4cd,2026-02-06,Jannis Mattheis,false,Merge pull request #899 from gotify/renovate/bump-dependencies-go,0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum,240,240,34
+gotify,1818c5dec4cd,cc2fae5988f5,2026-01-28,Jannis Mattheis,false,Merge pull request #909 from gotify/sort_key,9,C0 C1 C2,C2,S5,false,18,17,3,file-test func-added func-body import-added package-added struct-field-added struct-tag-changed,235,240,32
+gotify,f85c38928a14,ae3b824014cd,2025-12-29,renovate[bot],true,chore(deps): update module github.com/go-playground/validator/v10 to v10.30.1 (#892),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,235,235,30
+gotify,81522857ac20,12e298d78784,2025-12-29,renovate[bot],true,chore(deps): update module golang.org/x/crypto to v0.46.0 (#888),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum,235,235,34
+gotify,79788eb050ae,de7a4e97f117,2025-11-19,renovate[bot],true,chore(deps): update bump go dependencies (#871),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum,235,235,31
+gotify,de7a4e97f117,9216661dda38,2025-11-19,Trung Ng,false,Subpath handling for Gotify (#533) (#875),1,C5,C5,S5,false,1,1,1,startup-only-changed,235,235,31
+gotify,2a6f9fbc7cc4,2b67bc33cb14,2025-11-16,Jannis Mattheis,false,Merge pull request #873 from LaurenceJJones/fix-default-image-delete,1,C0,C0,none,true,0,0,0,,235,235,30
+gotify,71e38b982428,f263221133fc,2025-11-05,Laurence Jones,false,Add file type restriction to image upload input using accept attribute (#872),1,C1,C1,S6,true,1,1,0,func-body,235,235,30
+gotify,6d5abae5826c,496c16698170,2025-11-01,renovate[bot],true,chore(deps): update module github.com/gin-contrib/gzip to v1.2.5 (#867),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,235,235,31
+gotify,496c16698170,6de77209a6a0,2025-10-29,饺子w (Yumechi),false,chore: Migrate github.com/jinzhu/gorm to gorm.io/gorm (#863),23,C0 C1 C2 C4 C5,C5,S5,false,9,46,23,dep-added dep-removed dep-version file-go-unbuilt file-gosum file-test func-body func-removed func-signature import-added interface-changed startup-only-changed struct-field-retyped struct-tag-changed,224,235,31
+gotify,6de77209a6a0,4849e1e40f97,2025-10-20,renovate[bot],true,chore(deps): update bump go dependencies (#854),0,C0 C4,C4,S5,false,0,16,15,dep-added dep-removed dep-version file-gosum,224,224,31
+gotify,4bc42d2c1d7e,f77d404bba6f,2025-10-03,昨夜雨疏风骤,false,Optimize uniq function for better performance (#852),1,C1,C1,S5,false,1,1,1,func-body,224,224,30
+gotify,632ccc9282a4,4329e571ad1f,2025-09-20,renovate[bot],true,chore(deps): update module github.com/gin-gonic/gin to v1.11.0 (#849),0,C0 C4,C4,S5,false,0,15,14,dep-added dep-version file-gosum,224,224,31
+gotify,4329e571ad1f,9262a24abc41,2025-09-19,renovate[bot],true,chore(deps): update bump go dependencies (#830),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum gomod-go,224,224,31
+gotify,9262a24abc41,9e1455ff7d30,2025-09-19,饺子w (Yumechi),false,feat: refine AutoCert logic (#843),2,C2 C5,C5,S5,false,3,6,3,func-added import-added startup-only-changed struct-field-retyped type-added,223,224,90
+gotify,93ffad9abe5f,9ab62b657d13,2025-09-13,Jannis Mattheis,false,Merge pull request #837 from gotify/renovate/docker.io-gotify-build-1.x,0,C4,C4,S5,false,0,1,1,gomod-toolchain,223,223,32
+gotify,751dff4b45ac,7b9e8d9f83d6,2025-08-09,Jannis Mattheis,false,Merge pull request #821 from gotify/renovate/bump-dependencies-go,0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,223,223,30
+gotify,ebf6a6423d46,a9ecbdc94edb,2025-08-08,Jannis Mattheis,false,Merge pull request #818 from gotify/upgrade-ui,1,C5,C5,S5,false,1,1,1,startup-only-changed,223,223,31
+gotify,a96db710b4bd,bfcd1cb03715,2025-07-11,renovate[bot],true,chore(deps): update bump go dependencies (#803),0,C0 C4,C4,S5,false,0,13,12,dep-version file-gosum,223,223,30
+gotify,bfcd1cb03715,c1cb2e855aa0,2025-07-09,饺子w (Yumechi),false,fix: skip dotfiles and directories in plugin loading (#811) (#812),2,C0 C5,C5,S5,false,1,2,1,file-test startup-only-changed,223,223,30
+gotify,2498e6e19f9a,afe2a730dc48,2025-05-29,renovate[bot],true,chore(deps): update module github.com/gin-gonic/gin to v1.10.1 (#799),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,223,223,30
+gotify,afe2a730dc48,307b2aaada15,2025-05-29,Luc Didry,false,fix: consistent app ordering (#802),1,C1,C1,S6,true,1,1,0,func-body,223,223,31
+gotify,307b2aaada15,f11755d706bd,2025-05-05,renovate[bot],true,chore(deps): update bump go dependencies (#784),0,C0 C4,C4,S5,false,0,15,14,dep-version file-gosum,223,223,32
+gotify,cc20acb186e3,c44c4ef98010,2025-03-13,renovate[bot],true,chore(deps): update bump go dependencies (#770),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum gomod-go gomod-toolchain,223,223,30
+gotify,0cd03980ce19,a0bad7bd5a79,2025-02-13,renovate[bot],true,chore(deps): Update Go to 1.24 and bump dependencies (#758),0,C0 C4,C4,S5,false,0,6,5,dep-version file-gosum gomod-toolchain,223,223,30
+gotify,a0bad7bd5a79,63cfc1f04542,2025-01-17,renovate[bot],true,chore(deps): update bump go dependencies (#751),8,C0 C1 C4 C5,C5,S5,false,4,28,21,dep-removed dep-version file-gosum file-test func-body gomod-go gomod-toolchain main-changed startup-only-changed,223,223,68
+gotify,63cfc1f04542,c81a9a2c8855,2024-11-24,renovate[bot],true,chore(deps): update bump go dependencies (#736),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,223,223,30
+gotify,c81a9a2c8855,cc7da2ace306,2024-11-22,饺子w (Yumechi),false," Set umask=0 when creating unix sockets (#743)",3,C0 C2 C5,C5,S5,false,1,3,1,file-go-unbuilt startup-only-changed var-added,223,223,30
+gotify,cc7da2ace306,8639316ead73,2024-11-16,Jannis Mattheis,false,Merge pull request #734 from gotify/panic-bool,3,C2 C5,C5,S5,false,3,4,4,startup-only-changed struct-field-retyped,223,223,30
+gotify,8639316ead73,2eee8009f37a,2024-11-15,Jannis Mattheis,false,Merge pull request #733 from gotify/silent,1,C5,C5,S5,false,1,1,1,startup-only-changed,223,223,29
+gotify,bf177f2487e1,bb2403989e28,2024-11-09,renovate[bot],true,chore(deps): update module golang.org/x/crypto to v0.29.0 (#728),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,223,223,30
+gotify,60bafd2b98dd,2d6601747b54,2024-11-07,renovate[bot],true,chore(deps): update module gopkg.in/yaml.v2 to v3 (#719),3,C0 C2 C4,C4,S5,false,0,4,1,dep-removed file-gosum file-test import-added,223,223,31
+gotify,2d6601747b54,7c9d7706ebfc,2024-11-07,饺子w (Yumechi),false,Switch to upstream jinzhu/configor (#727),1,C0 C2 C4 C5,C5,S5,false,1,8,6,dep-added dep-removed dep-version file-gosum import-added startup-only-changed,223,223,30
+gotify,443d4b43ec11,a328be19513e,2024-11-02,renovate[bot],true,chore(deps): update bump go dependencies (#712),0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,223,223,29
+gotify,ec0235058741,58084c8dea57,2024-10-22,饺子w (Yumechi),false,Docker multiarch image  (#703),1,C0,C0,none,true,0,1,0,file-test,223,223,31
+gotify,58084c8dea57,a58b0be362a3,2024-09-22,Moin Ahmad,false,implement HEAD /health (#688),1,C5,C5,S5,false,1,1,1,startup-only-changed,223,223,31
+gotify,a58b0be362a3,a8a4fefd866c,2024-09-20,饺子w (Yumechi),false,bug: fixed a race condition in database test (#690),1,C1,C1,S6,true,2,2,0,func-body,223,223,32
+gotify,a8a4fefd866c,69c939ed9410,2024-07-02,Jannis Mattheis,false,Merge pull request #665 from gotify/fix-ui-config,1,C5,C5,S5,false,1,1,1,startup-only-changed,223,223,30
+gotify,69c939ed9410,12c7164f2e17,2024-06-23,Jannis Mattheis,false,Merge pull request #661 from gotify/update-backend,0,C0 C4,C4,S5,false,0,25,24,dep-added dep-removed dep-version file-gosum,223,223,30
+gotify,46281d6a51dc,d32d131d08a7,2024-02-10,Jannis Mattheis,false,Merge pull request #624 from LaurenceJJones/trusted-proxies,2,C2 C5,C5,S5,false,1,2,2,startup-only-changed struct-field-retyped,222,223,30
+gotify,d32d131d08a7,0bfa5ca4d964,2024-01-20,Jannis Mattheis,false,Merge pull request #621 from LaurenceJJones/master,4,C0 C1 C2 C5,C5,S5,false,8,17,6,file-test func-added func-removed func-signature import-added long-running-caller main-changed startup-only-changed,221,222,32
+gotify,0bfa5ca4d964,92916f011769,2023-10-23,Eng Zer Jun,false,perf: avoid allocations with `(*regexp.Regexp).MatchString` (#604),2,C1 C5,C5,S5,false,2,2,1,func-body startup-only-changed,221,221,31
+gotify,97f180b65091,8c0f7a949963,2023-09-17,Jannis Mattheis,false,Merge pull request #592 from gotify/build,12,C0 C2 C4,C4,S5,false,0,9,4,dep-version file-gosum file-test func-removed,221,221,30
+gotify,8c0f7a949963,a44418265af4,2023-08-06,Jannis Mattheis,false,Merge pull request #582 from eternal-flame-AD/lastping,13,C0 C2 C5,C5,S5,false,7,16,6,file-test func-added interface-changed startup-only-changed struct-field-added,221,221,32
+gotify,a44418265af4,72bd8c8ba64a,2023-07-30,Jannis Mattheis,false,Merge pull request #584 from gotify/update-deps,1,C0 C4,C4,S5,false,0,23,21,dep-added dep-version file-gosum file-test,221,221,32
+gotify,72bd8c8ba64a,aedc3e2ba657,2023-07-19,chrispruitt,false,Add default message priority for applications,10,C0 C1 C2 C3 C5,C3,S5+xform,false,8,14,4,file-test func-added func-body startup-only-changed struct-field-added struct-field-retyped,221,221,32
+gotify,aedc3e2ba657,5cd2d5411f08,2023-07-15,饺子w (Yumechi),false,Migrate from packr to go:embed (#581),3,C0 C1 C2 C4 C5,C5,S5,false,4,25,16,dep-removed file-gosum func-added func-body func-removed import-added package-removed startup-only-changed var-added var-init var-removed,224,221,31
+gotify,5cd2d5411f08,a37afcebfc0d,2023-05-28,Helmut K. C. Tessarek,false,Add delete application image endpoint,3,C0 C2 C5,C5,S5,false,2,3,1,file-test func-added startup-only-changed,223,224,34
+gotify,a37afcebfc0d,8f51a2c72dd2,2023-05-24,Helmut K. C. Tessarek,false,Improve log format (#567),1,C1,C1,S6,true,1,1,0,func-body,223,223,30
+gotify,8f51a2c72dd2,62a1c9984199,2023-05-24,Helmut K. C. Tessarek,false,Suppress /health request logging from localhost,1,C1,C1,S6,true,1,1,0,func-body,223,223,29
+gotify,a18970ea19d5,9d4e37aa87e5,2023-04-28,Jannis Mattheis,false,Merge pull request #560 from mateuscelio/master,2,C0 C1 C2,C2,S6,true,2,4,0,file-test func-body type-added,223,223,30
+gotify,9d4e37aa87e5,5852bbb4ac03,2023-01-10,Jannis Mattheis,false,Fix swagger-ui style,1,C2,C2,S5,false,0,1,1,var-init,223,223,30
+gotify,a261d8cd9f26,056cd5ecb7f3,2023-01-10,Jannis Mattheis,false,Merge pull request #541 from gotify/swagger-ui-xss,1,C2,C2,S5,false,0,1,1,var-init,223,223,31
+gotify,056cd5ecb7f3,022603ddf92d,2022-12-29,Jannis Mattheis,false,Merge pull request #535 from gotify/xss,2,C1 C2 C5,C5,S5,false,4,5,1,func-added func-body startup-only-changed type-added,222,223,29
+gotify,022603ddf92d,c8f78e84694c,2022-12-28,Jannis Mattheis,false,Merge pull request #534 from gotify/fix-xss,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,222,222,28
+gotify,c8f78e84694c,fe8a80d82fdc,2022-12-03,Jannis Mattheis,false,Merge pull request #529 from gotify/redirect,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,222,222,32
+gotify,fe8a80d82fdc,c869052764dd,2022-12-03,Jannis Mattheis,false,Merge pull request #527 from mateuscelio/add-authorization-header-auth,9,C0 C1 C2,C2,S6,true,3,5,0,file-test func-added func-body func-removed,221,222,30
+gotify,0250a48c2cd4,c4e63863f745,2022-09-11,Jannis Mattheis,false,Log loaded plugins,1,C5,C5,S5,false,1,1,1,startup-only-changed,221,221,29
+gotify,c4e63863f745,f16ce59e6ca3,2022-09-10,Jannis Mattheis,false,Merge pull request #508 from gotify/update,2,C0 C1 C2 C4,C4,S5,false,3,46,39,dep-added dep-removed dep-version file-gosum func-body func-signature gomod-go type-added type-removed,221,221,30
+gotify,f16ce59e6ca3,0d18b421e178,2022-07-24,mateuscelio,false,Prevent setting id while inserting / updating applications,2,C0 C1 C2,C2,S6,true,2,4,0,file-test func-body type-added,221,221,30
+gotify,0d18b421e178,a23666aaf0d5,2022-05-29,Jannis Mattheis,false,Merge pull request #489 from rwese/fix-login-form-autofill,9,C0 C1 C5,C5,S5,false,1,7,1,file-test func-body main-changed,221,221,30
+gotify,8affeced49f4,d2e5dee67dbe,2021-09-27,Jannis Mattheis,false,Mask token in log,1,C2 C5,C5,S5,false,2,3,1,func-added startup-only-changed var-added,220,221,31
+gotify,36eb8d8b2b74,c172590b92b1,2021-08-04,Jannis Mattheis,false,Inject register & version information into index.html,2,C2 C5,C5,S5,false,4,7,3,func-added func-signature startup-only-changed type-added,220,220,29
+gotify,c172590b92b1,7e261be3046b,2021-08-04,pigpig,false,Add registration,10,C0 C1 C2 C5,C5,S5,false,6,12,3,file-test func-added func-body startup-only-changed struct-field-added,215,220,29
+gotify,3364f1a9fe78,9abe803cf89e,2021-06-19,Jannis Mattheis,false,Update go deps,0,C0 C4,C4,S5,false,0,8,7,dep-removed dep-version file-gosum,215,215,30
+gotify,11aac90be43f,93b421fdcf7d,2021-04-16,Jannis Mattheis,false,Remove serviceWorker,1,C5,C5,S5,false,1,1,1,startup-only-changed,215,215,31
+gotify,93b421fdcf7d,dc24471fe8c6,2021-04-16,Jannis Mattheis,false,Update lib/pq,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,215,215,28
+gotify,dc24471fe8c6,1183313f144c,2021-04-16,Jannis Mattheis,false,Update sqlite,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,215,215,29
+gotify,1183313f144c,6c50f8287c5d,2021-04-16,Jannis Mattheis,false,Update stretchr/testify,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,215,215,28
+gotify,3454dcd60226,44e441a8c566,2020-11-01,Jannis Mattheis,false,Use golangci-lint,44,C0 C1 C2 C5,C5,S5,false,8,28,5,file-test func-body func-signature long-running-caller startup-only-changed,216,215,29
+gotify,1a3ad1d706c6,4b12b5884607,2020-10-05,Jannis Mattheis,false,Downgrade packr because of build errors,0,C0 C4,C4,S5,false,0,11,10,dep-added dep-removed dep-version file-gosum,216,216,28
+gotify,dd8664623426,de226ce0cf18,2020-09-12,Jannis Mattheis,false,Update go deps,0,C0 C4,C4,S5,false,0,23,22,dep-added dep-removed dep-version file-gosum,216,216,28
+gotify,de226ce0cf18,909eeff406fa,2020-09-10,Jannis Mattheis,false,Make ws ping interval configurable,2,C2 C5,C5,S5,false,1,2,2,startup-only-changed struct-field-retyped,216,216,29
+gotify,909eeff406fa,7993d0eef8a8,2020-09-10,Jannis Mattheis,false,Make keepalive period configurable,3,C0 C1 C2 C5,C5,S5,false,2,5,2,file-test func-added import-added startup-only-changed struct-field-retyped,216,216,29
+gotify,923030cf443b,307e61474bfd,2020-08-20,Richard Szolár,false,"Update ""github.com/go-yaml/yaml"" import path to ""gopkg.in/yaml.v2"" as recommended per the project's documentation",3,C0 C2 C4,C4,S5,false,0,5,2,dep-added dep-removed file-gosum file-test import-added,216,216,30
+gotify,307e61474bfd,d45e0da6a891,2020-07-18,Jannis Mattheis,false,Update gotify/configor,0,C0 C4,C4,S5,false,0,3,2,dep-removed dep-version file-gosum,216,216,30
+gotify,d45e0da6a891,757fa17d263b,2020-07-01,Jannis Mattheis,false,Allow delete for > uint32 ids,1,C1,C1,S6,true,1,2,0,func-body import-added,216,216,29
+gotify,757fa17d263b,348f96b89138,2020-06-24,Jannis Mattheis,false,Use int64 as input,5,C0,C0,none,true,0,0,0,,216,216,29
+gotify,a9249bbd28e3,92a468bf74f2,2020-06-23,Jannis Mattheis,false,Don't use id provided from POST /message api,2,C0 C1,C1,S6,true,1,2,0,file-test func-body,216,216,29
+gotify,92a468bf74f2,52efbbccebfa,2020-06-01,Jannis Mattheis,false,Fix packets.go:36: unexpected EOF,1,C1,C1,S6,true,1,1,0,func-body,216,216,30
+gotify,93b30c5c441b,7523ad0d2e33,2020-05-10,Stewart Thomson,false,Allows browser extensions in cors (#317),2,C0 C5,C5,S5,false,1,2,1,file-test startup-only-changed,216,216,28
+gotify,7523ad0d2e33,e1a6847c8443,2020-05-09,Jannis Mattheis,false,Use response header if cors config is empty,3,C0 C2 C5,C5,S5,false,2,4,1,file-test func-added startup-only-changed,216,216,29
+gotify,97876c5a2b83,a8b7a5fde029,2020-05-08,Jannis Mattheis,false,Update go 1.14.2,0,C4,C4,S5,false,0,1,1,gomod-go,216,216,27
+gotify,a8b7a5fde029,41c28e93856d,2020-05-08,Jannis Mattheis,false,Update mattn/go-sqlite3,0,C0 C4,C4,S5,false,0,2,1,dep-added file-gosum,216,216,29
+gotify,41c28e93856d,808ad482d2a3,2020-05-08,Jannis Mattheis,false,Remove apache thrift replace directive,0,C4,C4,S5,false,0,1,1,dep-replace,216,216,29
+gotify,808ad482d2a3,33bc7051f845,2020-05-08,Jannis Mattheis,false,Update lib/pq,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,216,216,30
+gotify,33bc7051f845,1629a66c143b,2020-05-08,Jannis Mattheis,false,Update x/crypto,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,216,216,29
+gotify,1629a66c143b,ca233dd8b5dd,2020-05-08,Jannis Mattheis,false,Update stretchr/testify,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,216,216,28
+gotify,ca233dd8b5dd,415dd862f82e,2020-05-08,Jannis Mattheis,false,Update gin-gonic,1,C0 C2 C4,C4,S5,false,2,13,10,dep-added dep-removed dep-version file-gosum func-signature import-added,216,216,29
+gotify,7b90b8a8f527,75c63bdf3948,2020-05-08,Jannis Mattheis,false,Use v2 in package path,67,C0 C2 C4 C5,C5,S5,false,293,92,14,file-test gomod-module goroutine-structure package-added package-removed,216,216,29
+gotify,3f04d50088c8,d22326bba8ed,2020-04-26,Stewart Thomson,false,Allow multiple CORS origins,6,C0 C2 C4 C5,C5,S5,false,3,10,3,dep-added file-gosum file-test func-added import-added startup-only-changed struct-field-retyped,213,216,29
+gotify,66ae74f830bc,0863aba9cb33,2020-03-14,Jannis Mattheis,false,Skip /etc/gotify/config.yml in tests,2,C0 C2 C5,C5,S5,false,2,3,1,file-test func-added startup-only-changed,213,213,28
+gotify,0863aba9cb33,e9c9a6e261d7,2020-03-07,Jannis Mattheis,false,Update packr/v2,3,C0 C1 C2 C4 C5,C5,S5,false,3,17,12,dep-added dep-removed dep-version file-gosum func-body import-added package-added startup-only-changed var-added var-init,212,213,28
+gotify,0a8fc47e5092,b2b56e09af0e,2020-01-18,Jannis Mattheis,false,Reduce ping interval,1,C5,C5,S5,false,1,1,1,startup-only-changed,212,212,28
+gotify,0a7a5cd61928,c9c6246c4cd1,2019-11-28,Jannis Mattheis,false,Add logging to websocket errors,1,C1 C2 C5,C5,S5,false,3,3,1,func-added func-body long-running-changed,211,212,29
+gotify,670594c0cb94,db1b703e1a3d,2019-11-28,Jannis Mattheis,false,Update gin-gonic/gin,1,C0 C2 C4,C4,S5,false,2,12,9,dep-added dep-removed dep-version file-gosum func-signature import-added,211,211,28
+gotify,db1b703e1a3d,7f1047b606e8,2019-11-28,Jannis Mattheis,false,Update h2non/filetype,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,211,211,29
+gotify,7f1047b606e8,5816a2686e90,2019-11-28,Jannis Mattheis,false,Update stretchr/testify,0,C0 C4,C4,S5,false,0,3,2,dep-added dep-version file-gosum,211,211,28
+gotify,5816a2686e90,98da88c0f86c,2019-11-28,Jannis Mattheis,false,Update crypto library,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,211,211,28
+gotify,98da88c0f86c,dc741493b4c5,2019-11-28,Jannis Mattheis,false,Gorm v1.9.11,0,C0 C4,C4,S5,false,0,11,10,dep-removed dep-version file-gosum,211,211,28
+gotify,179f51f38746,956c089abbb2,2019-09-28,Jannis Mattheis,false,Update go -> 1.13.1,0,C4,C4,S5,false,0,1,1,gomod-go,211,211,28
+gotify,ede9cd61d9d5,e60ee06a7eb3,2019-09-04,Jannis Mattheis,false,[#214] Replace thrift dep from apache.org with github repo,0,C0 C4,C4,S5,false,0,2,1,dep-replace file-gosum,211,211,28
+gotify,2b85b0bb8205,81c4a73df38c,2019-08-16,Jannis Mattheis,false,Update pq driver because Ping() wasn't implemented in v1.0,0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,211,211,29
+gotify,81c4a73df38c,ad157a138b49,2019-08-16,Jannis Mattheis,false,Add health api,6,C0 C1 C2 C5,C5,S5,false,3,11,1,const-added file-test func-added startup-only-changed type-added,210,211,28
+gotify,44f4ff31cb77,11e0a4b0dfab,2019-06-27,Noa Amran,false,Fix typos,5,C0,C0,none,true,0,0,0,,210,210,28
+gotify,11e0a4b0dfab,05a1aa26510f,2019-06-11,饺子w,false,Fix blob inconsistency in mysql (#196),1,C1 C2,C2,S6,true,2,2,0,func-added func-body,209,210,27
+gotify,67493c643eb6,11165faa068b,2019-05-25,饺子w,false,Return 500 server error on database failures (#191),30,C0 C1 C2 C5,C5,S5,false,79,101,13,file-test func-added func-body func-signature interface-changed startup-only-changed type-changed,182,209,27
+gotify,11165faa068b,909fb80d48f0,2019-05-05,饺子w,false,fixed plugin storage update during enable|disable (#188),1,C1,C1,S6,true,1,1,0,func-body,182,182,27
+frontend,232c9b67f711,1f89fa37a187,2026-09-17,Mend Renovate,true,Update golang (#3524),0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum gomod-toolchain,631,631,73
+frontend,53d081c91b72,66ef382efc79,2026-09-03,Mend Renovate,true,Update golang (#3495),0,C0 C4,C4,S5,false,0,18,17,dep-version file-gosum gomod-toolchain,631,631,24
+frontend,6a8dd7b17da9,c9df1ae138ec,2026-08-24,Mend Renovate,true,Update golang (#3484),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum gomod-toolchain,631,631,25
+frontend,16babe62c984,829ba2497d88,2026-08-11,Mend Renovate,true,Update golang (#3445),0,C0 C4,C4,S5,false,0,21,20,dep-version file-gosum gomod-toolchain,631,631,23
+frontend,ec527589ab42,b1716297d5bc,2026-07-08,Mend Renovate,true,fix(deps): update golang (#3327),0,C0 C4,C4,S5,false,0,31,30,dep-version file-gosum gomod-toolchain,631,631,24
+frontend,5b3eeea790d0,b3a12eea02fb,2026-04-23,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/otel/sdk to v1.43.0 [security] (#3315),0,C0 C4,C4,S5,false,0,6,5,dep-version file-gosum,631,631,26
+frontend,c9857ee54fba,48edfe9780a9,2026-03-24,dependabot[bot],true,chore(deps): bump google.golang.org/grpc in /src/frontend (#3285),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,631,631,25
+frontend,ef47406b067a,a1e09279d649,2026-03-16,Mend Renovate,true,fix(deps): update golang (#3257),0,C0 C4,C4,S5,false,0,20,19,dep-version file-gosum gomod-go gomod-toolchain,631,631,24
+frontend,71da54132c0b,d2e49c784d1d,2026-01-26,Mend Renovate,true,fix(deps): update golang (#3226),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum gomod-toolchain,631,631,25
+frontend,958bf3dc45fb,1d43e0b4b8c6,2026-01-05,Mend Renovate,true,fix(deps): update golang (#3204),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,631,631,25
+frontend,108609de9a98,375181028928,2025-12-29,Mend Renovate,true,fix(deps): update golang (#3194),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum,631,631,24
+frontend,ca9a7a623155,005109903cac,2025-12-16,Mend Renovate,true,fix(deps): update golang (#3179),0,C0 C4,C4,S5,false,0,14,13,dep-added dep-version file-gosum gomod-toolchain,631,631,25
+frontend,0434be5e7e97,18f3b732934a,2025-12-01,Mathieu Benoit,false,Bump container base images to fix CVEs (#3160),2,C0 C1 C2 C4 C5,C5,S5,false,2,47,44,dep-added dep-removed dep-version file-gosum func-body gomod-go gomod-toolchain import-added main-changed startup-only-changed,632,631,25
+frontend,895c9f20cd0c,ae44d79888e7,2025-09-23,dependabot[bot],true,chore(deps): bump golang.org/x/net in /src/frontend (#3103),0,C0 C4,C4,S5,false,0,6,5,dep-version file-gosum,632,632,24
+frontend,6167f318745b,6cd32ea482e0,2025-08-04,dependabot[bot],true,chore(deps): bump golang.org/x/oauth2 in /src/frontend (#3029),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum gomod-go,632,632,25
+frontend,96974455411e,a20677b20bd8,2025-03-31,Mend Renovate,true,fix(deps): update golang (#2939),0,C0 C4,C4,S5,false,0,20,19,dep-version file-gosum,632,632,24
+frontend,350d6e601145,9181ac044c94,2025-02-24,Mend Renovate,true,fix(deps): update golang (#2914),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,632,632,25
+frontend,e2b48f8c9f44,ebb10905f060,2025-02-10,Mend Renovate,true,fix(deps): update module google.golang.org/protobuf to v1.36.5 (#2900),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,632,632,23
+frontend,c47b10117d62,782f8b9d1511,2025-02-03,Mend Renovate,true,fix(deps): update golang (#2881),0,C0 C4,C4,S5,false,0,15,14,dep-version file-gosum,632,632,25
+frontend,aa72311d3d1d,0665faca90ea,2025-01-21,Mend Renovate,true,fix(deps): update golang (#2866),0,C0 C4,C4,S5,false,0,8,7,dep-version file-gosum,632,632,26
+frontend,e4988128e9ff,42acdc44e5ee,2024-12-30,Mend Renovate,true,fix(deps): update golang (#2847),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,632,632,26
+frontend,c3f3899b09e7,7c430c03ead7,2024-12-28,Mend Renovate,true,fix(deps): update golang (#2835),0,C0 C4,C4,S5,false,0,22,21,dep-added dep-version file-gosum,632,632,26
+frontend,a39c88dd1002,603d9e586c97,2024-12-17,Mend Renovate,true,fix(deps): update golang (#2825),0,C0 C4,C4,S5,false,0,16,15,dep-version file-gosum,632,632,26
+frontend,b8bfd8a8307c,3bca590e4447,2024-11-25,Mend Renovate,true,fix(deps): update golang (#2809),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,632,632,24
+frontend,df811c00d0ff,c7907aac5f3b,2024-11-18,Mend Renovate,true,fix(deps): update golang (#2804),0,C0 C4,C4,S5,false,0,16,15,dep-version file-gosum,632,632,25
+frontend,e952edb0a3df,a7effe79a8b4,2024-10-28,Mend Renovate,true,fix(deps): update golang (#2766),0,C0 C4,C4,S5,false,0,17,16,dep-version file-gosum,632,632,24
+frontend,9286f07d4b28,a1bf45eb098c,2024-10-01,Mend Renovate,true,fix(deps): update golang (#2752),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,632,632,25
+frontend,0f74eb5621b1,2790b06887e0,2024-09-16,Mend Renovate,true,fix(deps): update golang (#2737),0,C0 C4,C4,S5,false,0,13,12,dep-version file-gosum,632,632,24
+frontend,a8a96b6bfcb6,9ea5f4dfc9fc,2024-09-15,Mend Renovate,true,fix(deps): update golang (#2730),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,632,632,24
+frontend,ca90f3537cea,43947d7d2828,2024-09-05,Robert Pająk,false,Bump dependencies in Go services (#2716),2,C0 C1 C2 C4 C5,C5,S5,false,286,646,113,const-added dep-removed dep-version file-gosum func-added func-body func-removed func-signature gomod-go import-added init-changed interface-changed struct-field-added struct-field-removed struct-field-retyped type-added var-added var-removed,418,632,37
+frontend,b94b2732b3d4,4a223799590d,2024-09-02,Mend Renovate,true,fix(deps): update golang (#2708),0,C0 C4,C4,S5,false,0,14,13,dep-version file-gosum,418,418,19
+frontend,7300611e8625,d68e4ddb0cc6,2024-08-19,Mend Renovate,true,chore(deps): update golang (#2681),0,C0 C4,C4,S5,false,0,6,5,dep-version file-gosum,418,418,21
+frontend,a66a3a010c39,484a8e9ae739,2024-07-22,Mend Renovate,true,fix(deps): update golang (#2641),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,418,418,19
+frontend,7ac4a1e0af2e,d4f6ce817f7f,2024-07-22,Zadkiel AHARONIAN,false,feat: add support for baseUrl (#2609),2,C1 C2 C5,C5,S5,false,5,8,2,func-body main-changed var-added var-init,418,418,19
+frontend,d4f6ce817f7f,87363c231a64,2024-07-15,Mend Renovate,true,chore(deps): update golang (#2630),0,C0 C4,C4,S5,false,0,17,16,dep-version file-gosum,418,418,19
+frontend,5100ad15892e,d84a65b46ff5,2024-07-08,Mend Renovate,true,fix(deps): update golang (#2626),0,C0 C4,C4,S5,false,0,15,14,dep-added dep-version file-gosum,418,418,19
+frontend,bfe9047805bc,d76055cb44d4,2024-06-24,Mend Renovate,true,fix(deps): update golang (#2606),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,418,418,20
+frontend,9f77f3eb77e9,e446caf13c6a,2024-06-17,Mend Renovate,true,chore(deps): update golang (#2591),0,C0 C4,C4,S5,false,0,6,5,dep-version file-gosum,418,418,20
+frontend,09d54cf6c914,f891d8a03778,2024-06-10,Mend Renovate,true,fix(deps): update module github.com/go-playground/validator/v10 to v10.21.0 (#2585),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,418,418,20
+frontend,fe507b42f762,9ef5d9afeb47,2024-06-03,Mend Renovate,true,fix(deps): update golang (#2571),0,C0 C4,C4,S5,false,0,14,13,dep-version file-gosum,418,418,20
+frontend,40473ccd17ac,a7194e4697e4,2024-05-27,Mend Renovate,true,fix(deps): update golang (#2566),0,C0 C4,C4,S5,false,0,8,7,dep-version file-gosum,418,418,20
+frontend,2d10da3ff445,196051fbbb8f,2024-05-13,Mend Renovate,true,chore(deps): update golang (#2551),0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,418,418,19
+frontend,afde23471a2b,0d680ea55030,2024-05-12,Mend Renovate,true,fix(deps): update golang (#2544),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,418,418,20
+frontend,5fea71c222ec,e364d0da629f,2024-05-06,Mend Renovate,true,fix(deps): update golang (#2525),0,C0 C4,C4,S5,false,0,11,10,dep-version file-gosum,418,418,20
+frontend,652c2942605c,4f9c5b07a56b,2024-04-21,Mend Renovate,true,fix(deps): update golang (#2500),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,418,418,20
+frontend,90b81cca772e,a80fbd63546d,2024-04-17,Mend Renovate,true,fix(deps): update golang (#2481),0,C0 C4,C4,S5,false,0,20,19,dep-version file-gosum,418,418,20
+frontend,f1cfac111d00,1f0b9be2d7a1,2024-04-12,Olivier Bourgeois,false,Refactor common default templating payload in frontend (#2473),1,C1 C2,C2,S6,true,7,7,0,func-added func-body,418,418,20
+frontend,2932624cdb5f,84f0ad9cce34,2024-04-08,Olivier Bourgeois,false,"Add ShoppingAssistant, and AlloyDB support to ProductCatalog (#2466)",2,C1 C2 C4 C5,C5,S5,false,8,13,3,func-added func-body gomod-go import-added main-changed struct-field-added var-added,411,418,21
+frontend,986245932399,8c0353bc0aff,2024-03-25,Emmanuel Idika,false,feat: Implement validation for HTTP FormValue(s) in frontend microser… (#2438),3,C0 C1 C2 C4,C4,S5,false,8,12,5,dep-added file-gosum file-test func-body import-added package-added,408,411,20
+frontend,3d04ae983774,e2a1ab45de91,2024-03-15,Mend Renovate,true,fix(deps): update golang (#2413),0,C0 C4,C4,S5,false,0,6,5,dep-version file-gosum,408,408,19
+frontend,eeb1e0e30acb,72bf26a80dbd,2024-03-15,dependabot[bot],true,chore(deps): bump google.golang.org/protobuf in /src/frontend (#2419),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,19
+frontend,be061ac1a9ae,b4a535cd9eb9,2024-02-26,Mend Renovate,true,fix(deps): update golang (#2394),0,C0 C4,C4,S5,false,0,18,17,dep-added dep-version file-gosum,408,408,19
+frontend,d1f64efd58c6,d743829392c7,2024-02-19,Mend Renovate,true,fix(deps): update module google.golang.org/grpc to v1.61.1 (#2383),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,18
+frontend,6debd6aa2723,06f8f318c778,2024-02-11,Mend Renovate,true,fix(deps): update golang (#2376),0,C0 C4,C4,S5,false,0,19,18,dep-version file-gosum,408,408,19
+frontend,b71632c33b2a,7c8b244d162d,2024-01-29,Mend Renovate,true,fix(deps): update golang (#2358),0,C0 C4,C4,S5,false,0,13,12,dep-version file-gosum,408,408,19
+frontend,8f4e06dc4813,a09fd00b14ed,2024-01-22,Mend Renovate,true,fix(deps): update golang (#2348),0,C0 C4,C4,S5,false,0,11,10,dep-version file-gosum,408,408,18
+frontend,44cd06197530,ad474d936dd7,2024-01-22,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.20.0 (#2346),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,20
+frontend,b9fa554350db,71e18a8770e5,2023-12-28,Mend Renovate,true,fix(deps): update golang (#2315),0,C0 C4,C4,S5,false,0,10,9,dep-version file-gosum,408,408,18
+frontend,b49ba5b85cd0,8d5996cb2858,2023-12-19,dependabot[bot],true,chore(deps): bump golang.org/x/crypto in /src/frontend (#2312),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,19
+frontend,6b38a1979117,5e8a2b776930,2023-12-13,Nim Jayawardena,false,feat: Add support for packaging service (#2275),2,C1 C2 C5,C5,S5,false,3,8,1,func-added func-body import-added init-changed type-added var-added,408,408,19
+frontend,f5a4deb34dfa,1046ac9c08dd,2023-12-11,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.19.0 (#2293),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,18
+frontend,b9f2f779fb83,dfe9a23a3fdd,2023-12-04,Mend Renovate,true,fix(deps): update golang (#2280),0,C0 C4,C4,S5,false,0,9,8,dep-version file-gosum,408,408,19
+frontend,1a7bf05d3ed8,fc51ae667bea,2023-11-20,dependabot[bot],true,chore(deps): bump go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc (#2249),0,C0 C4,C4,S5,false,0,3,2,dep-removed dep-version file-gosum,408,408,19
+frontend,f419d1997f8c,1ec44cd1e094,2023-11-20,Mend Renovate,true,fix(deps): update golang (#2271),0,C0 C4,C4,S5,false,0,15,14,dep-version file-gosum,408,408,20
+frontend,1bcdc6aa8eb3,6aab49d818e3,2023-11-13,Mend Renovate,true,fix(deps): update golang (#2259),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,408,408,20
+frontend,baf6d8057826,ef4da9ef7ec6,2023-11-01,Mend Renovate,true,fix(deps): update golang (#2237),0,C0 C4,C4,S5,false,0,13,12,dep-version file-gosum,408,408,19
+frontend,6bd984f99925,4e315bf45e00,2023-10-17,Mend Renovate,true,fix(deps): update module google.golang.org/grpc to v1.58.3 (#2216),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,18
+frontend,c94ec047c528,41604d839476,2023-10-12,dependabot[bot],true,chore(deps): bump golang.org/x/net in /src/frontend (#2198),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,19
+frontend,0e6f7e074eac,669d3bba00a3,2023-10-06,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp to v0.45.0 (#2178),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,18
+frontend,669d3bba00a3,be7f66703637,2023-10-06,Mend Renovate,true,fix(deps): update opentelemetry-go monorepo to v1.19.0 (#2179),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,18
+frontend,be7f66703637,57fafe6a3d18,2023-10-06,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc to v0.45.0 (#2177),0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,408,408,18
+frontend,c210856f7106,18c5d54027a1,2023-09-29,Mend Renovate,true,fix(deps): update module google.golang.org/grpc to v1.58.2 (#2152),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,18
+frontend,dc992e328428,4dfbfc35ad13,2023-09-25,Mend Renovate,true,fix(deps): update opentelemetry-go monorepo to v1.18.0 (#2133),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,18
+frontend,b475c61980b2,92c661be860e,2023-09-21,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp to v0.44.0 (#2132),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,19
+frontend,92c661be860e,5310766cdf32,2023-09-21,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc to v0.44.0 (#2130),0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,408,408,18
+frontend,5310766cdf32,6d2e8e52f82c,2023-09-21,Mend Renovate,true,fix(deps): update module google.golang.org/grpc to v1.58.1 (#2129),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,18
+frontend,99cdf3ce1016,88589ec1ea4d,2023-09-07,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.15.0 (#2095),0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,408,408,19
+frontend,269325671482,abc7348259e8,2023-09-07,Mend Renovate,true,fix(deps): update module google.golang.org/grpc to v1.58.0 (#2096),0,C0 C4,C4,S5,false,0,13,12,dep-added dep-version file-gosum,408,408,18
+frontend,101acfe5ad11,b728d4ebbf52,2023-09-03,Mend Renovate,true,fix(deps): update opentelemetry-go monorepo to v1.17.0 (#2073),0,C0 C4,C4,S5,false,0,11,10,dep-removed dep-version file-gosum,408,408,19
+frontend,12802486af88,78b1791be5bc,2023-09-02,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc to v0.43.0 (#2071),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,20
+frontend,07271bd6cc96,5e64023ae593,2023-09-03,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp to v0.43.0 (#2072),0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,408,408,19
+frontend,d398a172b4f8,1c4852d5713c,2023-08-28,Mend Renovate,true,fix(deps): update module github.com/google/uuid to v1.3.1 (#2059),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,19
+frontend,a147957a4087,5d030c4641d9,2023-08-10,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.14.0 (#2024),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,19
+frontend,135b6184d792,802e66d0a6ee,2023-08-02,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.13.0 (#1988),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,18
+frontend,35d7181e7418,2b2735658a01,2023-07-27,Mend Renovate,true,fix(deps): update module google.golang.org/grpc to v1.57.0 (#1976),0,C0 C4,C4,S5,false,0,6,5,dep-added dep-version file-gosum,408,408,18
+frontend,01ab364b3dc5,33d3e178ecfd,2023-07-17,Drew Brown,false,fix(deps): update module google.golang.org/grpc to v1.56.2 (#1945),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum,408,408,18
+frontend,393e73b918e7,819ab924fe09,2023-07-14,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.12.0 (#1939),0,C0 C4,C4,S5,false,0,5,4,dep-removed dep-version file-gosum,408,408,18
+frontend,84036811baa5,d8698de64c30,2023-07-14,Drew Brown,false,chore: Upgrade open telemetry go dependencies (#1937),0,C0 C4,C4,S5,false,0,11,10,dep-added dep-version file-gosum,408,408,18
+frontend,44692fa618ea,34c313c35b97,2023-06-06,Mend Renovate,true,fix(deps): update module github.com/sirupsen/logrus to v1.9.3 (#1829),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,18
+frontend,fb4ed6d032aa,f75cbeb6a5a1,2023-05-19,Mend Renovate,true,fix(deps): update module google.golang.org/grpc to v1.55.0 (#1789),0,C0 C4,C4,S5,false,0,8,7,dep-version file-gosum,408,408,19
+frontend,f75cbeb6a5a1,f1593f514055,2023-05-19,Mend Renovate,true,fix(deps): update module github.com/sirupsen/logrus to v1.9.2 (#1788),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,18
+frontend,7fb2b4df2170,70dd6ae6fa48,2023-05-18,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.10.0 (#1781),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,408,408,20
+frontend,03e209e9e79a,ab1ce4471ed2,2023-05-17,Nim Jayawardena,false,Implement FRONTEND_MESSAGE env var (#1773),1,C1 C2,C2,S6,true,5,6,0,func-body var-added,408,408,18
+frontend,ef44e4130205,de6185bfa78d,2023-05-17,Mend Renovate,true,fix(deps): update module github.com/sirupsen/logrus to v1.9.1 (#1765),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,18
+frontend,bf4e1e310733,291ccb403d04,2023-05-16,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp to v0.41.1 (#1761),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,19
+frontend,291ccb403d04,8050adc48964,2023-05-16,Mend Renovate,true,fix(deps): update opentelemetry-go monorepo to v1.15.1 (#1762),0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,408,408,18
+frontend,d430cb945327,f1a5f267c4fc,2023-05-16,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc to v0.41.1 (#1758),0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,408,408,20
+frontend,8eb01bc24b6e,499ca011f09a,2023-05-02,Olivier Bourgeois,false,Bump opentel go to 0.41 (#1743),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,21
+frontend,63d5ce0ef8ac,dd030e282135,2023-05-01,Mend Renovate,true,fix(deps): update opentelemetry-go monorepo to v1.15.0 (#1731),0,C0 C4,C4,S5,false,0,10,9,dep-version file-gosum,408,408,19
+frontend,fa517d686ee6,eefd89d66c30,2023-04-11,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.9.0 (#1686),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,19
+frontend,677ba6ec4145,8d530178f362,2023-03-30,Mend Renovate,true,fix(deps): update module google.golang.org/grpc to v1.54.0 (#1656),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,21
+frontend,32c61e21dec8,8f34fec4480d,2023-03-30,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.8.0 (#1655),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,20
+frontend,b1b3d184a240,49041d850d95,2023-03-08,Mend Renovate,true,fix(deps): update module github.com/golang/protobuf to v1.5.3 (#1597),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,19
+frontend,fcfad0f9c6c9,e5b31bf6d3a9,2023-03-07,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp to v0.40.0 (#1588),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,408,408,19
+frontend,983c9050a9ef,b941cb2d4774,2023-03-07,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc to v0.40.0 (#1587),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,408,408,18
+frontend,5eb7dc95bd36,1bbbff78bf18,2023-03-06,Mend Renovate,true,fix(deps): update opentelemetry-go monorepo to v1.14.0 (#1585),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum,408,408,20
+frontend,7dc5a358d626,7fe0003a75f7,2023-02-24,Olivier Bourgeois,false,Bump Go opentel to 0.39 (#1558),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,19
+frontend,8149fda133d5,24b6591c1ca1,2023-02-23,Mend Renovate,true,fix(deps): update opentelemetry-go monorepo to v1.13.0 (#1540),0,C0 C4,C4,S5,false,0,7,6,dep-version file-gosum,408,408,19
+frontend,c1d3ec728009,c0b9a2563a31,2023-02-22,Mend Renovate,true,fix(deps): update module google.golang.org/grpc to v1.53.0 (#1539),0,C0 C4,C4,S5,false,0,6,5,dep-version file-gosum,408,408,19
+frontend,0344b92deefc,ab1fa9cbe161,2023-02-17,dependabot[bot],true,chore(deps): bump golang.org/x/net from 0.4.0 to 0.7.0 in /src/frontend (#1498),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,408,408,20
+frontend,1c8abe204b55,4ef588fc669a,2023-01-18,Drew Brown,false,Propagate trace context always (#1345),1,C5,C5,S5,false,2,3,3,main-changed startup-only-changed,410,408,20
+frontend,0b57c016bfb3,cb2fd0fcccaf,2022-12-19,Mend Renovate,true,fix(deps): update module cloud.google.com/go/compute/metadata to v0.2.3 (#1418),0,C0 C4,C4,S5,false,0,6,5,dep-version file-gosum,410,410,20
+frontend,6acd856de31e,dd658be7ef64,2022-12-08,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.4.0 (#1381),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,410,410,21
+frontend,142e4ec0352a,61c019bc1eb7,2022-12-08,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc to v0.37.0 (#1364),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,410,410,19
+frontend,d239190d40a7,f125f4a41fc3,2022-12-06,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.3.0 (#1365),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,410,410,20
+frontend,9e58b1e28e3e,d50171f6ce3b,2022-12-06,Mend Renovate,true,fix(deps): update module go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp to v0.37.0 (#1358),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,410,410,19
+frontend,d50171f6ce3b,7fbbe038fb6d,2022-12-05,Mend Renovate,true,fix(deps): update opentelemetry-go monorepo to v1.11.2 (#1355),0,C0 C4,C4,S5,false,0,8,7,dep-version file-gosum,410,410,19
+frontend,ea480e6f2cc7,34dc6fa379be,2022-12-05,Mend Renovate,true,fix(deps): update module cloud.google.com/go/profiler to v0.3.1 (#1352),0,C0 C4,C4,S5,false,0,6,5,dep-version file-gosum,410,410,19
+frontend,229e3b0b05ce,cd44b80fa56e,2022-12-02,Mend Renovate,true,fix(deps): update module cloud.google.com/go/compute/metadata to v0.2.2 (#1342),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,410,410,18
+frontend,dfc78b9310d0,919b08870b67,2022-12-01,Aryeh Katz,false,Make recommendation service optional (#1332),1,C1,C1,S6,true,2,2,0,func-body,412,410,18
+frontend,d82800f60edc,56c654c80811,2022-11-18,Mend Renovate,true,fix(deps): update module google.golang.org/grpc to v1.51.0 (#1276),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,412,412,19
+frontend,18f5db096978,f9c3475774ee,2022-11-08,Mend Renovate,true,fix(deps): update module golang.org/x/net to v0.2.0 (#1259),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,412,412,19
+frontend,b5347231e8ca,71161ce9473d,2022-11-07,Mend Renovate,true,fix(deps): update opentelemetry-go monorepo (#1238),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,412,412,18
+frontend,577eeb38c8c2,f452516b1c21,2022-11-04,Drew Brown,false,feat!: Add distributed tracing to Online Boutique (#1180),1,C0 C2 C4 C5,C5,S5,false,2,9,6,dep-added dep-version file-gosum import-added main-changed startup-only-changed,402,412,19
+frontend,ba2675354894,fe14c3cb65f4,2022-11-02,WhiteSource Renovate,true,fix(deps): update opentelemetry-go monorepo (#1226),0,C0 C4,C4,S5,false,0,9,8,dep-version file-gosum,402,402,18
+frontend,fe14c3cb65f4,a0d87b11e87c,2022-11-01,Drew Brown,false,feat!: Add OpenTelemetry Collector (#1167),1,C0 C2 C4 C5,C5,S5,false,2,24,18,dep-added file-gosum func-signature import-added long-running-caller main-changed startup-only-changed struct-field-added,392,402,18
+frontend,11512db29cc8,b89397bdc1d3,2022-10-31,WhiteSource Renovate,true,fix(deps): update module cloud.google.com/go/compute/metadata to v0.2.1 (#1218),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,392,392,20
+frontend,b89397bdc1d3,865127ea4601,2022-10-28,WhiteSource Renovate,true,fix(deps): update module cloud.google.com/go/compute to v1.12.1 (#1214),0,C0 C4,C4,S5,false,0,3,2,dep-added dep-version file-gosum,392,392,18
+frontend,56b15ef98f9b,2b228365e76b,2022-10-26,WhiteSource Renovate,true,fix(deps): update module cloud.google.com/go/compute to v1.11.0 (#1209),0,C0 C4,C4,S5,false,0,8,7,dep-version file-gosum,392,392,18
+frontend,e5947e062070,1405bd5cb588,2022-10-20,WhiteSource Renovate,true,fix(deps): update module golang.org/x/net to v0.1.0 (#1190),0,C0 C4,C4,S5,false,0,4,3,dep-version file-gosum,392,392,18
+frontend,8214fcd4734c,5945f5e08b16,2022-10-19,Nim Jayawardena,false,Include is_cymbal_brand var in renderHTTPError (#1186),1,C1,C1,S6,true,1,1,0,func-body,392,392,18
+frontend,21f35a943d9a,4b375ec003fe,2022-10-19,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to cb67ada (#1188),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,392,392,18
+frontend,c1cb7faa3a86,a07c6a1fc665,2022-10-18,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to f25eb7e (#1175),0,C0 C4,C4,S5,false,0,3,2,dep-version file-gosum,392,392,18
+frontend,a6e93d192236,e18ac338df9a,2022-10-17,WhiteSource Renovate,true,fix(deps): update module google.golang.org/grpc to v1.50.1 (#1173),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,392,392,19
+frontend,9d4ee4b42e71,a811b95955f9,2022-10-17,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to f15817d (#1169),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,392,392,18
+frontend,3d4863476881,ae3992d1f579,2022-10-13,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to 0b7e1fb (#1156),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,392,392,18
+frontend,5fccdac98561,05836a0648b0,2022-10-07,WhiteSource Renovate,true,fix(deps): update module google.golang.org/grpc to v1.50.0 (#1144),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,392,392,17
+frontend,a2407b8ad2ca,1077f6db062c,2022-10-04,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to 8021a29 (#1139),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,392,392,18
+frontend,7df483b625af,3b2431b6b6c7,2022-10-03,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to bcab684 (#1125),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,392,392,19
+frontend,3a52d2c27d53,73be08d0314f,2022-10-01,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to 107f3e3 (#1123),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,392,392,19
+frontend,9d8bb356aea2,d7570689b213,2022-09-29,Drew Brown,false,chore: Remove OpenCensus (#1088),1,C0 C2 C4 C5,C5,S5,false,3,18,14,dep-removed file-gosum func-removed func-signature main-changed startup-only-changed,415,392,19
+frontend,665b2c461fa1,1bcfbb6e3d09,2022-09-27,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to f486391 (#1103),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,415,415,19
+frontend,fc305b465957,c4e24e7fcdd6,2022-09-26,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to 02166a9 (#1098),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,415,415,21
+frontend,921c780f4bfb,9462b928d765,2022-09-22,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to d300de1 (#1082),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,415,415,20
+frontend,3011745aaa3c,734feca34ffe,2022-09-20,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to d0c6ba3 (#1073),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,415,415,20
+frontend,223cb70b5faf,9be0fde0d38f,2022-09-15,WhiteSource Renovate,true,fix(deps): update module cloud.google.com/go/compute to v1.10.0 (#1062),0,C0 C4,C4,S5,false,0,5,4,dep-version file-gosum,415,415,21
+frontend,45199a858ca9,67a73926a086,2022-09-09,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to bea034e (#1040),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,415,415,19
+frontend,27400d2fe54d,4977be57b584,2022-09-08,WhiteSource Renovate,true,fix(deps): update golang.org/x/net digest to 1e95f45 (#1033),0,C0 C4,C4,S5,false,0,2,1,dep-version file-gosum,415,415,19
+frontend,c04cf77a7550,60d35d42a285,2022-09-02,Mathieu Benoit,false,Allow to have a unique `user-id` across sessions (#1023),1,C5,C5,S5,false,1,1,1,startup-only-changed,415,415,20
+frontend,3b06f7ad2f76,10e8f3ed5175,2022-09-02,Mathieu Benoit,false,`golang` 1.19.0 (#1022),0,C0 C4,C4,S5,false,0,7,6,dep-removed file-gosum gomod-go,415,415,19

@@ -1,0 +1,60 @@
+{
+  "tool": "dimpclass/1",
+  "old": "testdata/cases/c5-startup-wiring/old",
+  "new": "testdata/cases/c5-startup-wiring/new",
+  "module": "example.com/c5-startup-wiring",
+  "classes": [
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (1): example.com/c5-startup-wiring.routes: start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: example.com/c5-startup-wiring.main",
+      "1 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "example.com/c5-startup-wiring.routes",
+      "reason": "body changed",
+      "file": "main.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 1,
+  "inline_sensitive_callers": [
+    "example.com/c5-startup-wiring.main"
+  ],
+  "findings": [
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "example.com/c5-startup-wiring.routes",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (10 -\u003e 19 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    }
+  ],
+  "stats": {
+    "old_packages": 1,
+    "new_packages": 1,
+    "old_funcs": 3,
+    "new_funcs": 3,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 1,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "tool": "dimpclass/1",
+  "old": "chi@7957c0d4ddae",
+  "new": "chi@67be7d9cafda",
+  "module": "github.com/go-chi/chi/v5",
+  "classes": [
+    "C0",
+    "C1",
+    "C2"
+  ],
+  "dominant_class": "C2",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (github.com/go-chi/chi/v5/middleware.WrapResponseWriter: interface method set changed (itabs and type assertions are compiled in); github.com/go-chi/chi/v5/middleware.basicWriter: layout of compiled-in type basicWriter changed (1 functions use it); S6 replaces functions, not types); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (2): github.com/go-chi/chi/v5/middleware.WrapResponseWriter: interface method set changed (itabs and type assertions are compiled in); github.com/go-chi/chi/v5/middleware.basicWriter: layout of compiled-in type basicWriter changed (1 functions use it); S6 replaces functions, not types"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "changed functions are small enough to be inlined; with S6 slot trampolines the call still dispatches through the slot, but raw binary patching (internal/livepatch) must also patch the inlining callers: github.com/go-chi/chi/v5/middleware.basicWriter.maybeWriteHeader",
+      "no patched function has a context.Context parameter: S6 gives per-call (not per-request) consistency, so one request may mix old and new versions of the 3 functions"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.basicWriter.Discard",
+      "reason": "added",
+      "file": "middleware/wrap_writer.go",
+      "ctx_param": false,
+      "inlinable": true
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.basicWriter.Write",
+      "reason": "body changed",
+      "file": "middleware/wrap_writer.go",
+      "ctx_param": false
+    },
+    {
+      "symbol": "github.com/go-chi/chi/v5/middleware.basicWriter.WriteHeader",
+      "reason": "body changed",
+      "file": "middleware/wrap_writer.go",
+      "ctx_param": false,
+      "inlinable": true
+    }
+  ],
+  "patch_set_size": 3,
+  "inline_sensitive_callers": [
+    "github.com/go-chi/chi/v5/middleware.basicWriter.maybeWriteHeader"
+  ],
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-test",
+      "symbol": "middleware/wrap_writer_test.go",
+      "detail": "modified"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5/middleware.basicWriter.Write",
+      "detail": "body changed (66 -\u003e 109 tokens)"
+    },
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/go-chi/chi/v5/middleware.basicWriter.WriteHeader",
+      "detail": "body changed (29 -\u003e 36 tokens)"
+    },
+    {
+      "class": "C2",
+      "kind": "interface-changed",
+      "symbol": "github.com/go-chi/chi/v5/middleware.WrapResponseWriter",
+      "detail": "+Discard()",
+      "s6_blocker": "interface method set changed (itabs and type assertions are compiled in)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/go-chi/chi/v5/middleware.basicWriter",
+      "detail": "discard bool [not state]",
+      "s6_blocker": "layout of compiled-in type basicWriter changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-added",
+      "symbol": "github.com/go-chi/chi/v5/middleware.basicWriter.Discard",
+      "detail": "(*basicWriter)func()"
+    }
+  ],
+  "stats": {
+    "old_packages": 2,
+    "new_packages": 2,
+    "old_funcs": 168,
+    "new_funcs": 169,
+    "old_type_errors": 0,
+    "new_type_errors": 0,
+    "changed_funcs": 3,
+    "changed_types": 2,
+    "changed_globals": 0
+  }
+}

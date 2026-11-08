@@ -1,0 +1,54 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@f77d404bba6f",
+  "new": "gotify@4bc42d2c1d7e",
+  "module": "github.com/gotify/server/v2",
+  "classes": [
+    "C1"
+  ],
+  "dominant_class": "C1",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "the change is interface-level but not S6-patchable (github.com/gotify/server/v2/api/stream.uniq: generic function (hotpatchgen skips generic instances)); state schema is unchanged, so S5 with identity transfer is the cheapest safe choice",
+      "S6 blockers (1): github.com/gotify/server/v2/api/stream.uniq: generic function (hotpatchgen skips generic instances)"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "type information is partial (224/224 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/gotify/server/v2/api/stream.uniq",
+      "reason": "body changed",
+      "file": "api/stream/stream.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 1,
+  "findings": [
+    {
+      "class": "C1",
+      "kind": "func-body",
+      "symbol": "github.com/gotify/server/v2/api/stream.uniq",
+      "detail": "body changed (59 -\u003e 81 tokens)",
+      "s6_blocker": "generic function (hotpatchgen skips generic instances)"
+    }
+  ],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 310,
+    "new_funcs": 310,
+    "old_type_errors": 224,
+    "new_type_errors": 224,
+    "changed_funcs": 1,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}

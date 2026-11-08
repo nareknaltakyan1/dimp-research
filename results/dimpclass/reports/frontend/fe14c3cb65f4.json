@@ -1,0 +1,222 @@
+{
+  "tool": "dimpclass/1",
+  "old": "frontend@a0d87b11e87c",
+  "new": "frontend@fe14c3cb65f4",
+  "module": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend",
+  "classes": [
+    "C0",
+    "C2",
+    "C4",
+    "C5"
+  ],
+  "dominant_class": "C5",
+  "recommendation": {
+    "mechanism": "S5",
+    "in_process": false,
+    "summary": "S5 FD-passing process handoff with identity state transfer (new binary).",
+    "justification": [
+      "dependency/toolchain/runtime/native/embedded change needs a new binary; S5 keeps the listening socket and transfers state unchanged (state schema identical)",
+      "goroutine-structure, long-running or start-up code changed: in-process patching would leave old code running in goroutines that never return; a new process starts the new goroutine structure, and the old one is drained and exits",
+      "S6 blockers (18): github.com/cenkalti/backoff/v4: dependency graph changed; github.com/felixge/httpsnoop: dependency graph changed; github.com/go-logr/logr: dependency graph changed; github.com/go-logr/stdr: dependency graph changed; github.com/grpc-ecosystem/grpc-gateway/v2: dependency graph changed; ... and 13 more"
+    ],
+    "alternatives": [
+      "Kubernetes rolling update (loses in-memory state, needs surge capacity)"
+    ],
+    "risks": [
+      "1 of 2 patched functions have no context.Context parameter: they get per-call, not per-request, version consistency under S6",
+      "2 patched functions are in package main; a Go plugin cannot import package main, so hotpatchgen must relocate them into an importable package",
+      "type information is partial (392/402 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds",
+      "quiescence: old activations of main(), init-started or long-running goroutines never return, so the old process is retired by exit, not by draining; set a drain deadline in the S5 upgrader"
+    ]
+  },
+  "patch_set": [
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.initTracing",
+      "reason": "signature changed",
+      "file": "main.go",
+      "ctx_param": true
+    },
+    {
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.main",
+      "reason": "calls initTracing whose signature changed",
+      "file": "main.go",
+      "ctx_param": false
+    }
+  ],
+  "patch_set_size": 2,
+  "findings": [
+    {
+      "class": "C0",
+      "kind": "file-gosum",
+      "symbol": "go.sum",
+      "detail": "modified (checksums only; the build list is determined by go.mod)"
+    },
+    {
+      "class": "C2",
+      "kind": "struct-field-added",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.frontendServer",
+      "detail": "collectorAddr string; collectorConn *google.golang.org/grpc.ClientConn [not state]",
+      "s6_blocker": "layout of compiled-in type frontendServer changed (1 functions use it); S6 replaces functions, not types"
+    },
+    {
+      "class": "C2",
+      "kind": "func-signature",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.initTracing",
+      "detail": "func(github.com/sirupsen/logrus.FieldLogger) -\u003e func(github.com/sirupsen/logrus.FieldLogger, context.Context, *frontendServer) (*go.opentelemetry.io/otel/sdk/trace.TracerProvider, error)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp",
+      "detail": "first import in github.com/GoogleCloudPlatform/microservices-demo/src/frontend (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "go.opentelemetry.io/otel",
+      "detail": "first import in github.com/GoogleCloudPlatform/microservices-demo/src/frontend (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc",
+      "detail": "first import in github.com/GoogleCloudPlatform/microservices-demo/src/frontend (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C2",
+      "kind": "import-added",
+      "symbol": "go.opentelemetry.io/otel/sdk/trace",
+      "detail": "first import in github.com/GoogleCloudPlatform/microservices-demo/src/frontend (newly linked package; its init() runs when the patch is loaded)"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/cenkalti/backoff/v4",
+      "detail": "v4.1.3 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/felixge/httpsnoop",
+      "detail": "v1.0.3 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-logr/logr",
+      "detail": "v1.2.3 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/go-logr/stdr",
+      "detail": "v1.2.2 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "github.com/grpc-ecosystem/grpc-gateway/v2",
+      "detail": "v2.7.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp",
+      "detail": "v0.36.3",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/otel",
+      "detail": "v1.11.0",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/otel/exporters/otlp/internal/retry",
+      "detail": "v1.11.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/otel/exporters/otlp/otlptrace",
+      "detail": "v1.11.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc",
+      "detail": "v1.11.0",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/otel/metric",
+      "detail": "v0.32.3 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/otel/sdk",
+      "detail": "v1.11.0",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/otel/trace",
+      "detail": "v1.11.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C4",
+      "kind": "dep-added",
+      "symbol": "go.opentelemetry.io/proto/otlp",
+      "detail": "v0.19.0 (indirect)",
+      "s6_blocker": "dependency graph changed"
+    },
+    {
+      "class": "C5",
+      "kind": "startup-only-changed",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.initTracing",
+      "detail": "only called (directly) from start-up code main()/init(); body changed (2 -\u003e 96 tokens)",
+      "s6_blocker": "start-up-only code already ran; its effect is baked into the live state, so patching it changes nothing"
+    },
+    {
+      "class": "C5",
+      "kind": "long-running-caller",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.main",
+      "detail": "calls initTracing whose signature changed; caller is calls blocking server loop ListenAndServe()",
+      "s6_blocker": "caller in the call-graph closure never returns"
+    },
+    {
+      "class": "C5",
+      "kind": "main-changed",
+      "symbol": "github.com/GoogleCloudPlatform/microservices-demo/src/frontend.main",
+      "detail": "body changed (692 -\u003e 736 tokens)",
+      "s6_blocker": "main() runs once at start-up (never re-executed / never returns)"
+    }
+  ],
+  "stats": {
+    "old_packages": 3,
+    "new_packages": 3,
+    "old_funcs": 455,
+    "new_funcs": 455,
+    "old_type_errors": 392,
+    "new_type_errors": 402,
+    "changed_funcs": 2,
+    "changed_types": 1,
+    "changed_globals": 0
+  }
+}

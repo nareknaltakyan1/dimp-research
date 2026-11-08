@@ -1,0 +1,35 @@
+{
+  "tool": "dimpclass/1",
+  "old": "gotify@11e0a4b0dfab",
+  "new": "gotify@44f4ff31cb77",
+  "module": "github.com/gotify/server",
+  "classes": [
+    "C0"
+  ],
+  "dominant_class": "C0",
+  "recommendation": {
+    "mechanism": "none",
+    "in_process": true,
+    "summary": "No runtime code change: nothing to patch.",
+    "justification": [
+      "the canonical token streams of all built Go sources are identical; only tests, comments, formatting or non-compiled files changed"
+    ],
+    "risks": [
+      "type information is partial (210/210 type errors old/new; third-party packages are opaque): call-graph and state reachability are lower bounds"
+    ]
+  },
+  "patch_set": [],
+  "patch_set_size": 0,
+  "findings": [],
+  "stats": {
+    "old_packages": 27,
+    "new_packages": 27,
+    "old_funcs": 286,
+    "new_funcs": 286,
+    "old_type_errors": 210,
+    "new_type_errors": 210,
+    "changed_funcs": 0,
+    "changed_types": 0,
+    "changed_globals": 0
+  }
+}
