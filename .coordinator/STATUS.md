@@ -33,10 +33,10 @@ NOTE 2026-11-08 05:37: S6, S7 and S8 were cut off by the 5h usage limit (reset 0
 ## Wave 3
 DISPATCHED 06:00: experiment runner (sole Docker user; owns bench.env, scripts, results, docs/results.md) + read-only code reviewer.
 DONE: README, paper ideas 9-12 (transactional patch sets, update-class MSR study, Shutdown loss, in-process canary).
-- [ ] Run the full experiment matrix ONLY when no other agent uses Docker (noisy-neighbour warning).
+- [x] Matrix DONE+committed (311 runs, docs/results.md). Was: Run the full experiment matrix ONLY when no other agent uses Docker (noisy-neighbour warning).
       Needs per-solution cmd/<sol>/bench.env (SERVER_ARGS, TRIGGER, FAIL_TARGET) + build.sh; contract gaps:
       E5 needs upgrade back to v1 (alternate v1/v2), E6 needs a per-solution failure target (default to=v2-broken).
       Run (E1-E6) for B0, B1(kind), S1-S7 in Docker; results/ plus plots
-- [~] Code review DONE -> .coordinator/review-2026-11-08.md (2 high, 7 medium). FIX AFTER the matrix finishes (dispatch fixer agents by area: S7/operator/canary/signing; handoff S5; patchable+hotswap), then re-run E1+E6 for s5/s7 and correct the docs
+- [~] FIXERS DISPATCHED 09:30 (F1 S7/operator/canary/signing; F2 handoff S4/S5 + keep-alive loss root cause + re-runs -> results/handoff-fix/; F3 patchable/hotswap/S6/S2 build.sh + CONTRACT drain_timeout). After: update docs/results.md + README with fixed numbers, final report. Code review DONE -> .coordinator/review-2026-11-08.md (2 high, 7 medium). FIX AFTER the matrix finishes (dispatch fixer agents by area: S7/operator/canary/signing; handoff S5; patchable+hotswap), then re-run E1+E6 for s5/s7 and correct the docs
 - [ ] Lead: README, results chapter docs/results.md, paper draft outline paper/, update paper-ideas with real numbers
 - [ ] Commit and push after each wave; final report to the user
