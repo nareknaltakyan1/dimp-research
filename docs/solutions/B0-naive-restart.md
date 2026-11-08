@@ -47,6 +47,18 @@ there is no socket bound to the port, so the kernel answers SYNs with RST
 In `hard` mode the drain time is ~0 but in-flight requests are cut. Without
 `-state-file` the counter restarts at 0, producing duplicate counts.
 
+**Deliberately left on stdlib `Shutdown` (2026-11-08 handoff fix).**
+`-mode=graceful` drains with `http.Server.Shutdown`. Like
+`SetKeepAlivesEnabled(false)`, `Shutdown` calls `closeIdleConns` and closes
+every idle keep-alive connection at once, so B0 also has the HTTP/1.1
+idle-close race that caused the S4/S5 E2 losses. The keep-alive-safe drain
+added to `internal/handoff/drain.go` (`Connection: close` on every response,
+plus a grace period before idle connections are closed) is a method on the
+S4/S5 `handoff.Server`. B0 uses its own `http.Server`, so the drain is not
+shared code here. B0 is meant to be the naive baseline, and naive code calls
+`Shutdown`, so B0 keeps it. The extra losses this adds are small next to B0's
+refused-connection window (see `docs/results.md`).
+
 ## State transfer
 
 Only via a file written after the old process stopped serving (`-state-file`).

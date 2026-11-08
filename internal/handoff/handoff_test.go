@@ -182,8 +182,11 @@ func get(t *testing.T, addr, path string) apiResp {
 }
 
 // newOld starts a "fresh" server in-process (no signal loop).
-func newOld(t *testing.T, mode Mode, ctl string) *Server {
-	s := NewServer(Config{Mode: mode, Addr: "127.0.0.1:0", CtlSock: ctl, Version: "v1", ReadyTimeout: 3 * time.Second, DrainTimeout: 3 * time.Second})
+func newOld(t *testing.T, mode Mode, ctl string) *Server { return newOldGrace(t, mode, ctl, 0) }
+
+// newOldGrace is newOld with an explicit Config.IdleGrace (0 = default).
+func newOldGrace(t *testing.T, mode Mode, ctl string, grace time.Duration) *Server {
+	s := NewServer(Config{Mode: mode, Addr: "127.0.0.1:0", CtlSock: ctl, Version: "v1", ReadyTimeout: 3 * time.Second, DrainTimeout: 3 * time.Second, IdleGrace: grace})
 	if err := s.listenFresh(); err != nil {
 		t.Fatal(err)
 	}

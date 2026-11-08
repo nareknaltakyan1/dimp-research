@@ -422,3 +422,37 @@ CSVs of E1, E3 and E6; RSS series of E5; the campaign log) is in
 `results/raw/_smoke/` and the earlier harness-validation runs in
 `results/raw/_validation/` (their summaries: `results/validation/`); neither
 enters the tables above.
+
+## 8. Post-review fixes and re-runs (2026-11-08)
+
+A code review ([.coordinator/review-2026-11-08.md](../.coordinator/review-2026-11-08.md))
+and the campaign's own S4/S5 finding led to fixes. The tables above stay as measured at
+`464cd1f`; this section reports what changed afterwards.
+
+**S4/S5 keep-alive loss: fixed.** The 137 failures on reused keep-alive connections
+(section 4, RQ1) came from the old process closing idle connections at the seal
+(`SetKeepAlivesEnabled(false)` → `closeIdleConns()`, the RFC 9112 §9.5 race). The
+drain now sends `Connection: close` and gives idle connections a 1 s grace. After the fix, the
+re-run of every S4, S4+migrate and S5 cell in E1, E2, E4-ka and E6 (5 reps each) gave **0 failed
+requests in 70 runs (6.38 M requests)**, compared with 37/58/42 errors in E2 before. The cost is +4-9 ms
+median upgrade duration. Details: [results/handoff-fix/summary.md](../results/handoff-fix/summary.md).
+With this fix, S1, S2, S3, S6 and S7 had zero failed requests in every campaign experiment,
+and S4/S5 had zero in every re-run cell. **S4 E5** (50 repeated upgrades, 1-2 errors per run
+in the campaign) was **not** re-run and is still open. Among the baselines, k8s-preStop had 1
+error in 5 runs.
+
+**S1, S2, S3, S6: behaviour unchanged after the safety fixes** (stale-context pin
+invalidation, unload-safe rollback, `drain_timeout` event, S6 signed-manifest replay
+protection, admin auth, stripe hash). A re-run of E1 and E6 (3 reps each) gave 0 errors,
+0 state anomalies and successful rollback for all four. The stripe-hash fix lowered S6's
+multi-core trampoline cost to 1.5-7.8 ns on macOS.
+
+**S7: security fixes, demo re-run** ([results/s7-demo/run2-20261108-fixes/](../results/s7-demo/)).
+- Good patch: 0 failed of 7,515 requests, with 0 restarts.
+- Buggy patch: caught in shadow and rolled back fleet-wide in 1.14 s.
+- Replay of an older validly signed patch after a restart: rejected by the persisted high-water mark.
+- Unauthenticated admin calls: rejected with 401 in 8 of 8 cases.
+
+**Analysis caveat.** `bench/analysis/analyze.py` does not yet count the new
+`drain_timeout` event separately. In the campaign, S1-S3 drain timeouts in E3 were still
+emitted as `upgrade_failed`. Re-check the E3 "upgrade completed" counts before citing them.

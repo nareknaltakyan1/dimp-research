@@ -16,7 +16,8 @@ const (
 	MsgOffer    = "offer"    // old -> new: listener fd(s) attached (fd-pass mode)
 	MsgPrepared = "prepared" // new -> old: I hold a listener and am initialised
 	MsgState    = "state"    // old -> new: old stopped accepting; here is the state
-	MsgReady    = "ready"    // new -> old: I am serving and passed self-check
+	MsgReady    = "ready"    // new -> old: I hold listener + state and passed self-check; NOT serving yet
+	MsgCommit   = "commit"   // old -> new: point of no return; start serving (old will not roll back)
 	MsgAbort    = "abort"    // either side: give up
 )
 

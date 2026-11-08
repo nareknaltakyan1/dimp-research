@@ -250,24 +250,40 @@ long-running loops.
 **Venues:** MSR (Mining Software Repositories), ICSME, EMSE journal.
 **Fit:** an excellent, low-risk first paper for the student.
 
-### Idea 11. Graceful Is Not Lossless: Request Loss in Go's http.Server.Shutdown and SO_REUSEPORT Handoffs
+### Idea 11. Graceful Is Not Lossless: Request Loss in Go's http.Server.Shutdown and Process Handoffs
 
-**Evidence:** S4/S5 ([docs/solutions/S5-fd-passing.md](solutions/S5-fd-passing.md)).
-Draining with `http.Server.Shutdown` closes connections that were accepted but whose
-request has not yet been read, producing 1-8 EOF errors in about half of 15 S5 runs. A
-connection-tracking drain removed them (0 errors in all runs). `SO_REUSEPORT` handoff
-resets queued connections unless `net.ipv4.tcp_migrate_req=1` (0/5 runs with errors
-with the setting vs. 5/5 runs with 10-18 resets each under an induced accept stall).
+**Evidence:** S4/S5 ([docs/solutions/S5-fd-passing.md](solutions/S5-fd-passing.md), section
+"Keep-alive close race"; [results/handoff-fix/summary.md](../results/handoff-fix/summary.md)).
+Two independent loss mechanisms were found and fixed:
 
-**RQ.** Do the "graceful" shutdown primitives of mainstream server stacks actually
-guarantee zero request loss during upgrades, and under which conditions do they fail?
+1. *Accepted-but-unread connections.* `http.Server.Shutdown` closes connections that
+   were accepted but whose request has not yet been read. This gave 1-8 EOFs in about half of 15
+   early S5 runs, and a connection-tracking drain removed them.
+2. *Keep-alive idle-close race (the main result).* At 21k req/s the full campaign lost
+   137 requests across S4/S5 runs, all on **reused keep-alive connections**, 9-12 ms after
+   the trigger. Root cause: `SetKeepAlivesEnabled(false)` (and `Shutdown`) call
+   `closeIdleConns()`, which closes connections a client has just sent a request on
+   (RFC 9112 §9.5). `tcp_migrate_req` does not help, since it covers only unaccepted
+   connections. The fix: never close at the seal, send `Connection: close` (RFC 9112
+   §9.6) on every response during the drain, and give idle connections a 1 s grace. After
+   the fix: **0 failed requests in 70 runs (6.38 M requests)**, against 137 before, at a cost of
+   +4-9 ms in median upgrade time.
 
-**Contributions:** a reproducible loss characterisation and root-cause analysis in the
-Go stdlib; a fix (connection-tracking drain); measured effect of the kernel's
-`tcp_migrate_req`; extension to other runtimes (Node, Java/Netty, Envoy) as future work.
-**Venues:** an experience/industry track (Middleware Industry, SoCC, USENIX ;login:), or a
-short paper; also a Go issue / upstream patch.
-**Fit:** a fast, high-impact short paper.
+A default Go client would have hidden every one of these losses: it retries idempotent
+requests on reused connections automatically. Our load generator disables retry, which matches
+non-idempotent traffic (RFC 9110 §9.2.2), so "zero downtime" claims measured with
+retrying clients can overstate safety.
+
+**RQ.** Do the "graceful" shutdown primitives of mainstream server stacks guarantee zero
+request loss during upgrades? Under which load and connection-reuse conditions do they fail,
+and does client retry mask the losses?
+
+**Contributions:** characterisation and root cause in the Go stdlib; a drain protocol
+that eliminates the loss on our testbed; quantified masking by client retry; the effect
+of `tcp_migrate_req`; extension to Envoy, Node, Java/Netty and nginx as future work; an
+upstream Go issue or patch.
+**Venues:** short paper or experience track (Middleware Industry, SoCC, ICPE, USENIX ;login:).
+**Fit:** fast, high impact, and fully reproducible with this repository.
 
 ### Idea 12. In-Process Progressive Delivery: Shadow-Then-Commit Canaries Inside a Single Pod (extends Idea 4 + 6 with results)
 

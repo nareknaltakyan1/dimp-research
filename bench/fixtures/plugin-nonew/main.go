@@ -6,3 +6,6 @@ package main
 
 // Version is the logical version this (broken) plugin would report.
 var Version = "v2-broken"
+
+// main is never run (plugins ignore it); it only lets `go build ./...` succeed.
+func main() {}

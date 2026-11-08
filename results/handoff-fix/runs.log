@@ -1,0 +1,284 @@
+[06:39:13] >>> s4-reuseport E1 (containers running: 0)
+[build] s4-reuseport
+[run] fix-s4-reuseport E1 rep 1/5 -> results/raw/fix-s4-reuseport/E1-fix-20261108T063916Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=274.667µs p99=757.507µs max=11.837918ms wall_step_ns=298653
+[run] fix-s4-reuseport E1 rep 2/5 -> results/raw/fix-s4-reuseport/E1-fix-20261108T063916Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=288.842µs p99=697.21µs max=2.917258ms wall_step_ns=-19014
+[run] fix-s4-reuseport E1 rep 3/5 -> results/raw/fix-s4-reuseport/E1-fix-20261108T063916Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=114.172µs p99=1.714625ms max=7.145002ms wall_step_ns=-1
+[run] fix-s4-reuseport E1 rep 4/5 -> results/raw/fix-s4-reuseport/E1-fix-20261108T063916Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=137.381µs p99=1.711339ms max=7.424464ms wall_step_ns=296528
+[run] fix-s4-reuseport E1 rep 5/5 -> results/raw/fix-s4-reuseport/E1-fix-20261108T063916Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=274.045µs p99=1.021463ms max=4.380506ms wall_step_ns=-451889
+[done] results in results/raw/fix-s4-reuseport/
+[06:41:02] >>> s4-reuseport+migrate E1 (containers running: 0)
+[build] s4-reuseport
+[run] fix-s4-reuseport+migrate E1 rep 1/5 -> results/raw/fix-s4-reuseport+migrate/E1-fix-20261108T064104Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=267.042µs p99=925.715µs max=10.428377ms wall_step_ns=-89847
+[run] fix-s4-reuseport+migrate E1 rep 2/5 -> results/raw/fix-s4-reuseport+migrate/E1-fix-20261108T064104Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=156.216µs p99=1.152503ms max=4.523337ms wall_step_ns=-84
+[run] fix-s4-reuseport+migrate E1 rep 3/5 -> results/raw/fix-s4-reuseport+migrate/E1-fix-20261108T064104Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=358.592µs p99=997.84µs max=10.515715ms wall_step_ns=-215598
+[run] fix-s4-reuseport+migrate E1 rep 4/5 -> results/raw/fix-s4-reuseport+migrate/E1-fix-20261108T064104Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=283.92µs p99=887.257µs max=5.519877ms wall_step_ns=367404
+[run] fix-s4-reuseport+migrate E1 rep 5/5 -> results/raw/fix-s4-reuseport+migrate/E1-fix-20261108T064104Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=139.501µs p99=643.71µs max=2.190799ms wall_step_ns=83
+[done] results in results/raw/fix-s4-reuseport+migrate/
+[06:42:51] >>> s5-fdpass E1 (containers running: 1)
+WARNING: 1 other container(s) running on this Docker host; measurements may be perturbed (recorded in metadata).
+[build] s5-fdpass
+[run] fix-s5-fdpass E1 rep 1/5 -> results/raw/fix-s5-fdpass/E1-fix-20261108T064252Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=196.509µs p99=885.25µs max=10.472917ms wall_step_ns=42
+[run] fix-s5-fdpass E1 rep 2/5 -> results/raw/fix-s5-fdpass/E1-fix-20261108T064252Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=99.506µs p99=403.417µs max=4.380625ms wall_step_ns=195111
+[run] fix-s5-fdpass E1 rep 3/5 -> results/raw/fix-s5-fdpass/E1-fix-20261108T064252Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=111.377µs p99=550.709µs max=5.543882ms wall_step_ns=-207222
+[run] fix-s5-fdpass E1 rep 4/5 -> results/raw/fix-s5-fdpass/E1-fix-20261108T064252Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=184.926µs p99=665.674µs max=11.245296ms wall_step_ns=0
+[run] fix-s5-fdpass E1 rep 5/5 -> results/raw/fix-s5-fdpass/E1-fix-20261108T064252Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=182.292µs p99=860.043µs max=6.488336ms wall_step_ns=409320
+[done] results in results/raw/fix-s5-fdpass/
+[06:44:39] >>> s4-reuseport E4-ka (containers running: 1)
+WARNING: 1 other container(s) running on this Docker host; measurements may be perturbed (recorded in metadata).
+[build] s4-reuseport
+[run] fix-s4-reuseport E4-ka rep 1/5 -> results/raw/fix-s4-reuseport/E4-ka-fix-20261108T064441Z-r1
+loadgen: sent=10000 classes=map[none:10000] p50=79.835µs p99=100.129335ms max=102.050962ms wall_step_ns=20612
+[run] fix-s4-reuseport E4-ka rep 2/5 -> results/raw/fix-s4-reuseport/E4-ka-fix-20261108T064441Z-r2
+loadgen: sent=10000 classes=map[none:10000] p50=79.63µs p99=100.151169ms max=102.411759ms wall_step_ns=42612
+[run] fix-s4-reuseport E4-ka rep 3/5 -> results/raw/fix-s4-reuseport/E4-ka-fix-20261108T064441Z-r3
+loadgen: sent=10000 classes=map[none:10000] p50=78.087µs p99=100.190337ms max=102.651759ms wall_step_ns=0
+[run] fix-s4-reuseport E4-ka rep 4/5 -> results/raw/fix-s4-reuseport/E4-ka-fix-20261108T064441Z-r4
+loadgen: sent=10000 classes=map[none:10000] p50=76.049µs p99=100.180542ms max=102.198172ms wall_step_ns=59987
+[run] fix-s4-reuseport E4-ka rep 5/5 -> results/raw/fix-s4-reuseport/E4-ka-fix-20261108T064441Z-r5
+loadgen: sent=10000 classes=map[none:10000] p50=85.253µs p99=100.175668ms max=102.402508ms wall_step_ns=-21054
+[done] results in results/raw/fix-s4-reuseport/
+[06:46:28] >>> s4-reuseport+migrate E4-ka (containers running: 1)
+WARNING: 1 other container(s) running on this Docker host; measurements may be perturbed (recorded in metadata).
+[build] s4-reuseport
+[run] fix-s4-reuseport+migrate E4-ka rep 1/5 -> results/raw/fix-s4-reuseport+migrate/E4-ka-fix-20261108T064629Z-r1
+loadgen: sent=10000 classes=map[none:10000] p50=82.458µs p99=100.143626ms max=102.095255ms wall_step_ns=-42
+[run] fix-s4-reuseport+migrate E4-ka rep 2/5 -> results/raw/fix-s4-reuseport+migrate/E4-ka-fix-20261108T064629Z-r2
+loadgen: sent=10000 classes=map[none:10000] p50=86.085µs p99=100.188882ms max=102.675299ms wall_step_ns=-334
+[run] fix-s4-reuseport+migrate E4-ka rep 3/5 -> results/raw/fix-s4-reuseport+migrate/E4-ka-fix-20261108T064629Z-r3
+loadgen: sent=10000 classes=map[none:10000] p50=93.462µs p99=101.703383ms max=114.767507ms wall_step_ns=454195
+[run] fix-s4-reuseport+migrate E4-ka rep 4/5 -> results/raw/fix-s4-reuseport+migrate/E4-ka-fix-20261108T064629Z-r4
+loadgen: sent=10000 classes=map[none:10000] p50=122.341µs p99=101.409421ms max=110.478839ms wall_step_ns=-13181
+[run] fix-s4-reuseport+migrate E4-ka rep 5/5 -> results/raw/fix-s4-reuseport+migrate/E4-ka-fix-20261108T064629Z-r5
+loadgen: sent=10000 classes=map[none:10000] p50=80.009µs p99=100.125543ms max=102.51934ms wall_step_ns=0
+[done] results in results/raw/fix-s4-reuseport+migrate/
+[06:48:16] >>> s5-fdpass E4-ka (containers running: 2)
+WARNING: 2 other container(s) running on this Docker host; measurements may be perturbed (recorded in metadata).
+[build] s5-fdpass
+[run] fix-s5-fdpass E4-ka rep 1/5 -> results/raw/fix-s5-fdpass/E4-ka-fix-20261108T064818Z-r1
+loadgen: sent=10000 classes=map[none:10000] p50=82.709µs p99=100.135173ms max=102.181712ms wall_step_ns=25987
+[run] fix-s5-fdpass E4-ka rep 2/5 -> results/raw/fix-s5-fdpass/E4-ka-fix-20261108T064818Z-r2
+loadgen: sent=10000 classes=map[none:10000] p50=85.835µs p99=100.177168ms max=104.084839ms wall_step_ns=51486
+[run] fix-s5-fdpass E4-ka rep 3/5 -> results/raw/fix-s5-fdpass/E4-ka-fix-20261108T064818Z-r3
+loadgen: sent=10000 classes=map[none:10000] p50=79.796µs p99=100.161049ms max=104.203008ms wall_step_ns=-376180
+[run] fix-s5-fdpass E4-ka rep 4/5 -> results/raw/fix-s5-fdpass/E4-ka-fix-20261108T064818Z-r4
+loadgen: sent=10000 classes=map[none:10000] p50=83.673µs p99=100.165252ms max=102.195503ms wall_step_ns=41
+[run] fix-s5-fdpass E4-ka rep 5/5 -> results/raw/fix-s5-fdpass/E4-ka-fix-20261108T064818Z-r5
+loadgen: sent=10000 classes=map[none:10000] p50=79.213µs p99=100.139544ms max=101.854837ms wall_step_ns=403862
+[done] results in results/raw/fix-s5-fdpass/
+[06:50:05] >>> s4-reuseport E2 (containers running: 1)
+WARNING: 1 other container(s) running on this Docker host; measurements may be perturbed (recorded in metadata).
+[build] s4-reuseport
+[run] fix-s4-reuseport E2 rep 1/5 -> results/raw/fix-s4-reuseport/E2-fix-20261108T065007Z-r1
+loadgen: sent=420000 classes=map[none:420000] p50=55.856µs p99=716.178µs max=3.304844ms wall_step_ns=-744388
+[run] fix-s4-reuseport E2 rep 2/5 -> results/raw/fix-s4-reuseport/E2-fix-20261108T065007Z-r2
+loadgen: sent=420000 classes=map[none:420000] p50=58.432µs p99=1.870166ms max=35.907668ms wall_step_ns=-208
+[run] fix-s4-reuseport E2 rep 3/5 -> results/raw/fix-s4-reuseport/E2-fix-20261108T065007Z-r3
+loadgen: sent=420000 classes=map[none:420000] p50=56.699µs p99=938.207µs max=5.854597ms wall_step_ns=-168
+[run] fix-s4-reuseport E2 rep 4/5 -> results/raw/fix-s4-reuseport/E2-fix-20261108T065007Z-r4
+loadgen: sent=420000 classes=map[none:420000] p50=53.59µs p99=770.576µs max=3.218441ms wall_step_ns=-245472
+[run] fix-s4-reuseport E2 rep 5/5 -> results/raw/fix-s4-reuseport/E2-fix-20261108T065007Z-r5
+loadgen: sent=420000 classes=map[none:420000] p50=53.151µs p99=87.147609ms max=267.344614ms wall_step_ns=200236
+[done] results in results/raw/fix-s4-reuseport/
+[06:51:55] >>> s4-reuseport+migrate E2 (containers running: 1)
+WARNING: 1 other container(s) running on this Docker host; measurements may be perturbed (recorded in metadata).
+[build] s4-reuseport
+[run] fix-s4-reuseport+migrate E2 rep 1/5 -> results/raw/fix-s4-reuseport+migrate/E2-fix-20261108T065157Z-r1
+loadgen: sent=420000 classes=map[none:420000] p50=70.089µs p99=374.707682ms max=525.063098ms wall_step_ns=-375
+[run] fix-s4-reuseport+migrate E2 rep 2/5 -> results/raw/fix-s4-reuseport+migrate/E2-fix-20261108T065157Z-r2
+loadgen: sent=420000 classes=map[none:420000] p50=164.695441ms p99=2.049931871s max=2.192121431s wall_step_ns=-834
+[run] fix-s4-reuseport+migrate E2 rep 3/5 -> results/raw/fix-s4-reuseport+migrate/E2-fix-20261108T065157Z-r3
+loadgen: sent=420000 classes=map[none:420000] p50=377.426µs p99=241.523011ms max=711.936422ms wall_step_ns=4623686319
+[run] fix-s4-reuseport+migrate E2 rep 4/5 -> results/raw/fix-s4-reuseport+migrate/E2-fix-20261108T065157Z-r4
+loadgen: sent=420000 classes=map[none:420000] p50=167.482µs p99=454.595627ms max=577.552382ms wall_step_ns=344935212319
+[run] fix-s4-reuseport+migrate E2 rep 5/5 -> results/raw/fix-s4-reuseport+migrate/E2-fix-20261108T065157Z-r5
+loadgen: sent=420000 classes=map[none:420000] p50=211.694µs p99=847.695955ms max=1.154082437s wall_step_ns=-541
+[done] results in results/raw/fix-s4-reuseport+migrate/
+[07:02:37] >>> s5-fdpass E2 (containers running: 0)
+[build] s5-fdpass
+[run] fix-s5-fdpass E2 rep 1/5 -> results/raw/fix-s5-fdpass/E2-fix-20261108T070240Z-r1
+loadgen: sent=420000 classes=map[none:420000] p50=59.366µs p99=110.065062ms max=241.730259ms wall_step_ns=-542
+[run] fix-s5-fdpass E2 rep 2/5 -> results/raw/fix-s5-fdpass/E2-fix-20261108T070240Z-r2
+loadgen: sent=420000 classes=map[none:420000] p50=57.549µs p99=183.412696ms max=330.118031ms wall_step_ns=4907916702236
+[run] fix-s5-fdpass E2 rep 3/5 -> results/raw/fix-s5-fdpass/E2-fix-20261108T070240Z-r3
+loadgen: sent=420000 classes=map[none:420000] p50=113.258µs p99=1.175576557s max=1.399465336s wall_step_ns=2601266440861
+[run] fix-s5-fdpass E2 rep 4/5 -> results/raw/fix-s5-fdpass/E2-fix-20261108T070240Z-r4
+loadgen: sent=420000 classes=map[none:420000] p50=58.326µs p99=1.792447ms max=50.328006ms wall_step_ns=41
+[run] fix-s5-fdpass E2 rep 5/5 -> results/raw/fix-s5-fdpass/E2-fix-20261108T070240Z-r5
+loadgen: sent=420000 classes=map[none:420000] p50=56.422µs p99=161.719246ms max=278.421353ms wall_step_ns=1635194
+[done] results in results/raw/fix-s5-fdpass/
+[09:53:09] >>> s4-reuseport E6 (containers running: 0)
+[build] s4-reuseport
+[run] fix-s4-reuseport E6 rep 1/5 -> results/raw/fix-s4-reuseport/E6-fix-20261108T090942Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=299.963µs p99=556.875751ms max=758.734167ms wall_step_ns=3587622047152
+[run] fix-s4-reuseport E6 rep 2/5 -> results/raw/fix-s4-reuseport/E6-fix-20261108T090942Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=288.253µs p99=4.741793ms max=161.313043ms wall_step_ns=1050669288027
+[run] fix-s4-reuseport E6 rep 3/5 -> results/raw/fix-s4-reuseport/E6-fix-20261108T090942Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=295.751µs p99=4.981668ms max=144.897085ms wall_step_ns=-41
+[run] fix-s4-reuseport E6 rep 4/5 -> results/raw/fix-s4-reuseport/E6-fix-20261108T090942Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=292.215µs p99=45.759759ms max=169.755462ms wall_step_ns=1021907581735
+[run] fix-s4-reuseport E6 rep 5/5 -> results/raw/fix-s4-reuseport/E6-fix-20261108T090942Z-r5
+loadgen: sent=4000 classes=map[none:3998 reset:2] p50=310.589µs p99=86.977005ms max=196.976963ms wall_step_ns=3413112976070
+[done] results in results/raw/fix-s4-reuseport/
+[11:55:12] >>> s4-reuseport+migrate E6 (containers running: 0)
+[build] s4-reuseport
+[run] fix-s4-reuseport+migrate E6 rep 1/5 -> results/raw/fix-s4-reuseport+migrate/E6-fix-20261108T114245Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=689.67µs p99=1.558497505s max=1.806819505s wall_step_ns=1575169048903
+[run] fix-s4-reuseport+migrate E6 rep 2/5 -> results/raw/fix-s4-reuseport+migrate/E6-fix-20261108T114245Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=321.592µs p99=6.030084ms max=139.067215ms wall_step_ns=-166
+[run] fix-s4-reuseport+migrate E6 rep 3/5 -> results/raw/fix-s4-reuseport+migrate/E6-fix-20261108T114245Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=316.422µs p99=460.230626ms max=659.931334ms wall_step_ns=2086232955154
+[run] fix-s4-reuseport+migrate E6 rep 4/5 -> results/raw/fix-s4-reuseport+migrate/E6-fix-20261108T114245Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=327.63µs p99=91.960297ms max=192.261506ms wall_step_ns=4323592628777
+[run] fix-s4-reuseport+migrate E6 rep 5/5 -> results/raw/fix-s4-reuseport+migrate/E6-fix-20261108T114245Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=339.338µs p99=69.093255ms max=141.159424ms wall_step_ns=-41
+[done] results in results/raw/fix-s4-reuseport+migrate/
+[14:47:29] >>> s5-fdpass E6 (containers running: 0)
+[build] s5-fdpass
+[run] fix-s5-fdpass E6 rep 1/5 -> results/raw/fix-s5-fdpass/E6-fix-20261108T144732Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=317.419µs p99=7.585668ms max=153.88813ms wall_step_ns=-42
+[run] fix-s5-fdpass E6 rep 2/5 -> results/raw/fix-s5-fdpass/E6-fix-20261108T144732Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=337.298µs p99=107.464716ms max=165.04763ms wall_step_ns=1589891671195
+[run] fix-s5-fdpass E6 rep 3/5 -> results/raw/fix-s5-fdpass/E6-fix-20261108T144732Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=343.627µs p99=618.440175ms max=816.588508ms wall_step_ns=3693114011862
+[run] fix-s5-fdpass E6 rep 4/5 -> results/raw/fix-s5-fdpass/E6-fix-20261108T144732Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=424.254µs p99=702.49371ms max=902.286793ms wall_step_ns=-83
+[run] fix-s5-fdpass E6 rep 5/5 -> results/raw/fix-s5-fdpass/E6-fix-20261108T144732Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=400.503µs p99=50.76263ms max=155.954174ms wall_step_ns=2591782614570
+[done] results in results/raw/fix-s5-fdpass/
+[17:29:36] >>> s4-reuseport+crash E6 (containers running: 0)
+[build] s4-reuseport
+[run] fix-s4-reuseport+crash E6 rep 1/5 -> results/raw/fix-s4-reuseport+crash/E6-fix-20261108T170036Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=326.006µs p99=107.126251ms max=189.142884ms wall_step_ns=2109137674445
+[run] fix-s4-reuseport+crash E6 rep 2/5 -> results/raw/fix-s4-reuseport+crash/E6-fix-20261108T170036Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=355.674µs p99=107.000587ms max=194.703171ms wall_step_ns=1040302090195
+[run] fix-s4-reuseport+crash E6 rep 3/5 -> results/raw/fix-s4-reuseport+crash/E6-fix-20261108T170036Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=290.252µs p99=10.496547ms max=145.089505ms wall_step_ns=-41
+[run] fix-s4-reuseport+crash E6 rep 4/5 -> results/raw/fix-s4-reuseport+crash/E6-fix-20261108T170036Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=334.63µs p99=413.987378ms max=611.324128ms wall_step_ns=1393114999820
+[run] fix-s4-reuseport+crash E6 rep 5/5 -> results/raw/fix-s4-reuseport+crash/E6-fix-20261108T170036Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=355.216µs p99=81.372584ms max=185.698254ms wall_step_ns=1423546760071
+[done] results in results/raw/fix-s4-reuseport+crash/
+[18:41:49] >>> s5-fdpass+crash E6 (containers running: 1)
+WARNING: 1 other container(s) running on this Docker host; measurements may be perturbed (recorded in metadata).
+[build] s5-fdpass
+[run] fix-s5-fdpass+crash E6 rep 1/5 -> results/raw/fix-s5-fdpass+crash/E6-fix-20261108T184151Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=98.294µs p99=455.63µs max=6.270963ms wall_step_ns=576153
+[run] fix-s5-fdpass+crash E6 rep 2/5 -> results/raw/fix-s5-fdpass+crash/E6-fix-20261108T184151Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=87.423µs p99=232.085µs max=3.099792ms wall_step_ns=42
+[run] fix-s5-fdpass+crash E6 rep 3/5 -> results/raw/fix-s5-fdpass+crash/E6-fix-20261108T184151Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=179.964µs p99=870.754µs max=9.527587ms wall_step_ns=-36555
+[run] fix-s5-fdpass+crash E6 rep 4/5 -> results/raw/fix-s5-fdpass+crash/E6-fix-20261108T184151Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=117.048µs p99=732.334µs max=7.929293ms wall_step_ns=-117598
+[run] fix-s5-fdpass+crash E6 rep 5/5 -> results/raw/fix-s5-fdpass+crash/E6-fix-20261108T184151Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=101.627µs p99=314.545µs max=1.596047ms wall_step_ns=-42
+[done] results in results/raw/fix-s5-fdpass+crash/
+ALL DONE
+[18:43:51] >>> RERUN s4-reuseport+migrate E2 (containers running: 1)
+WARNING: 1 other container(s) running on this Docker host; measurements may be perturbed (recorded in metadata).
+[build] s4-reuseport
+[run] fix-s4-reuseport+migrate E2 rep 1/5 -> results/raw/fix-s4-reuseport+migrate/E2-fix2-20261108T184353Z-r1
+loadgen: sent=420000 classes=map[none:420000] p50=57.553µs p99=713.825µs max=6.740977ms wall_step_ns=-8973
+[run] fix-s4-reuseport+migrate E2 rep 2/5 -> results/raw/fix-s4-reuseport+migrate/E2-fix2-20261108T184353Z-r2
+loadgen: sent=420000 classes=map[none:420000] p50=57.009µs p99=724.967µs max=6.64116ms wall_step_ns=-83
+[run] fix-s4-reuseport+migrate E2 rep 3/5 -> results/raw/fix-s4-reuseport+migrate/E2-fix2-20261108T184353Z-r3
+loadgen: sent=420000 classes=map[none:420000] p50=57.474µs p99=758.323µs max=5.683227ms wall_step_ns=-76597
+[run] fix-s4-reuseport+migrate E2 rep 4/5 -> results/raw/fix-s4-reuseport+migrate/E2-fix2-20261108T184353Z-r4
+loadgen: sent=420000 classes=map[none:420000] p50=57.073µs p99=764.158µs max=6.501506ms wall_step_ns=-136180
+[run] fix-s4-reuseport+migrate E2 rep 5/5 -> results/raw/fix-s4-reuseport+migrate/E2-fix2-20261108T184353Z-r5
+loadgen: sent=420000 classes=map[none:420000] p50=56.984µs p99=5.853682ms max=56.919759ms wall_step_ns=-291
+[done] results in results/raw/fix-s4-reuseport+migrate/
+[18:45:42] >>> RERUN s5-fdpass E2 (containers running: 1)
+WARNING: 1 other container(s) running on this Docker host; measurements may be perturbed (recorded in metadata).
+[build] s5-fdpass
+[run] fix-s5-fdpass E2 rep 1/5 -> results/raw/fix-s5-fdpass/E2-fix2-20261108T184546Z-r1
+loadgen: sent=420000 classes=map[none:420000] p50=216.33µs p99=73.700798ms max=198.483506ms wall_step_ns=-208
+[run] fix-s5-fdpass E2 rep 2/5 -> results/raw/fix-s5-fdpass/E2-fix2-20261108T184546Z-r2
+loadgen: sent=420000 classes=map[none:420000] p50=53.787µs p99=782.539µs max=8.159733ms wall_step_ns=11903
+[run] fix-s5-fdpass E2 rep 3/5 -> results/raw/fix-s5-fdpass/E2-fix2-20261108T184546Z-r3
+loadgen: sent=420000 classes=map[none:420000] p50=55.405µs p99=824.415µs max=6.230415ms wall_step_ns=178069
+[run] fix-s5-fdpass E2 rep 4/5 -> results/raw/fix-s5-fdpass/E2-fix2-20261108T184546Z-r4
+loadgen: sent=420000 classes=map[none:420000] p50=55.641µs p99=723.535µs max=4.345107ms wall_step_ns=98236
+[run] fix-s5-fdpass E2 rep 5/5 -> results/raw/fix-s5-fdpass/E2-fix2-20261108T184546Z-r5
+loadgen: sent=420000 classes=map[none:420000] p50=55.384µs p99=731.628µs max=4.094255ms wall_step_ns=-42
+[done] results in results/raw/fix-s5-fdpass/
+[18:47:34] >>> RERUN s4-reuseport E6 (containers running: 0)
+[build] s4-reuseport
+[run] fix-s4-reuseport E6 rep 1/5 -> results/raw/fix-s4-reuseport/E6-fix2-20261108T184736Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=297.586µs p99=923.714µs max=12.19696ms wall_step_ns=-503306
+[run] fix-s4-reuseport E6 rep 2/5 -> results/raw/fix-s4-reuseport/E6-fix2-20261108T184736Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=306.918µs p99=1.909294ms max=17.674714ms wall_step_ns=-329054
+[run] fix-s4-reuseport E6 rep 3/5 -> results/raw/fix-s4-reuseport/E6-fix2-20261108T184736Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=303.338µs p99=1.180674ms max=19.926795ms wall_step_ns=-208
+[run] fix-s4-reuseport E6 rep 4/5 -> results/raw/fix-s4-reuseport/E6-fix2-20261108T184736Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=350.585µs p99=1.632836ms max=12.894171ms wall_step_ns=500111
+[run] fix-s4-reuseport E6 rep 5/5 -> results/raw/fix-s4-reuseport/E6-fix2-20261108T184736Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=299.96µs p99=1.053918ms max=16.876758ms wall_step_ns=-441597
+[done] results in results/raw/fix-s4-reuseport/
+[18:49:23] >>> RERUN s4-reuseport+migrate E6 (containers running: 0)
+[build] s4-reuseport
+[run] fix-s4-reuseport+migrate E6 rep 1/5 -> results/raw/fix-s4-reuseport+migrate/E6-fix2-20261108T184925Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=377.298µs p99=1.553753ms max=17.201253ms wall_step_ns=-13180
+[run] fix-s4-reuseport+migrate E6 rep 2/5 -> results/raw/fix-s4-reuseport+migrate/E6-fix2-20261108T184925Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=306.418µs p99=712.296µs max=14.508467ms wall_step_ns=-41
+[run] fix-s4-reuseport+migrate E6 rep 3/5 -> results/raw/fix-s4-reuseport+migrate/E6-fix2-20261108T184925Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=313.127µs p99=1.056295ms max=13.941084ms wall_step_ns=4778
+[run] fix-s4-reuseport+migrate E6 rep 4/5 -> results/raw/fix-s4-reuseport+migrate/E6-fix2-20261108T184925Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=313.717µs p99=1.441962ms max=15.067214ms wall_step_ns=-161182
+[run] fix-s4-reuseport+migrate E6 rep 5/5 -> results/raw/fix-s4-reuseport+migrate/E6-fix2-20261108T184925Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=227.71µs p99=821.918µs max=13.088588ms wall_step_ns=-110389
+[done] results in results/raw/fix-s4-reuseport+migrate/
+[18:51:12] >>> RERUN s5-fdpass E6 (containers running: 0)
+[build] s5-fdpass
+[run] fix-s5-fdpass E6 rep 1/5 -> results/raw/fix-s5-fdpass/E6-fix2-20261108T185113Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=269.465µs p99=982.502µs max=35.444042ms wall_step_ns=0
+[run] fix-s5-fdpass E6 rep 2/5 -> results/raw/fix-s5-fdpass/E6-fix2-20261108T185113Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=305.668µs p99=907.006µs max=6.758755ms wall_step_ns=-182806
+[run] fix-s5-fdpass E6 rep 3/5 -> results/raw/fix-s5-fdpass/E6-fix2-20261108T185113Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=280.838µs p99=865.459µs max=34.255842ms wall_step_ns=-61430
+[run] fix-s5-fdpass E6 rep 4/5 -> results/raw/fix-s5-fdpass/E6-fix2-20261108T185113Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=268.55µs p99=805.051µs max=5.660167ms wall_step_ns=-1
+[run] fix-s5-fdpass E6 rep 5/5 -> results/raw/fix-s5-fdpass/E6-fix2-20261108T185113Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=259.584µs p99=1.021633ms max=3.040467ms wall_step_ns=-136181
+[done] results in results/raw/fix-s5-fdpass/
+[18:53:00] >>> RERUN s4-reuseport+crash E6 (containers running: 0)
+[build] s4-reuseport
+[run] fix-s4-reuseport+crash E6 rep 1/5 -> results/raw/fix-s4-reuseport+crash/E6-fix2-20261108T185302Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=264.838µs p99=906.962µs max=11.175757ms wall_step_ns=-60640
+[run] fix-s4-reuseport+crash E6 rep 2/5 -> results/raw/fix-s4-reuseport+crash/E6-fix2-20261108T185302Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=291.128µs p99=889.963µs max=6.03496ms wall_step_ns=89610
+[run] fix-s4-reuseport+crash E6 rep 3/5 -> results/raw/fix-s4-reuseport+crash/E6-fix2-20261108T185302Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=284.714µs p99=941.044µs max=6.93721ms wall_step_ns=-41
+[run] fix-s4-reuseport+crash E6 rep 4/5 -> results/raw/fix-s4-reuseport+crash/E6-fix2-20261108T185302Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=234.84µs p99=764.754µs max=7.371003ms wall_step_ns=-178014
+[run] fix-s4-reuseport+crash E6 rep 5/5 -> results/raw/fix-s4-reuseport+crash/E6-fix2-20261108T185302Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=327.587µs p99=976.258µs max=6.23609ms wall_step_ns=-95097
+[done] results in results/raw/fix-s4-reuseport+crash/
+[18:54:48] >>> RERUN s5-fdpass+crash E6 (containers running: 0)
+[build] s5-fdpass
+[run] fix-s5-fdpass+crash E6 rep 1/5 -> results/raw/fix-s5-fdpass+crash/E6-fix2-20261108T185450Z-r1
+loadgen: sent=4000 classes=map[none:4000] p50=314.343µs p99=1.096334ms max=44.501334ms wall_step_ns=-192597
+[run] fix-s5-fdpass+crash E6 rep 2/5 -> results/raw/fix-s5-fdpass+crash/E6-fix2-20261108T185450Z-r2
+loadgen: sent=4000 classes=map[none:4000] p50=312.218µs p99=763.676µs max=5.045092ms wall_step_ns=-42
+[run] fix-s5-fdpass+crash E6 rep 3/5 -> results/raw/fix-s5-fdpass+crash/E6-fix2-20261108T185450Z-r3
+loadgen: sent=4000 classes=map[none:4000] p50=313.712µs p99=911.133µs max=5.404917ms wall_step_ns=126820
+[run] fix-s5-fdpass+crash E6 rep 4/5 -> results/raw/fix-s5-fdpass+crash/E6-fix2-20261108T185450Z-r4
+loadgen: sent=4000 classes=map[none:4000] p50=284.543µs p99=1.10784ms max=6.824299ms wall_step_ns=-105763
+[run] fix-s5-fdpass+crash E6 rep 5/5 -> results/raw/fix-s5-fdpass+crash/E6-fix2-20261108T185450Z-r5
+loadgen: sent=4000 classes=map[none:4000] p50=268.709µs p99=836.967µs max=4.508549ms wall_step_ns=0
+[done] results in results/raw/fix-s5-fdpass+crash/
+RERUN DONE

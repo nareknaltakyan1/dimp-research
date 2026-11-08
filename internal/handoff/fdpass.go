@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"runtime"
 	"syscall"
 )
 
@@ -25,6 +26,9 @@ func SendFiles(c *net.UnixConn, data []byte, files ...*os.File) error {
 		oob = syscall.UnixRights(fds...)
 	}
 	n, oobn, err := c.WriteMsgUnix(data, oob, nil)
+	// The raw descriptors above are only valid while the *os.File values are
+	// reachable (a finalizer would close them).
+	runtime.KeepAlive(files)
 	if err != nil {
 		return err
 	}
@@ -44,37 +48,60 @@ func SendFiles(c *net.UnixConn, data []byte, files ...*os.File) error {
 
 // recvChunk reads up to len(buf) bytes and returns any SCM_RIGHTS descriptors
 // that arrived with them, wrapped as *os.File.
+//
+// Every descriptor the kernel installed is wrapped before any error is
+// returned, and on error they are closed here: on MSG_CTRUNC the kernel has
+// still installed the descriptors that fit, and a later malformed message
+// must not leak the ones parsed before it.
 func recvChunk(c *net.UnixConn, buf []byte) (int, []*os.File, error) {
 	oob := make([]byte, syscall.CmsgSpace(4*maxFDsPerMsg))
 	n, oobn, flags, _, err := c.ReadMsgUnix(buf, oob)
+	var files []*os.File
+	var perr error
+	if oobn > 0 {
+		files, perr = parseRights(oob[:oobn])
+	}
+	switch {
+	case err != nil:
+	case flags&syscall.MSG_CTRUNC != 0:
+		err = errors.New("handoff: control message truncated (too many fds)")
+	case perr != nil:
+		err = perr
+	}
 	if err != nil {
+		closeAll(files)
 		return n, nil, err
 	}
-	if flags&syscall.MSG_CTRUNC != 0 {
-		return n, nil, errors.New("handoff: control message truncated (too many fds)")
-	}
-	if oobn == 0 {
-		return n, nil, nil
-	}
-	msgs, err := syscall.ParseSocketControlMessage(oob[:oobn])
+	return n, files, nil
+}
+
+// parseRights wraps every SCM_RIGHTS descriptor in oob, continuing past
+// malformed messages so that nothing installed is left unwrapped.
+func parseRights(oob []byte) ([]*os.File, error) {
+	msgs, err := syscall.ParseSocketControlMessage(oob)
 	if err != nil {
-		return n, nil, err
+		return nil, err // nothing parseable, so nothing we could close
 	}
 	var files []*os.File
-	for _, m := range msgs {
+	var first error
+	for i := range msgs {
+		m := &msgs[i]
 		if m.Header.Level != syscall.SOL_SOCKET || m.Header.Type != syscall.SCM_RIGHTS {
 			continue
 		}
-		fds, err := syscall.ParseUnixRights(&m)
+		fds, err := syscall.ParseUnixRights(m)
 		if err != nil {
-			return n, files, err
+			if first == nil {
+				first = err
+			}
+			continue
 		}
 		for _, fd := range fds {
 			syscall.CloseOnExec(fd)
 			files = append(files, os.NewFile(uintptr(fd), fmt.Sprintf("handoff-fd-%d", fd)))
 		}
 	}
-	return n, files, nil
+	return files, first
 }
 
 const maxFDsPerMsg = 16

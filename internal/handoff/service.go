@@ -36,6 +36,7 @@ type Service struct {
 	sealed   bool
 	ready    bool
 	proxy    *httputil.ReverseProxy
+	outcome  *sealOutcome // non-nil between Seal and Commit/Unseal
 
 	// Hooks (optional).
 	OnUpgrade func(to, bin string) error
@@ -58,21 +59,61 @@ func (s *Service) SetCount(n uint64) { s.mu.Lock(); s.count = n; s.mu.Unlock() }
 // Inflight returns the number of admitted, unfinished /api requests.
 func (s *Service) Inflight() int64 { s.mu.Lock(); defer s.mu.Unlock(); return s.inflight }
 
+// sealOutcome is resolved once a seal is either committed (the successor
+// owns the counter) or rolled back (Unseal).
+type sealOutcome struct {
+	done       chan struct{}
+	rolledBack bool // written before done is closed
+}
+
+// proxyWaitMax bounds how long a failed late request waits for the handoff
+// outcome before it is answered 502.
+const proxyWaitMax = 30 * time.Second
+
 // Seal stops admitting /api requests and returns the first count value the
 // successor must use. Late requests are forwarded to forwardAddr (host:port)
 // if non-empty, else answered 503.
+//
+// If forwarding fails (e.g. the successor crashed before serving), the
+// request waits for the outcome of the handoff: after a rollback it is served
+// locally - safe because with the two-phase protocol a successor that never
+// received commit has accepted nothing - otherwise it is answered 502.
 func (s *Service) Seal(forwardAddr string) uint64 {
+	o := &sealOutcome{done: make(chan struct{})}
 	var p *httputil.ReverseProxy
 	if forwardAddr != "" {
 		u := &url.URL{Scheme: "http", Host: forwardAddr}
 		p = httputil.NewSingleHostReverseProxy(u)
 		p.Transport = &http.Transport{DisableKeepAlives: true, ResponseHeaderTimeout: 30 * time.Second}
+		p.ErrorHandler = func(w http.ResponseWriter, r *http.Request, err error) {
+			select {
+			case <-o.done:
+				if o.rolledBack {
+					s.handleAPI(w, r)
+					return
+				}
+			case <-time.After(proxyWaitMax):
+			case <-r.Context().Done():
+			}
+			http.Error(w, "forward to successor failed: "+err.Error(), http.StatusBadGateway)
+		}
 	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.sealed = true
 	s.proxy = p
+	s.outcome = o
 	return s.count + uint64(s.inflight)
+}
+
+// Commit records that the successor took over for good (no rollback).
+func (s *Service) Commit() {
+	s.mu.Lock()
+	if s.outcome != nil {
+		close(s.outcome.done)
+		s.outcome = nil
+	}
+	s.mu.Unlock()
 }
 
 // Unseal reverts Seal (rollback path).
@@ -80,6 +121,11 @@ func (s *Service) Unseal() {
 	s.mu.Lock()
 	s.sealed = false
 	s.proxy = nil
+	if s.outcome != nil {
+		s.outcome.rolledBack = true
+		close(s.outcome.done)
+		s.outcome = nil
+	}
 	s.mu.Unlock()
 }
 

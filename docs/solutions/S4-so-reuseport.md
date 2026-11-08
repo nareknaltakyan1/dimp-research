@@ -27,11 +27,12 @@ sequenceDiagram
     N->>O: hello (ctl unix socket)
     O->>N: (no fd)  N->>O: prepared
     O->>K: close(A)  <-- connections still in queue A get RST
-    O->>O: keep-alives off; Seal(): next = count + inflight
+    O->>O: beginDrain (Connection: close on every response; idle conns NOT closed); Seal(): next = count + inflight
     O->>N: state {count: next}
+    N->>O: ready (self-check without serving; nothing accepted yet)
+    O->>N: commit (no rollback after this)
     N->>K: accept() on B (queue B kept connections hashed to it)
-    N->>O: ready (after /healthz self-check)
-    O->>O: drain own + proxy late requests to N; exit
+    O->>O: drain own + proxy late requests to N; close conns idle for -idle-grace; exit
 ```
 
 The new process binds only after it has initialised and does not `accept()`
@@ -69,10 +70,19 @@ before the new process accepts.
 ## Failure and rollback
 
 Old process keeps serving if the child fails before `prepared`. If the child
-dies after `state`, the old re-binds a fresh reuseport socket, unseals and
-resumes (measured: `upgrade_failed` emitted, service stays v1, count
-continues). But unlike S5 the connections queued in the dead child's queue
-B **are reset** - rollback is not lossless with reuseport.
+dies after `state` (and before `commit`), the old re-binds a fresh reuseport
+socket, unseals and resumes (measured: `upgrade_failed` emitted, service
+stays v1, count continues). But unlike S5 the connections queued in the dead
+child's queue B **are reset** - rollback is not lossless with reuseport.
+Late requests that the old process tried to forward to the dead child are
+served locally once the rollback is known. This is safe because the child
+had accepted nothing.
+
+The two-phase ready/commit protocol, the waiter fix and the descriptor
+fixes are shared with S5 (`internal/handoff`), so see
+`docs/solutions/S5-fd-passing.md`, "Failure and rollback". In short: the
+successor accepts nothing until it has read `commit`, and the old process
+never rolls back once `commit` has been written.
 
 ## Kubernetes fit
 
@@ -116,6 +126,35 @@ the stall only changes latency then. The single reset in the rollback run is
 the reuseport cost of a crashing successor: its own queue B is discarded. S5
 avoids this because both processes share one queue.
 
+
+## Campaign finding: keep-alive close race (fixed 2026-11-08)
+
+In the E2 campaign (21 000 req/s, keep-alive), S4 lost 5-9 requests per run (37
+total) and S4+migrate lost 6-27 (58), all on reused keep-alive connections, 9.6-12.3 ms
+after the trigger. This was **not** the accept-queue pitfall above, which is why
+`tcp_migrate_req` did not help. It was the HTTP/1.1 idle-connection close race: at the
+seal the old process called `SetKeepAlivesEnabled(false)`, which closes all idle
+connections at once. The root cause, the fix (`Connection: close` on every response
+while draining, idle connections closed only after `-idle-grace`) and the client-retry
+discussion are in `docs/solutions/S5-fd-passing.md`, "Keep-alive close race". The
+drain code is shared.
+
+After the fix (same parameters, 5 reps per cell):
+
+| cell | errors/run before | after |
+|---|---|---|
+| s4-reuseport E2 | 9/6/9/5/8 | 0/0/0/0/0 |
+| s4-reuseport+migrate E2 | 27/8/9/8/6 | 0/0/0/0/0 |
+| s4-reuseport+migrate E4-ka | 0/0/0/1/1 | 0/0/0/0/0 |
+| s4 / s4+migrate E1, E4-ka, E6, s4+crash E6 | 0 | 0 |
+
+The cost, as medians: the upgrade completes about 8 ms later in E2 (7.5 -> 15.7 ms;
+S4+migrate 7.7 -> 16.4 ms), and the upgrade-window max is 1.8 -> 4.6 ms. The
+upgrade-window p99 is unchanged (0.69 -> 0.95 ms). Data: `results/handoff-fix/`.
+
+The accept-queue reset pitfall itself is unchanged by this fix: closing listener A
+still resets connections in queue A. The campaign's E4-noka at 500 req/s never
+triggered it, and `tcp_migrate_req=1` or S5 remain the mitigations.
 
 ## Limitations / threats to validity
 

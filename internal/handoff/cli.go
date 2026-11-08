@@ -19,6 +19,7 @@ func Main(mode Mode, buildVersion, buildFail string) {
 	allowBin := fs.Bool("allow-bin-param", false, "allow POST /admin/upgrade?bin=PATH (arbitrary exec: trusted networks only)")
 	readyTO := fs.Duration("ready-timeout", 10*time.Second, "successor must be ready within this, else rollback")
 	drainTO := fs.Duration("drain-timeout", 30*time.Second, "max time to drain in-flight requests")
+	idleGrace := fs.Duration("idle-grace", time.Second, "while draining, keep idle keep-alive connections open this long before closing them server-side (each reuse gets Connection: close)")
 	stall := fs.Duration("stall-accept", 0, "reuseport pitfall demo: stop accepting this long before closing the old listener")
 	pidfile := fs.String("pidfile", "", "write the active server pid here (used by -supervise)")
 	takeover := fs.Bool("takeover", false, "connect to -ctl-sock and take over a running server")
@@ -41,7 +42,7 @@ func Main(mode Mode, buildVersion, buildFail string) {
 	s := NewServer(Config{
 		Mode: mode, Addr: *addr, CtlSock: *ctl, Version: *version,
 		NextBinary: *nextBin, NextVersion: *nextVer, AllowBinParam: *allowBin,
-		ReadyTimeout: *readyTO, DrainTimeout: *drainTO, StallAccept: *stall,
+		ReadyTimeout: *readyTO, DrainTimeout: *drainTO, StallAccept: *stall, IdleGrace: graceOrNone(*idleGrace),
 		PIDFile: *pidfile, Takeover: *takeover, SimulateFail: buildFail,
 		ChildArgs: func(to string, same bool) []string {
 			args := FlagArgs(fs, "version", "takeover", "supervise")
@@ -55,4 +56,12 @@ func Main(mode Mode, buildVersion, buildFail string) {
 		Emit("fatal", map[string]any{"err": err.Error(), "version": *version})
 		os.Exit(1)
 	}
+}
+
+// graceOrNone maps the flag value 0 ("no grace") to Config's "close immediately".
+func graceOrNone(d time.Duration) time.Duration {
+	if d == 0 {
+		return -1
+	}
+	return d
 }

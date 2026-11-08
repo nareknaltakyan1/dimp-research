@@ -42,6 +42,11 @@ type Config struct {
 	AllowBinParam bool   // allow POST /admin/upgrade?bin=
 	ReadyTimeout  time.Duration
 	DrainTimeout  time.Duration
+	// IdleGrace: while draining, keep-alive connections that are idle are
+	// left open this long (a client that reuses one gets its response with
+	// "Connection: close"); only connections idle for the whole grace are
+	// closed by the server. 0 = default (1s), negative = close immediately.
+	IdleGrace time.Duration
 	// ChildArgs builds argv[1:] for the successor. sameBinary is true when
 	// re-executing the current executable (then the version must be passed).
 	ChildArgs func(toVersion string, sameBinary bool) []string
@@ -68,9 +73,11 @@ type Server struct {
 	gen    int
 
 	openConns atomic.Int64 // tracked via http.Server.ConnState
+	conns     sync.Map     // net.Conn -> *connTrack
+	draining  atomic.Bool  // responses carry "Connection: close"
 
 	upgrading atomic.Bool
-	waiter    chan *net.UnixConn // non-nil while a spawned child is expected
+	waiter    chan *net.UnixConn // non-nil (buffer 1) while a spawned child is expected; guarded by mu
 	done      chan struct{}
 	doneOnce  sync.Once
 }
@@ -83,8 +90,13 @@ func NewServer(cfg Config) *Server {
 	if cfg.DrainTimeout == 0 {
 		cfg.DrainTimeout = 30 * time.Second
 	}
+	if cfg.IdleGrace == 0 {
+		cfg.IdleGrace = time.Second
+	} else if cfg.IdleGrace < 0 {
+		cfg.IdleGrace = 0
+	}
 	s := &Server{cfg: cfg, Svc: NewService(cfg.Version, 0), done: make(chan struct{})}
-	s.srv = &http.Server{Handler: s.Svc.Handler(), ReadHeaderTimeout: 10 * time.Second, ConnState: s.connState}
+	s.srv = &http.Server{Handler: s.drainHandler(s.Svc.Handler()), ReadHeaderTimeout: 10 * time.Second, ConnState: s.connState}
 	s.Svc.OnUpgrade = func(to, bin string) error {
 		if bin != "" && !cfg.AllowBinParam {
 			return errors.New("bin= not allowed (start with -allow-bin-param)")
@@ -136,9 +148,9 @@ func (s *Server) Run() error {
 			s.mu.Lock()
 			ln := s.ln
 			s.mu.Unlock()
-			s.srv.SetKeepAlivesEnabled(false)
+			s.beginDrain()
 			_ = ln.Close()
-			_ = s.drain()
+			_, _ = s.drain()
 			return nil
 		}
 	}
@@ -176,7 +188,7 @@ func (s *Server) serve() {
 
 // ---------- successor side ----------
 
-func (s *Server) takeover() error {
+func (s *Server) takeover() (err error) {
 	deadline := time.Now().Add(s.cfg.ReadyTimeout)
 	var c *net.UnixConn
 	for {
@@ -191,6 +203,11 @@ func (s *Server) takeover() error {
 		time.Sleep(20 * time.Millisecond)
 	}
 	defer c.Close()
+	defer func() {
+		if err != nil && s.ln != nil { // never served: release our listener
+			_ = s.ln.Close()
+		}
+	}()
 	_ = c.SetDeadline(deadline)
 	fail := func(err error) error {
 		_ = WriteMsg(c, Msg{Type: MsgAbort, Err: err.Error()})
@@ -213,6 +230,7 @@ func (s *Server) takeover() error {
 		}
 		l, err := net.FileListener(files[0])
 		if err != nil {
+			files[0].Close()
 			return fail(err)
 		}
 		s.lnFile = files[0] // keep for the next upgrade / our own rollback
@@ -247,27 +265,87 @@ func (s *Server) takeover() error {
 	}
 	s.Svc.SetCount(m.State.Count)
 	s.gen = m.State.Generation + 1
-	s.serve()
+	// Self-check WITHOUT serving: the listener must be a listening socket and
+	// the handler must answer /healthz. Nothing is accepted before commit.
+	if err := checkListening(ln); err != nil {
+		return fail(fmt.Errorf("self-check: %w", err))
+	}
 	s.Svc.SetReady(true)
-	if err := selfCheck(LoopbackAddr(ln.Addr())); err != nil {
+	if err := selfCheck(s.srv.Handler); err != nil {
 		return fail(fmt.Errorf("self-check: %w", err))
 	}
 	if err := WriteMsg(c, Msg{Type: MsgReady, PID: os.Getpid(), Version: s.cfg.Version}); err != nil {
 		return err
 	}
+	// Two-phase handoff: serve only after the predecessor has committed (it
+	// will then never roll back). Without commit we exit having served
+	// nothing, so the predecessor's rollback cannot duplicate counts.
+	if _, _, err := Expect(c, MsgCommit); err != nil {
+		return fmt.Errorf("predecessor did not commit: %w", err)
+	}
+	s.serve()
 	Emit("new_version_serving", map[string]any{"version": s.cfg.Version, "count_start": m.State.Count, "generation": s.gen, "mode": string(s.cfg.Mode)})
 	return nil
 }
 
-func selfCheck(addr string) error {
-	cl := &http.Client{Timeout: 2 * time.Second, Transport: &http.Transport{DisableKeepAlives: true}}
-	resp, err := cl.Get("http://" + addr + "/healthz")
+// selfCheck calls GET /healthz on h in-process.
+func selfCheck(h http.Handler) error {
+	req, err := http.NewRequest(http.MethodGet, "/healthz", nil)
 	if err != nil {
 		return err
 	}
-	resp.Body.Close()
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("healthz status %d", resp.StatusCode)
+	rec := &recorder{h: http.Header{}}
+	h.ServeHTTP(rec, req)
+	if rec.code != 0 && rec.code != http.StatusOK {
+		return fmt.Errorf("healthz status %d", rec.code)
+	}
+	return nil
+}
+
+type recorder struct {
+	h    http.Header
+	code int
+}
+
+func (r *recorder) Header() http.Header { return r.h }
+func (r *recorder) Write(b []byte) (int, error) {
+	if r.code == 0 {
+		r.code = http.StatusOK
+	}
+	return len(b), nil
+}
+func (r *recorder) WriteHeader(code int) {
+	if r.code == 0 {
+		r.code = code
+	}
+}
+
+// checkListening verifies that ln's socket is in the listening state
+// (SO_ACCEPTCONN), e.g. that a passed descriptor really is a live listener.
+func checkListening(ln net.Listener) error {
+	tl, ok := ln.(*net.TCPListener)
+	if !ok {
+		return nil
+	}
+	rc, err := tl.SyscallConn()
+	if err != nil {
+		return err
+	}
+	var v int
+	var serr error
+	if err := rc.Control(func(fd uintptr) {
+		v, serr = syscall.GetsockoptInt(int(fd), syscall.SOL_SOCKET, syscall.SO_ACCEPTCONN)
+	}); err != nil {
+		return err
+	}
+	if errors.Is(serr, syscall.ENOPROTOOPT) {
+		return nil // SO_ACCEPTCONN not readable on this OS (e.g. macOS); Linux supports it
+	}
+	if serr != nil {
+		return serr
+	}
+	if v == 0 {
+		return errors.New("socket is not listening")
 	}
 	return nil
 }
@@ -302,15 +380,8 @@ func (s *Server) ctlLoop(l *net.UnixListener) {
 		if err != nil {
 			return
 		}
-		s.mu.Lock()
-		w := s.waiter
-		s.mu.Unlock()
-		if w != nil {
-			select {
-			case w <- c:
-				continue
-			default:
-			}
+		if s.offerToWaiter(c) {
+			continue
 		}
 		// Externally started successor (e.g. `kubectl exec ... -takeover`).
 		if !s.upgrading.CompareAndSwap(false, true) {
@@ -340,18 +411,63 @@ func (s *Server) StartUpgrade(to, bin string) error {
 		bin = self
 	}
 	Emit("upgrade_start", map[string]any{"from": s.cfg.Version, "to": to, "bin": bin, "mode": string(s.cfg.Mode)})
-	w := make(chan *net.UnixConn)
-	s.mu.Lock()
-	s.waiter = w
-	s.mu.Unlock()
+	w := s.newWaiter()
 	go func() {
 		err := s.spawnAndHandoff(w, to, bin, bin == self)
-		s.mu.Lock()
-		s.waiter = nil
-		s.mu.Unlock()
+		s.clearWaiter()
 		s.finish(err)
 	}()
 	return nil
+}
+
+// newWaiter registers the channel on which ctlLoop delivers the spawned
+// child's control connection. It is buffered (1) so the delivery never
+// depends on the spawning goroutine already waiting: with an unbuffered
+// channel and a non-blocking send, a child that connected before the parent
+// reached its select (easy under CPU load) was treated as a second,
+// external successor and rejected with "upgrade already in progress".
+func (s *Server) newWaiter() chan *net.UnixConn {
+	w := make(chan *net.UnixConn, 1)
+	s.mu.Lock()
+	s.waiter = w
+	s.mu.Unlock()
+	return w
+}
+
+// offerToWaiter hands c to the registered waiter, if any and if its slot is
+// free. Done under mu so that clearWaiter cannot strand a connection.
+func (s *Server) offerToWaiter(c *net.UnixConn) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.waiter == nil {
+		return false
+	}
+	select {
+	case s.waiter <- c:
+		return true
+	default:
+		return false
+	}
+}
+
+// clearWaiter unregisters the waiter and rejects a connection that was
+// delivered but never picked up.
+func (s *Server) clearWaiter() {
+	s.mu.Lock()
+	w := s.waiter
+	s.waiter = nil
+	var stray *net.UnixConn
+	if w != nil {
+		select {
+		case stray = <-w:
+		default:
+		}
+	}
+	s.mu.Unlock()
+	if stray != nil {
+		_ = WriteMsg(stray, Msg{Type: MsgAbort, Err: "upgrade no longer expecting a successor"})
+		stray.Close()
+	}
 }
 
 func (s *Server) spawnAndHandoff(w chan *net.UnixConn, to, bin string, same bool) error {
@@ -365,6 +481,7 @@ func (s *Server) spawnAndHandoff(w chan *net.UnixConn, to, bin string, same bool
 	go func() { exited <- cmd.Wait() }()
 	select {
 	case c := <-w:
+		s.clearWaiter() // later connections are external (and rejected while we run)
 		return s.handoff(c, cmd)
 	case err := <-exited:
 		return fmt.Errorf("successor exited before connecting: %v", err)
@@ -385,12 +502,26 @@ func (s *Server) finish(err error) {
 
 // handoff runs the predecessor half of the protocol on c. cmd is the spawned
 // successor (nil for an external one) and is killed on failure.
+//
+// Two-phase: after the successor reports ready (it holds the listener and
+// the state but has accepted nothing), we send commit. Sending commit is the
+// point of no return. A successor only starts serving after it has read a
+// complete commit frame, so:
+//   - any failure before commit was delivered -> the successor has served
+//     nothing and never will (it exits on abort/EOF) -> rollback is safe,
+//     for spawned and external (-takeover) successors alike;
+//   - after commit was written -> we never roll back; the successor owns
+//     the service even if it dies later (that is an ordinary crash).
+//
+// A failed write of the commit frame cannot have delivered a complete frame
+// (unix stream sockets report partial writes as short counts, which
+// SendFiles completes or fails), so it is treated as "not delivered".
 func (s *Server) handoff(c *net.UnixConn, cmd *exec.Cmd) (err error) {
 	defer c.Close()
 	_ = c.SetDeadline(time.Now().Add(s.cfg.ReadyTimeout))
-	sealed := false
+	sealed, committed := false, false
 	defer func() {
-		if err == nil {
+		if err == nil || committed {
 			return
 		}
 		_ = WriteMsg(c, Msg{Type: MsgAbort, Err: err.Error()})
@@ -427,8 +558,8 @@ func (s *Server) handoff(c *net.UnixConn, cmd *exec.Cmd) (err error) {
 		s.ln.Pause()
 		time.Sleep(s.cfg.StallAccept)
 	}
-	s.srv.SetKeepAlivesEnabled(false)
 	_ = s.ln.Close()
+	s.beginDrain() // NOT SetKeepAlivesEnabled(false): see drain.go
 	sealed = true
 	next := s.Svc.Seal(LoopbackAddr(s.ln.Addr()))
 	st := &State{Count: next, FromVersion: s.cfg.Version, FromPID: os.Getpid(), SealedAtNs: time.Now().UnixNano(), Generation: s.gen,
@@ -439,43 +570,19 @@ func (s *Server) handoff(c *net.UnixConn, cmd *exec.Cmd) (err error) {
 	if _, _, err := Expect(c, MsgReady); err != nil {
 		return fmt.Errorf("successor not ready: %w", err)
 	}
+	if err := WriteMsg(c, Msg{Type: MsgCommit}); err != nil {
+		return fmt.Errorf("commit not delivered: %w", err)
+	}
+	committed = true
+	s.Svc.Commit()
 
 	// Successor serves; drain our in-flight (and proxied late) requests.
 	s.closeCtl()
-	derr := s.drain()
-	Emit("old_version_drained", map[string]any{"version": s.cfg.Version, "count": s.Svc.Count(), "drain_err": errString(derr)})
+	ds, derr := s.drain()
+	Emit("old_version_drained", map[string]any{"version": s.cfg.Version, "count": s.Svc.Count(), "drain_err": errString(derr),
+		"drain_ms": float64(ds.Duration.Microseconds()) / 1000, "idle_closed": ds.IdleClosed, "open_at_end": ds.OpenAtEnd})
 	Emit("upgrade_done", map[string]any{"from": s.cfg.Version, "to": hello.Version, "new_pid": hello.PID})
 	return nil
-}
-
-func (s *Server) connState(_ net.Conn, st http.ConnState) {
-	switch st {
-	case http.StateNew:
-		s.openConns.Add(1)
-	case http.StateClosed, http.StateHijacked:
-		s.openConns.Add(-1)
-	}
-}
-
-// drain waits until every connection the old process accepted has been
-// served and closed, and only then calls Shutdown.
-//
-// We deliberately do NOT call http.Server.Shutdown first: net/http's
-// conn.serve drops a connection without any response if it reads the
-// request after Shutdown began (server.go: "if c.server.shuttingDown()
-// { return }"), so connections accepted just before the handoff whose
-// request bytes were not yet read would see EOF. With keep-alives disabled
-// every such connection is closed right after its (served or proxied)
-// response, so openConns reaches 0.
-func (s *Server) drain() error {
-	deadline := time.Now().Add(s.cfg.DrainTimeout)
-	for s.openConns.Load() > 0 && time.Now().Before(deadline) {
-		s.srv.SetKeepAlivesEnabled(false) // closes conns that went idle
-		time.Sleep(2 * time.Millisecond)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), time.Until(deadline)+time.Second)
-	defer cancel()
-	return s.srv.Shutdown(ctx)
 }
 
 // resumeServing is the post-seal rollback: re-acquire the listener and
@@ -494,7 +601,7 @@ func (s *Server) resumeServing() error {
 	s.mu.Lock()
 	s.ln = newGated(ln)
 	s.mu.Unlock()
-	s.srv.SetKeepAlivesEnabled(true)
+	s.endDrain()
 	s.Svc.Unseal()
 	s.Svc.SetReady(true)
 	s.serve()

@@ -29,10 +29,10 @@ It grew out of the student PoC [Ruzanna20/dimp-poc](https://github.com/Ruzanna20
 | S1 | Atomic swap + per-version epoch draining | in-process | [S1](docs/solutions/S1-epoch-swap.md) | old version drains in ~0.7 ms under load (global counter never drains) |
 | S2 | Go `plugin` (.so) loading | in-process | [S2](docs/solutions/S2-go-plugin.md) | real dynamic code, but +5.3 MiB never reclaimed per upgrade |
 | S3 | WebAssembly modules (wazero) | in-process | [S3](docs/solutions/S3-wasm.md) | dynamic code with memory reclaimed (flat over 20 upgrades) |
-| S4 | New process + `SO_REUSEPORT` | process | [S4](docs/solutions/S4-so-reuseport.md) | accept-queue resets unless `tcp_migrate_req=1` |
-| S5 | Listener FD passing (SCM_RIGHTS) + state transfer | process | [S5](docs/solutions/S5-fd-passing.md) | 0 lost connections in every run, exact state hand-over, rollback |
+| S4 | New process + `SO_REUSEPORT` | process | [S4](docs/solutions/S4-so-reuseport.md) | 0 failed requests after the keep-alive drain fix (was 37 at 21k req/s) |
+| S5 | Listener FD passing (SCM_RIGHTS) + state transfer | process | [S5](docs/solutions/S5-fd-passing.md) | 0 failed requests in all re-runs (6.38M requests); found and fixed the Go keep-alive close race |
 | S6 | Hotpatch-ready compilation + transactional patch sets | in-process | [S6](docs/solutions/S6-hotpatch-ready-compilation.md) | 0 mixed-version requests; patch 100 functions in 110 µs |
-| S7 | Kubernetes `HotPatch` operator, signed patches, in-process canary | cloud-native | [S7](docs/solutions/S7-k8s-inplace-patch-operator.md) | in-place fleet patch with 0 errors and 0 restarts; bad patch caught in shadow in 0.6 s |
+| S7 | Kubernetes `HotPatch` operator, signed patches, in-process canary | cloud-native | [S7](docs/solutions/S7-k8s-inplace-patch-operator.md) | in-place fleet patch with 0 errors and 0 restarts; bad patch caught in shadow; replay and unauthenticated admin rejected |
 | S8 | Update classifier and mechanism selector | analysis | [S8](docs/solutions/S8-update-classifier.md) | 48.5% of real non-bot Go commits hot-patchable in-process |
 
 ## Repository layout
@@ -71,6 +71,6 @@ scripts/s7_kind_demo.sh
 
 ## Status
 
-Stage 1 (implementation and first results) is complete. See [.coordinator/STATUS.md](.coordinator/STATUS.md)
+Stage 1 (implementation, a 311-run campaign, code review and fixes) is complete. Headline: S1-S3, S6 and S7 had zero failed requests in every experiment; S4/S5 reached zero in all re-run cells after the keep-alive fix (S4's repeated-upgrade E5 not yet re-run); and only in-process and handoff mechanisms preserved in-memory state (Kubernetes rolling updates reset it). See [docs/results.md](docs/results.md) section 8 for the post-review re-runs. See [.coordinator/STATUS.md](.coordinator/STATUS.md)
 for the work log and remaining items. The testbed is a single Apple M4 Pro laptop with Docker Desktop; see the
 threats to validity in each document.

@@ -5,3 +5,5 @@ results/raw/
 .DS_Store
 __pycache__/
 .venv/
+results/handoff-fix/raw/
+results/handoff-fix/raw_invalid/
