@@ -40,3 +40,11 @@ DONE: README, paper ideas 9-12 (transactional patch sets, update-class MSR study
 - [~] FIXERS DISPATCHED 09:30 (F1 S7/operator/canary/signing; F2 handoff S4/S5 + keep-alive loss root cause + re-runs -> results/handoff-fix/; F3 patchable/hotswap/S6/S2 build.sh + CONTRACT drain_timeout). After: update docs/results.md + README with fixed numbers, final report. Code review DONE -> .coordinator/review-2026-11-08.md (2 high, 7 medium). FIX AFTER the matrix finishes (dispatch fixer agents by area: S7/operator/canary/signing; handoff S5; patchable+hotswap), then re-run E1+E6 for s5/s7 and correct the docs
 - [ ] Lead: README, results chapter docs/results.md, paper draft outline paper/, update paper-ideas with real numbers
 - [ ] Commit and push after each wave; final report to the user
+
+## 2026-11-08 23:10 - Stage 1 COMPLETE
+All waves done, all fixes committed. Open items for stage 2 (not started):
+- Re-run S4 E5 (repeated upgrades) after the keep-alive fix; count drain_timeout separately in analyze.py and re-check E3
+- S7: a replacement pod forgets the high-water mark (needs durable storage or a signed minimum version)
+- S1-S3 /admin/upgrade still unauthenticated (bench-only servers)
+- Second rater for the S8 manual validation; extend the S8 corpus to 10-20 repos
+- Testbed is a single laptop; repeat key cells on a real multi-node cluster
