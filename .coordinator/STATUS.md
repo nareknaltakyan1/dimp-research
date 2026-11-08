@@ -27,7 +27,7 @@ NOTE 2026-11-08 05:37: S6, S7 and S8 were cut off by the 5h usage limit (reset 0
       in-process canary (traffic split v1/v2 in one process), shadow/differential execution,
       SLO-based auto-rollback. Builds on internal/hotswap + s3-wasm (start AFTER Engineer A).
       Owns internal/canary, internal/signing, operator/, cmd/s7-*, docs/solutions/S7*
-- [~] S8 DISPATCHED (agent E; tools/dimpclass + real-history eval of commit classes) Adaptive mechanism selector: classify a patch (body-only / signature / state-schema change)
+- [x] S8 DONE+committed (450 real commits: 48.5% non-bot hot-patchable; init-time code is main blocker) DISPATCHED (agent E; tools/dimpclass + real-history eval of commit classes) Adaptive mechanism selector: classify a patch (body-only / signature / state-schema change)
       and pick S1/S3/S6 vs S5 vs rolling update. Small; can be done by the lead or S7 agent.
 
 ## Wave 3
