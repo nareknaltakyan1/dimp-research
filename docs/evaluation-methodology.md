@@ -112,9 +112,12 @@ error and HTTP 200; `T` = first trigger time; `E` = last `upgrade_done` or
 * **Version-mix window.** Per swap, using server timestamps of successful
   responses between this trigger and the next: last response of the old version
   − first response of the new version, clipped at 0. Mean (and max) over swaps.
-* **State continuity.** Successful responses sorted by server `ts_ns`. With
-  tolerance `J = concurrency cap` (increment-vs-timestamp reordering under
-  concurrency), a drop `count < running_max − J` is a *reset* if
+* **State continuity.** Successful responses with `work_ms = 0` sorted by server
+  `ts_ns` (long requests stamp `ts_ns` at completion but take their count at
+  arrival, so they would appear as false regressions in S4/S5/S6). With
+  tolerance `J = max(16, rate × 50 ms)` (increment-vs-timestamp reordering under
+  concurrency; revised 2026-11-08 from `J = concurrency cap`, which was large
+  enough to hide B0's real resets in E5), a drop `count < running_max − J` is a *reset* if
   `count < 0.1·running_max`, else a *regression*; the running max then restarts
   from the new value. *Duplicates* = successful responses − distinct count values
   (exactly 0 for a single atomic counter, regardless of concurrency).
